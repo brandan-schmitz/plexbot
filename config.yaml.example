@@ -1,0 +1,71 @@
+####################
+### Bot Settings ###
+####################
+BotSettings:
+  # The bot token, this is obtained from the Discord Developer Portal
+  token: thisissomerandomediscordbotapitokendonotuseit
+
+  # The name of the bot displayed in all messages
+  botName: Plexbot
+
+  # The folder that the movies will be downloaded to
+  movieDownloadFolder: /path/to/movie/folder
+
+  # URL of Image displayed in place of movies that do not have a poster image
+  noPosterImageUrl: https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png
+
+  # Base URL of the current YTS domain to look at for API requests
+  # At the time of this commit, this is the current domain so this can be left as is
+  currentYtsDomain: yts.mx
+
+  # The ID of the channel for listing movies that can be upgraded to a better resolution
+  upgradableMoviesChannelId: 012345678901234567
+
+  # The ID of the channel for notifications about movies that have been upgraded to a better resolution
+  upgradedMoviesChannelId: 012345678901234567
+
+  # The ID of the channel where the bot's status message will be located
+  botStatusChannelId: 012345678901234567
+
+  # The ID of the channel for notifications about movies that have been added to the library
+  newMoviesChannelId: 012345678901234567
+
+  # The ID of the channel for notifications about movies that have been added to the waiting list
+  waitlistChannelId: 012345678901234567
+
+
+#########################
+### Database Settings ###
+#########################
+DatabaseSettings:
+  # The IP or URL of the server hosting the bots database
+  ipAddress: 127.0.01
+
+  # The database server port
+  port: 3306
+
+  # The name of the database the bot should use
+  dbName: Plexbot
+
+  # The username the bot will use to access the database
+  username: Plexbot
+
+  # The password the bot will use to access the database
+  password: somepassword
+
+
+################
+### API Keys ###
+################
+ApiKeys:
+  # The API key for all requests to the OMDb API for getting IMDB OmdbMovie ID's.
+  # You can get an API ket for this at http://www.omdbapi.com/ however it is recommended to purchase
+  # at least the Basic plan through https://www.patreon.com/join/omdb to avoid API key limits.
+  omdbApiKey: somekey
+
+  # Private API key for real-debrid which is where the movies get downloaded from
+  # In order to get an API key, you will need to register an account at https://real-debrid.com
+  # and purchase a premium offer. Generally the 180 day plan is the best deal. Once purchased, go
+  # to https://real-debrid.com/apitoken to retrieve your token. You will need to purchase more time
+  # before your plan expires otherwise the bot will not function.
+  realDebridKey: somerandomeapikeygoeshereotherwiseitwontwork
