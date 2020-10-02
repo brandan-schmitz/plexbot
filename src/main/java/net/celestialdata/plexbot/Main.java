@@ -110,37 +110,37 @@ public class Main {
         FallbackLoggerConfiguration.setDebug(false);
 
         // Initialize the database connections
-        System.out.print("Connecting to the database...  ");
+        System.out.print("Connecting to the database...");
         DataSource.init();
         System.out.println("Done");
 
         // Start the bot
-        System.out.print("Connecting to the Discord API...  ");
+        System.out.print("Connecting to the Discord API...");
         startBot();
         System.out.println("Done");
 
         // Register guild join and leaver listeners
-        System.out.print("Registering event listeners...  ");
+        System.out.print("Registering event listeners...");
         botApi.addListener((ServerJoinListener) event -> AddRemoveGuilds.addGuild(event.getServer()));
         botApi.addListener((ServerLeaveListener) event -> AddRemoveGuilds.removeGuild(event.getServer()));
         botApi.addListener((ServerMemberJoinListener) event -> DatabaseDataManager.addUser(event.getUser()));
         System.out.println("Done");
 
         // Update the database with any new guilds or users that may have been added while the bot was offline
-        System.out.print("Scanning for new Guilds and Users...  ");
+        System.out.print("Scanning for new Guilds and Users...");
         UpdateGuildsUsersDB.runScan();
         System.out.println("Done");
 
-        System.out.print("Configuring API resources... ");
+        System.out.print("Configuring API resources...");
         initUnirest();
         System.out.println("Done");
 
         // Register the bot commands
-        System.out.print("Registering Bot Commands...  ");
+        System.out.print("Registering Bot Commands...");
         registerBotCommands();
         System.out.println("Done");
 
-        System.out.print("Configuring Bot Work Pool... ");
+        System.out.print("Configuring Bot Work Pool...");
         BotWorkPool.getInstance();
         System.out.println("Done");
 
@@ -155,15 +155,15 @@ public class Main {
 
         System.out.print("Configuring Bot Status Manager...");
         BotStatusManager.getInstance();
-        System.out.print("Done");
+        System.out.println("Done");
 
         // Start the waitlist manager
-        System.out.print("Configuring the Waitlist Manager... ");
+        System.out.print("Configuring the Waitlist Manager...");
         new WaitlistManager();
         System.out.println("Done");
 
         // Start the resolution manager
-        System.out.print("Configuring the Resolution Manager... ");
+        System.out.print("Configuring the Resolution Manager...");
         new ResolutionManager();
         System.out.println("Done");
 

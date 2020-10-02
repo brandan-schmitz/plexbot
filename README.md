@@ -36,7 +36,7 @@ Plexbot was originally created for the purpose of automating the process of down
   !r --id=tt0371746
   ```
 
-- **Waitinglist:** Allows the bot to periodically (1x/hr) check to see if a move is now avaialble for download. A movie is automatically added to the waiting list if a user uses the request command and the bot is unable to find the movie at the time. During its hourly check, if a movie is found to have become available, the bot will automatically download the movie that was requested and then send the user that requested it a message stating the movie was added.
+- **Waiting List:** Allows the bot to periodically (1x/hr) check to see if a move is now avaialble for download. A movie is automatically added to the waiting list if a user uses the request command and the bot is unable to find the movie at the time. During its hourly check, if a movie is found to have become available, the bot will automatically download the movie that was requested and then send the user that requested it a message stating the movie was added.
 - **Resolution Upgrader:** Simply adding a movie is often not the end of the road for a movie. Occassionally a new version of a movie that has already been downloaded to the server becomes available. If a new version that has a higher resolution that what is current downloaded does become available, the bot is capable of informing the administator that there an upgrade is available. If the administrator replies with a :thumbsup: reaction, the bot will then download the new version of the movie to replace the old one.
 
 <br>
@@ -189,7 +189,8 @@ CREATE TABLE `Movies` (
   `movie_id` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL,
   `movie_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `movie_year` varchar(4) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `movie_resolution` int(4) DEFAULT NULL
+  `movie_resolution` int(4) DEFAULT NULL,
+  `movie_filename` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

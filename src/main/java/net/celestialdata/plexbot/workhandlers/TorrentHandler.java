@@ -119,4 +119,8 @@ public class TorrentHandler {
         
         return quality;
     }
+
+    public String getTorrentSize() {
+        return selectedTorrent.size;
+    }
 }

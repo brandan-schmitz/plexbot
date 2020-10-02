@@ -52,7 +52,7 @@ final public class BotStatusManager implements Runnable {
                 //noinspection InfiniteLoopStatement
                 while (true) {
                     sentMessage.edit(buildMessage());
-                    lock.wait(1200);
+                    lock.wait(3000);
                 }
             }
         } catch (InterruptedException e) {
@@ -66,10 +66,10 @@ final public class BotStatusManager implements Runnable {
                 .setColor(statusColor)
                 .setDescription("Below you can find the current status of the bot including all running processes. " +
                         "Please note that only the first for tasks in the queue are actively being processed, anything " +
-                        "after that will be processed once a previous task is completed.\n\n")
-                .addField("Waitlist Manager: ", waitlistManagerStatus)
-                .addField("Resolution Manager: ", resolutionManagerStatus)
-                .addField("Task Queue:", "```" + buildProcessList() + "```")
+                        "after that will be processed once a previous task is completed.\n\n" +
+                        "**Waitlist Manager:**\n```" + waitlistManagerStatus + "```\n" +
+                        "**Resolution Manager:**\n```" + resolutionManagerStatus + "```\n" +
+                        "**Task Queue:**\n```" + buildProcessList() + "```")
                 .setFooter("Updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         .format(ZonedDateTime.now()) + " CST");
     }

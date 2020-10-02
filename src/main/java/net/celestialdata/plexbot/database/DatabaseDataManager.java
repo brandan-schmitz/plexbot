@@ -161,16 +161,17 @@ public class DatabaseDataManager {
      * Add a movie to the database. This is where a movie gets added if
      * it has been downloaded to the server already.
      *
-     * @param movieId      the IMDB ID of the movie
-     * @param movieTitle   the title of the movie
-     * @param movieYear    the year the movie was released
-     * @param movieQuality the numerical value of the movie resolution (320, 480, 720, 1080, 2160)
+     * @param movieId       the IMDB ID of the movie
+     * @param movieTitle    the title of the movie
+     * @param movieYear     the year the movie was released
+     * @param movieQuality  the numerical value of the movie resolution (320, 480, 720, 1080, 2160)
+     * @param movieFilename the filename of the movie
      */
-    public static void addMovie(String movieId, String movieTitle, String movieYear, int movieQuality) {
+    public static void addMovie(String movieId, String movieTitle, String movieYear, int movieQuality, String movieFilename) {
         movieTitle = movieTitle.replace("'", "");
 
         try (Connection connection = DataSource.getConnection()) {
-            connection.createStatement().execute("INSERT INTO Movies (movie_id, movie_title, movie_year, movie_resolution) VALUES ('" + movieId + "', '" + movieTitle + "', '" + movieYear + "', '" + movieQuality + "')");
+            connection.createStatement().execute("INSERT INTO Movies (movie_id, movie_title, movie_year, movie_resolution, movie_filename) VALUES ('" + movieId + "', '" + movieTitle + "', '" + movieYear + "', '" + movieQuality + "', '" + movieFilename + "')");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -264,10 +265,46 @@ public class DatabaseDataManager {
     }
 
     /**
+     * Get the current filename of the movie as it is stored in the filesystem.
+     *
+     * @param movieId the IMDB ID of the movie
+     * @return the filename of the movie
+     */
+    public static String getMovieFilename(String movieId) {
+        String filename = "";
+
+        try (Connection connection = DataSource.getConnection()) {
+            ResultSet resultSet = connection.createStatement().executeQuery("SELECT movie_filename FROM Movies WHERE movie_id = '" + movieId + "'");
+
+            while (resultSet.next()) {
+                filename = resultSet.getString("movie_filename");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return filename;
+    }
+
+    /**
+     * Update the filename of a movie stored in the database.
+     *
+     * @param movieId       the IMDB ID of the movie
+     * @param movieFilename the new filename of the movie
+     */
+    public static void updateMovieFilename(String movieId, String movieFilename) {
+        try (Connection connection = DataSource.getConnection()) {
+            connection.createStatement().execute("UPDATE Movies SET movie_filename = '" + movieFilename + "' WHERE movie_id = '" + movieId + "'");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Update the resolution of a movie stored in the database.
      *
      * @param movieId      the IMDB ID of the movie
-     * @param movieQuality the new resolution to set
+     * @param movieQuality the new resolution
      */
     public static void updateMovieResolution(String movieId, int movieQuality) {
         try (Connection connection = DataSource.getConnection()) {

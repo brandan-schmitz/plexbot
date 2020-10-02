@@ -4,7 +4,6 @@ import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.BotStatusManager;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import java.io.*;
 import java.net.URL;
@@ -13,7 +12,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 
 /**
  * This class handled the methods required to download a movie
@@ -25,7 +23,6 @@ public class DownloadHandler {
     private final DecimalFormat decimalFormat = new DecimalFormat("#0.0");
     private boolean isDownloading = true;
     private boolean didDownloadFail = false;
-    private boolean didRenameFail = false;
     private long progress = 0;
     private long size = 0;
     private String filename;
@@ -35,9 +32,9 @@ public class DownloadHandler {
      * This is the constructor for the download handler and is responsible
      * for downloading the specified file and the progress of the download.
      *
-     * @param downloadLink The link of the file to download.
-     * @param movie The OmdbMovie entity that is the movie being downloaded.
-     * @param separateThread Should the download occur in a separate thread or not.
+     * @param downloadLink the link of the file to download.
+     * @param movie the OmdbMovie entity that is the movie being downloaded.
+     * @param separateThread should the download occur in a separate thread or not.
      */
     public void downloadFile(String downloadLink, OmdbMovie movie, Boolean separateThread) {
         Runnable downloader = () -> {
@@ -103,37 +100,18 @@ public class DownloadHandler {
     /**
      * Rename the file to the specified file extension.
      *
-     * @param newExtension The file extension to save the file as.
+     * @param newExtension the file extension to save the file as.
+     * @return if the rename operation was successful or not
      */
-    public void renameFile(String newExtension) {
+    public boolean renameFile(String newExtension) {
         File file = new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + filename);
-        didRenameFail = !file.renameTo(new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + filename + newExtension));
-    }
-
-    /**
-     * Delete the old movie files from the server for this movie.
-     *
-     * @return if the files were deleted
-     */
-    public boolean deletePreviousVersions() {
-        boolean deleted = true;
-
-        FileFilter filter = new WildcardFileFilter(filename + ".*");
-        File[] files = new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder()).listFiles(filter);
-        assert files != null;
-        for (File file : files) {
-            if (!file.delete()) {
-                deleted = false;
-            }
-        }
-
-        return deleted;
+        return file.renameTo(new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + filename + newExtension));
     }
 
     /**
      * Get the current progress of the download as a percentage.
      *
-     * @return The progress of the download.
+     * @return the progress of the download.
      */
     public String getProgress() {
         String _progress = decimalFormat.format(((double) progress / size) * 100) + "%";
@@ -145,9 +123,18 @@ public class DownloadHandler {
     }
 
     /**
+     * Get the filename of the movie being downloaded.
+     *
+     * @return the filename of the movie
+     */
+    public String getFilename() {
+        return filename;
+    }
+
+    /**
      * Get if the thread is currently downloading the file.
      *
-     * @return The boolean state of the download (true=downloading/false=finished).
+     * @return the boolean state of the download (true=downloading/false=finished).
      */
     public boolean isDownloading() {
         return isDownloading;
@@ -156,18 +143,9 @@ public class DownloadHandler {
     /**
      * Check if the download failed.
      *
-     * @return The boolean value of the download failure status.
+     * @return the boolean value of the download failure status.
      */
     public boolean didDownloadFail() {
         return didDownloadFail;
-    }
-
-    /**
-     * Check if the rename operation failed.
-     *
-     * @return The boolean value of the rename operation status.
-     */
-    public boolean didRenameFail() {
-        return didRenameFail;
     }
 }

@@ -351,10 +351,8 @@ public class RequestHandler implements Runnable {
                 .exceptionally(ExceptionLogger.get());
 
         // Rename the downloaded file to add the extension
-        downloadHandler.renameFile(realDebridHandler.getExtension());
-
         // Verify the rename operation succeeded
-        if (downloadHandler.didRenameFail()) {
+        if (!downloadHandler.renameFile(realDebridHandler.getExtension())) {
             displayError("There was an error while downloading this movie. Please try again later.", "file-rename-fail");
             realDebridHandler.deleteTorrent();
             BotStatusManager.getInstance().removeProcess(processName);
@@ -365,7 +363,13 @@ public class RequestHandler implements Runnable {
         realDebridHandler.deleteTorrent();
 
         // Add the movie to the database
-        DatabaseDataManager.addMovie(selectedMovie.imdbID, selectedMovie.Title, selectedMovie.Year, torrentHandler.getTorrentQuality());
+        DatabaseDataManager.addMovie(
+                selectedMovie.imdbID,
+                selectedMovie.Title,
+                selectedMovie.Year,
+                torrentHandler.getTorrentQuality(),
+                downloadHandler.getFilename() + realDebridHandler.getExtension()
+        );
 
         sentMessage.edit(new EmbedBuilder()
                 .setTitle("Addition Status")

@@ -278,10 +278,8 @@ public class WaitlistManager {
             }
 
             // Rename the movie file using the proper extension so that Plex will find it
-            downloadHandler.renameFile(realDebridHandler.getExtension());
-
             // Exit if the rename process failed, and clean up the torrent on real-debrid in the process
-            if (downloadHandler.didRenameFail()) {
+            if (!downloadHandler.renameFile(realDebridHandler.getExtension())) {
                 // TODO: Delete the file that was downloaded but failed to be renamed
                 realDebridHandler.deleteTorrent();
                 updateMessage(movie);
@@ -293,7 +291,7 @@ public class WaitlistManager {
             realDebridHandler.deleteTorrent();
 
             // Add the movie to the database
-            DatabaseDataManager.addMovie(movie.imdbID, movie.Title, movie.Year, torrentHandler.getTorrentQuality());
+            DatabaseDataManager.addMovie(movie.imdbID, movie.Title, movie.Year, torrentHandler.getTorrentQuality(), downloadHandler.getFilename());
 
             // Send a message to the new-movies notification channel stating the movie is now available on Plex
             Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.newMoviesChannelId()).ifPresent(textChannel ->
