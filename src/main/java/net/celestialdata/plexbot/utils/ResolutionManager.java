@@ -175,15 +175,13 @@ public class ResolutionManager {
      * @param id the IMDB ID of the movie to download
      */
     private void upgradeMovie(String id) {
+        OmdbMovie movie = Omdb.getMovieInfo(id);
+
         Runnable downloader = () -> {
-            OmdbMovie movie = Omdb.getMovieInfo(id);
             TorrentHandler torrentHandler;
             RealDebridHandler realDebridHandler;
             DownloadHandler downloadHandler;
             String magnetLink;
-
-            // Add the process to the StatusManager
-            BotStatusManager.getInstance().addProcess("Upgrade " + movie.Title + " (" + movie.Year + ")");
 
             // Search YTS for the movie
             torrentHandler = new TorrentHandler(movie.imdbID);
@@ -353,11 +351,10 @@ public class ResolutionManager {
             // Delete the movie from the list of upgradable movies
             DatabaseDataManager.removeMovieFromUpgradableList(movie.imdbID);
 
-            // TODO: Access the Plex API and delete the old movie to avoid duplicates
             BotStatusManager.getInstance().removeProcess("Upgrade " + movie.Title + " (" + movie.Year + ")");
         };
 
         // Add the task to download this movie to the bots work pool
-        BotWorkPool.getInstance().executor.submit(downloader);
+        BotWorkPool.getInstance().submitProcess("Upgrade " + movie.Title + " (" + movie.Year + ")", downloader);
     }
 }
