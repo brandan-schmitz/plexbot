@@ -29,6 +29,9 @@ public class RequestMovieCommand implements CommandExecutor {
      */
     @Command(aliases = {"request", "r"}, description = "Request a movie be added to the server", async = true, category = "request", usage = "# request <movie name>\n//Request a movie.\n# r <movie name>\n//Request a movie.")
     public void onRequestMovieCommand(Message message, String[] args) {
+        year = "";
+        id = "";
+
         if (args.length == 0) {
             // Build a message saying a argument is needed
             EmbedBuilder embed = new EmbedBuilder()

@@ -39,6 +39,7 @@ public class RequestHandler implements Runnable {
     /**
      * Constructor for the worker thread.
      *
+     * @param processName the name of the process for the work queue
      * @param searchTitle The title of the movie to search for.
      * @param sentMessage The javacord message entity of the message the bot responds with.
      * @param userId The ID of the user that requested the movie.

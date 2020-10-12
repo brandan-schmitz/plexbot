@@ -135,11 +135,6 @@ public class Main {
         initUnirest();
         System.out.println("Done");
 
-        // Register the bot commands
-        System.out.print("Registering Bot Commands...");
-        registerBotCommands();
-        System.out.println("Done");
-
         System.out.print("Configuring Bot Work Pool...");
         BotWorkPool.getInstance();
         System.out.println("Done");
@@ -165,6 +160,11 @@ public class Main {
         // Start the resolution manager
         System.out.print("Configuring the Resolution Manager...");
         new ResolutionManager();
+        System.out.println("Done");
+
+        // Register the bot commands
+        System.out.print("Registering Bot Commands...");
+        registerBotCommands();
         System.out.println("Done");
 
         // Display start-up complete message and invite link

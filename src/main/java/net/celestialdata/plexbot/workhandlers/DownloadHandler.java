@@ -37,24 +37,20 @@ public class DownloadHandler {
      * @param separateThread should the download occur in a separate thread or not.
      */
     public void downloadFile(String downloadLink, OmdbMovie movie, Boolean separateThread) {
+        // Remove anything from the filename that may cause issues
+        filename = movie.Title + " (" + movie.Year + ")";
+        filename = filename.replace("<", "");
+        filename = filename.replace(">", "");
+        filename = filename.replace(":", "");
+        filename = filename.replace("\"", "");
+        filename = filename.replace("/", "");
+        filename = filename.replace("<\\", "");
+        filename = filename.replace("|", "");
+        filename = filename.replace("?", "");
+        filename = filename.replace("*", "");
+        filename = filename.replace(".", "");
+
         Runnable downloader = () -> {
-            // Remove anything from the filename that may cause issues
-            filename = movie.Title + " (" + movie.Year + ")";
-            filename = filename.replace("<", "");
-            filename = filename.replace(">", "");
-            filename = filename.replace(":", "");
-            filename = filename.replace("\"", "");
-            filename = filename.replace("/", "");
-            filename = filename.replace("<\\", "");
-            filename = filename.replace("|", "");
-            filename = filename.replace("?", "");
-            filename = filename.replace("*", "");
-            filename = filename.replace(".", "");
-
-            if (separateThread) {
-                BotStatusManager.getInstance().addProcess("Download " + filename);
-            }
-
             try {
                 // Open a connection to the file being downloaded
                 URLConnection connection = new URL(downloadLink).openConnection();
@@ -93,7 +89,7 @@ public class DownloadHandler {
         };
 
         if (separateThread) {
-            BotWorkPool.getInstance().executor.submit(downloader);
+            BotWorkPool.getInstance().submitProcess("Download " + filename, downloader);
         } else downloader.run();
     }
 
