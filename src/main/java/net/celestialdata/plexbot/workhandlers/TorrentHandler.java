@@ -8,10 +8,10 @@ import net.celestialdata.plexbot.apis.yts.objects.YtsTorrent;
 import java.util.ArrayList;
 
 public class TorrentHandler {
+    private final String movieId;
     private ArrayList<YtsMovie> movieList = new ArrayList<>();
     private ArrayList<YtsTorrent> torrents = new ArrayList<>();
     private YtsSearchResponse response;
-    private final String movieId;
     private String magnetLink;
     private YtsTorrent selectedTorrent = new YtsTorrent();
 
@@ -108,7 +108,7 @@ public class TorrentHandler {
 
     public int getTorrentQuality() {
         int quality = 0;
-        
+
         if (selectedTorrent.quality.contains("720")) {
             quality = 720;
         } else if (selectedTorrent.quality.contains("1080")) {
@@ -116,7 +116,7 @@ public class TorrentHandler {
         } else if (selectedTorrent.quality.contains("2160")) {
             quality = 2160;
         }
-        
+
         return quality;
     }
 

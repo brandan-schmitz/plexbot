@@ -32,8 +32,8 @@ public class PagedEmbed {
 
     private final ConcurrentHashMap<Integer, List<Field>> pages = new ConcurrentHashMap<>();
     private final List<Field> fields = new ArrayList<>();
-    private int page;
     private final AtomicReference<Message> sentMessage = new AtomicReference<>();
+    private int page;
 
     /**
      * Creates a new PagedEmbed object.
@@ -50,8 +50,8 @@ public class PagedEmbed {
     /**
      * Adds a new field to the pages embed.
      *
-     * @param title  The title of the field.
-     * @param text   The text of the field.
+     * @param title The title of the field.
+     * @param text  The text of the field.
      */
     public void addField(String title, String text) {
         fields.add(new Field(title, text));

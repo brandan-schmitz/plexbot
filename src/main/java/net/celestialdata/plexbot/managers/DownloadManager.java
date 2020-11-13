@@ -1,11 +1,12 @@
-package net.celestialdata.plexbot.workhandlers;
+package net.celestialdata.plexbot.managers;
 
-import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.config.ConfigProvider;
-import net.celestialdata.plexbot.utils.BotStatusManager;
+import net.celestialdata.plexbot.utils.CustomRunnable;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
@@ -19,24 +20,19 @@ import java.text.DecimalFormat;
  *
  * @author Celestialdeath99
  */
-public class DownloadHandler {
+public class DownloadManager implements CustomRunnable {
+    public final Object lock = new Object();
     private final DecimalFormat decimalFormat = new DecimalFormat("#0.0");
     private boolean isDownloading = true;
     private boolean didDownloadFail = false;
     private long progress = 0;
     private long size = 0;
     private String filename;
-    public final Object lock = new Object();
+    private final String downloadLink;
 
-    /**
-     * This is the constructor for the download handler and is responsible
-     * for downloading the specified file and the progress of the download.
-     *
-     * @param downloadLink the link of the file to download.
-     * @param movie the OmdbMovie entity that is the movie being downloaded.
-     * @param separateThread should the download occur in a separate thread or not.
-     */
-    public void downloadFile(String downloadLink, OmdbMovie movie, Boolean separateThread) {
+    public DownloadManager(String downloadLink, OmdbMovie movie) {
+        this.downloadLink = downloadLink;
+
         // Remove anything from the filename that may cause issues
         filename = movie.Title + " (" + movie.Year + ")";
         filename = filename.replace("<", "");
@@ -49,48 +45,48 @@ public class DownloadHandler {
         filename = filename.replace("?", "");
         filename = filename.replace("*", "");
         filename = filename.replace(".", "");
+    }
 
-        Runnable downloader = () -> {
-            try {
-                // Open a connection to the file being downloaded
-                URLConnection connection = new URL(downloadLink).openConnection();
-                ReadableByteChannel readableByteChannel = Channels.newChannel(connection.getInputStream());
-                FileChannel fileOutputStream = new FileOutputStream(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + filename).getChannel();
+    @Override
+    public String taskName() {
+        return "Download " + filename;
+    }
 
-                // Get the size of the file in bytes used in calculating the progress of the download
-                size = connection.getContentLengthLong();
+    @Override
+    public void run() {
+        try {
+            // Open a connection to the file being downloaded
+            URLConnection connection = new URL(downloadLink).openConnection();
+            ReadableByteChannel readableByteChannel = Channels.newChannel(connection.getInputStream());
+            FileChannel fileOutputStream = new FileOutputStream(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + filename).getChannel();
 
-                // Download the file from the server
-                while (fileOutputStream.transferFrom(readableByteChannel, fileOutputStream.size(), 1024) > 0) {
-                    synchronized (lock) {
-                        progress += 1024;
-                        lock.notifyAll();
-                    }
-                }
+            // Get the size of the file in bytes used in calculating the progress of the download
+            size = connection.getContentLengthLong();
 
-                // Mark that the download has finished without errors and close the connection to the server.
+            // Download the file from the server
+            while (fileOutputStream.transferFrom(readableByteChannel, fileOutputStream.size(), 1024) > 0) {
                 synchronized (lock) {
-                    isDownloading = false;
-                    lock.notifyAll();
-                }
-                fileOutputStream.close();
-
-            } catch (IOException e) {
-                synchronized (lock) {
-                    didDownloadFail = true;
-                    isDownloading = false;
+                    progress += 1024;
                     lock.notifyAll();
                 }
             }
 
-            if (separateThread) {
-                BotStatusManager.getInstance().removeProcess("Download " + filename);
+            // Mark that the download has finished without errors and close the connection to the server.
+            synchronized (lock) {
+                isDownloading = false;
+                lock.notifyAll();
             }
-        };
+            fileOutputStream.close();
 
-        if (separateThread) {
-            BotWorkPool.getInstance().submitProcess("Download " + filename, downloader);
-        } else downloader.run();
+        } catch (IOException e) {
+            synchronized (lock) {
+                didDownloadFail = true;
+                isDownloading = false;
+                lock.notifyAll();
+            }
+        }
+
+        endTask();
     }
 
     /**

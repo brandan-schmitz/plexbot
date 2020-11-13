@@ -54,7 +54,7 @@ public class DatabaseDataManager {
     /**
      * Update the command prefix for a particular server.
      *
-     * @param guildID the Discord ID of the server to update the prefix for
+     * @param guildID   the Discord ID of the server to update the prefix for
      * @param newPrefix the new prefix that will be used for the specified server
      */
     public static void updateServerPrefix(long guildID, String newPrefix) {
@@ -107,7 +107,7 @@ public class DatabaseDataManager {
      */
     public static void addUser(User user) {
         try (Connection connection = DataSource.getConnection()) {
-            connection.createStatement().execute("INSERT INTO Users (user_ID, discriminated_name) VALUES ('" + user.getId() + "', '" + user.getDiscriminatedName() +"') ON DUPLICATE KEY UPDATE discriminated_name = '" + user.getDiscriminatedName() + "'");
+            connection.createStatement().execute("INSERT INTO Users (user_ID, discriminated_name) VALUES ('" + user.getId() + "', '" + user.getDiscriminatedName() + "') ON DUPLICATE KEY UPDATE discriminated_name = '" + user.getDiscriminatedName() + "'");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -408,7 +408,7 @@ public class DatabaseDataManager {
         long id = 0;
 
         try (Connection connection = DataSource.getConnection()) {
-            ResultSet resultSet = connection.createStatement().executeQuery("SELECT requester_id FROM Waitlist WHERE movie_id ='" + movieId +"'");
+            ResultSet resultSet = connection.createStatement().executeQuery("SELECT requester_id FROM Waitlist WHERE movie_id ='" + movieId + "'");
 
             while (resultSet.next()) {
                 id = resultSet.getLong("requester_id");
@@ -436,9 +436,9 @@ public class DatabaseDataManager {
     /**
      * Add a movie to the list of movies which can be upgraded to a better resolution version.
      *
-     * @param movieId the IMDB ID of the movie
+     * @param movieId            the IMDB ID of the movie
      * @param upgradedResolution the resolution the movie can be upgraded to
-     * @param messageId the discord ID of the message showing the movie has an upgrade available
+     * @param messageId          the discord ID of the message showing the movie has an upgrade available
      */
     public static void addMovieToUpgradableList(String movieId, int upgradedResolution, long messageId) {
         try (Connection connection = DataSource.getConnection()) {

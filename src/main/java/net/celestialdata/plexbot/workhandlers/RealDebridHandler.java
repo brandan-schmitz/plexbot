@@ -1,16 +1,19 @@
 package net.celestialdata.plexbot.workhandlers;
 
 import net.celestialdata.plexbot.apis.realdebrid.RealDebrid;
-import net.celestialdata.plexbot.apis.realdebrid.objects.*;
+import net.celestialdata.plexbot.apis.realdebrid.objects.MagnetResponse;
+import net.celestialdata.plexbot.apis.realdebrid.objects.RdbFile;
+import net.celestialdata.plexbot.apis.realdebrid.objects.Torrent;
+import net.celestialdata.plexbot.apis.realdebrid.objects.UnrestrictedLink;
 
 public class RealDebridHandler {
+    public final Object lock = new Object();
     private final String magnetLink;
     private MagnetResponse magnetResponse;
     private Torrent torrent;
     private boolean didSelectOperationFail = false;
     private UnrestrictedLink unrestrictedLink;
     private String extension;
-    public final Object lock = new Object();
 
     public RealDebridHandler(String magnetLink) {
         this.magnetLink = magnetLink;

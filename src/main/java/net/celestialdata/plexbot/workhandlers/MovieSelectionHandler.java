@@ -24,22 +24,22 @@ import java.util.concurrent.TimeUnit;
  * @author Celestialdeath99
  */
 class MovieSelectionHandler {
+    public final Object lock = new Object();
     private final ArrayList<EmbedBuilder> selectScreens = new ArrayList<>();
     private final ArrayList<OmdbMovie> movieList = new ArrayList<>();
-    private int currentPage = 0;
     private final Message sentMessage;
+    private int currentPage = 0;
     private OmdbMovie selectedMovie;
     private boolean beenSet = false;
     private boolean wasCanceled = false;
-    public final Object lock = new Object();
 
     /**
      * This is the main constructor for the selection handler. It is responsible for
      * building a list of the movies the search returned, creating the screens with each
      * movie and registering the ReactionHandlers for the handler.
      *
-     * @param response The SearchResultResponse from the OMDB API containing a list of
-     *                 movies that the API found.
+     * @param response    The SearchResultResponse from the OMDB API containing a list of
+     *                    movies that the API found.
      * @param sentMessage The javacord message entity that the bot replied with to the
      *                    original request message.
      */
@@ -74,7 +74,7 @@ class MovieSelectionHandler {
             int posCounter = 1;
             for (OmdbMovie m : movieList) {
                 String imgUrl = ConfigProvider.BOT_SETTINGS.noPosterImageUrl();
-                if (!m.Poster.equalsIgnoreCase("N/A"))  {
+                if (!m.Poster.equalsIgnoreCase("N/A")) {
                     imgUrl = m.Poster;
                 }
 

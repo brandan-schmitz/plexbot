@@ -1,8 +1,10 @@
-package net.celestialdata.plexbot.utils;
+package net.celestialdata.plexbot.managers;
 
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.config.ConfigProvider;
+import net.celestialdata.plexbot.utils.BotColors;
+import net.celestialdata.plexbot.utils.StringBuilderPlus;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -15,12 +17,12 @@ import java.util.ArrayList;
 
 final public class BotStatusManager implements Runnable {
     private static volatile BotStatusManager single_instance = null;
-    private String resolutionManagerStatus;
-    private String waitlistManagerStatus;
+    final Object lock = new Object();
     private final Message sentMessage;
     private final ArrayList<String> currentProcesses;
+    private String resolutionManagerStatus;
+    private String waitlistManagerStatus;
     private Color statusColor = BotColors.SUCCESS;
-    final Object lock = new Object();
 
     private BotStatusManager() {
         resolutionManagerStatus = "Idle";

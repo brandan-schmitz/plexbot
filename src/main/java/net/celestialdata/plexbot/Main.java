@@ -5,19 +5,15 @@ import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
 import net.celestialdata.plexbot.commandhandler.JavacordHandler;
-import net.celestialdata.plexbot.commands.HelpCommand;
-import net.celestialdata.plexbot.commands.NewPrefixCommand;
-import net.celestialdata.plexbot.commands.PingCommand;
-import net.celestialdata.plexbot.commands.PurgeCommand;
-import net.celestialdata.plexbot.commands.RequestMovieCommand;
+import net.celestialdata.plexbot.commands.*;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DataSource;
 import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.managers.BotStatusManager;
+import net.celestialdata.plexbot.managers.resolution.ResolutionManager;
+import net.celestialdata.plexbot.managers.waitlist.WaitlistManager;
 import net.celestialdata.plexbot.serverconfigurations.AddRemoveGuilds;
 import net.celestialdata.plexbot.serverconfigurations.UpdateGuildsUsersDB;
-import net.celestialdata.plexbot.utils.BotStatusManager;
-import net.celestialdata.plexbot.utils.ResolutionManager;
-import net.celestialdata.plexbot.utils.WaitlistManager;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.permission.PermissionState;
@@ -29,9 +25,11 @@ import org.javacord.api.listener.server.member.ServerMemberJoinListener;
 import org.javacord.api.util.logging.FallbackLoggerConfiguration;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class Main {
+    public static ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     private static DiscordApi botApi;
     private static CommandHandler commandHandler;
 
@@ -63,8 +61,6 @@ public class Main {
     public static CommandHandler getCommandHandler() {
         return commandHandler;
     }
-
-    public static ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     /**
      * Generates a Bot Invite URL
@@ -144,7 +140,7 @@ public class Main {
             // Ensure clean disconnect from Discord API
             botApi.disconnect();
 
-             // Ensure all bot work is stopped cleanly
+            // Ensure all bot work is stopped cleanly
             BotWorkPool.getInstance().executor.shutdown();
         }));
 

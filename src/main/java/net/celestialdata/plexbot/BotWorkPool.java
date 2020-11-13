@@ -1,8 +1,11 @@
 package net.celestialdata.plexbot;
 
-import net.celestialdata.plexbot.utils.BotStatusManager;
+import net.celestialdata.plexbot.managers.BotStatusManager;
+import net.celestialdata.plexbot.utils.CustomRunnable;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class BotWorkPool {
     private static BotWorkPool single_instance = null;
@@ -11,6 +14,13 @@ public class BotWorkPool {
     private BotWorkPool() {
         // Configure the executor
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
+
+        // Configure the thread factory to use named threads and remove failed threads from the BotStatusManager
+        executor.setThreadFactory(r -> {
+            Thread thread = new Thread(r);
+            thread.setUncaughtExceptionHandler((t, e) -> ((CustomRunnable) r).endTask(e));
+            return thread;
+        });
 
         // If the queue is full, wait 1 second and try again
         executor.setRejectedExecutionHandler((r, executor) -> {
@@ -43,8 +53,8 @@ public class BotWorkPool {
         return executor.getQueue().size() + (executor.getActiveCount() - 1);
     }
 
-    public void submitProcess(String processName, Runnable task) {
-        executor.submit(task);
-        BotStatusManager.getInstance().addProcess(processName);
+    public void submitProcess(CustomRunnable task) {
+        executor.execute(task);
+        BotStatusManager.getInstance().addProcess(task.taskName());
     }
 }

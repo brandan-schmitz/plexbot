@@ -22,18 +22,21 @@ public interface BotSettings {
 
     /**
      * The folder to save the movie files into
+     *
      * @return The folder path
      */
     String movieDownloadFolder();
 
     /**
      * The URL of the image to display if there is not an image available
+     *
      * @return The image URL
      */
     String noPosterImageUrl();
 
     /**
      * The URL of the current YTS domain name
+     *
      * @return The YTS URL
      */
     String currentYtsDomain();
@@ -41,12 +44,14 @@ public interface BotSettings {
     /**
      * The ID of the channel for listing movies that can be upgraded to
      * a better quality
+     *
      * @return The channel id
      */
     long upgradableMoviesChannelId();
 
     /**
      * The ID of the channel for notifications about movies that have been upgraded to a better resolution
+     *
      * @return The channel id
      */
     long upgradedMoviesChannelId();
@@ -60,12 +65,14 @@ public interface BotSettings {
 
     /**
      * The ID of the channel for notifications about movies that have been added to the library
+     *
      * @return The channel id
      */
     long newMoviesChannelId();
 
     /**
      * The ID of the channel for notifications about movies that have been added to the waiting list
+     *
      * @return The channel id
      */
     long waitlistChannelId();

@@ -4,7 +4,6 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import net.celestialdata.plexbot.apis.realdebrid.objects.MagnetResponse;
-import net.celestialdata.plexbot.apis.realdebrid.objects.StandardRDBResponse;
 import net.celestialdata.plexbot.apis.realdebrid.objects.Torrent;
 import net.celestialdata.plexbot.apis.realdebrid.objects.UnrestrictedLink;
 import net.celestialdata.plexbot.config.ConfigProvider;

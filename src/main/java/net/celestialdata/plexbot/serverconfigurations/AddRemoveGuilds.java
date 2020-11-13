@@ -10,6 +10,7 @@ public class AddRemoveGuilds {
 
     /**
      * Add a guild and its members to the database
+     *
      * @param guild The guild to add to the database
      */
     public static void addGuild(Server guild) {

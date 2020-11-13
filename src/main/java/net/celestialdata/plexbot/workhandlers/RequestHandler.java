@@ -1,5 +1,6 @@
 package net.celestialdata.plexbot.workhandlers;
 
+import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.apis.omdb.Omdb;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
@@ -7,10 +8,12 @@ import net.celestialdata.plexbot.apis.omdb.objects.search.SearchResult;
 import net.celestialdata.plexbot.apis.omdb.objects.search.SearchResultResponse;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.managers.BotStatusManager;
+import net.celestialdata.plexbot.managers.DownloadManager;
+import net.celestialdata.plexbot.managers.waitlist.WaitlistManager;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
-import net.celestialdata.plexbot.utils.BotStatusManager;
-import net.celestialdata.plexbot.utils.WaitlistManager;
+import net.celestialdata.plexbot.utils.CustomRunnable;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -28,7 +31,7 @@ import java.time.temporal.ChronoUnit;
  *
  * @author Celestialdeath99
  */
-public class RequestHandler implements Runnable {
+public class RequestHandler implements CustomRunnable {
     private final String processName;
     private final String searchTitle;
     private final String searchYear;
@@ -42,7 +45,7 @@ public class RequestHandler implements Runnable {
      * @param processName the name of the process for the work queue
      * @param searchTitle The title of the movie to search for.
      * @param sentMessage The javacord message entity of the message the bot responds with.
-     * @param userId The ID of the user that requested the movie.
+     * @param userId      The ID of the user that requested the movie.
      */
     public RequestHandler(String processName, String searchTitle, String searchYear, String searchId, Message sentMessage, long userId) {
         this.processName = processName;
@@ -51,6 +54,11 @@ public class RequestHandler implements Runnable {
         this.searchId = searchId;
         this.sentMessage = sentMessage;
         this.userId = userId;
+    }
+
+    @Override
+    public String taskName() {
+        return processName;
     }
 
     /**
@@ -63,7 +71,7 @@ public class RequestHandler implements Runnable {
         OmdbMovie selectedMovie;
         TorrentHandler torrentHandler;
         RealDebridHandler realDebridHandler;
-        DownloadHandler downloadHandler;
+        DownloadManager downloadManager;
         String magnetLink;
         String downloadLink;
 
@@ -295,15 +303,15 @@ public class RequestHandler implements Runnable {
                 .exceptionally(ExceptionLogger.get());
 
         // Download File
-        downloadHandler = new DownloadHandler();
-        downloadHandler.downloadFile(downloadLink, selectedMovie, true);
+        downloadManager = new DownloadManager(downloadLink, selectedMovie);
+        BotWorkPool.getInstance().submitProcess(downloadManager);
 
         // Wait for the file to be downloaded
-        synchronized (downloadHandler.lock) {
+        synchronized (downloadManager.lock) {
             LocalDateTime lastUpdated = LocalDateTime.now();
-            while (downloadHandler.isDownloading()) {
+            while (downloadManager.isDownloading()) {
                 try {
-                    downloadHandler.lock.wait();
+                    downloadManager.lock.wait();
 
                     // Update the download progress message
                     if (lastUpdated.plus(5, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
@@ -314,7 +322,7 @@ public class RequestHandler implements Runnable {
                                         BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
                                                 BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
                                                 BotEmojis.FINISHED_STEP + "  Mask download file\n" +
-                                                BotEmojis.TODO_STEP + "  **Download movie:** " + downloadHandler.getProgress() + "\n" +
+                                                BotEmojis.TODO_STEP + "  **Download movie:** " + downloadManager.getProgress() + "\n" +
                                                 BotEmojis.TODO_STEP + "  Add movie to database")
                                 .setFooter("Message updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                                         .format(ZonedDateTime.now()) + " CST")
@@ -330,7 +338,7 @@ public class RequestHandler implements Runnable {
         }
 
         // Verify that the download did not fail
-        if (downloadHandler.didDownloadFail()) {
+        if (downloadManager.didDownloadFail()) {
             displayError("There was an error while downloading this movie. Please try again later.", "file-download-fail");
             realDebridHandler.deleteTorrent();
             BotStatusManager.getInstance().removeProcess(processName);
@@ -353,7 +361,7 @@ public class RequestHandler implements Runnable {
 
         // Rename the downloaded file to add the extension
         // Verify the rename operation succeeded
-        if (!downloadHandler.renameFile(realDebridHandler.getExtension())) {
+        if (!downloadManager.renameFile(realDebridHandler.getExtension())) {
             displayError("There was an error while downloading this movie. Please try again later.", "file-rename-fail");
             realDebridHandler.deleteTorrent();
             BotStatusManager.getInstance().removeProcess(processName);
@@ -369,7 +377,7 @@ public class RequestHandler implements Runnable {
                 selectedMovie.Title,
                 selectedMovie.Year,
                 torrentHandler.getTorrentQuality(),
-                downloadHandler.getFilename() + realDebridHandler.getExtension()
+                downloadManager.getFilename() + realDebridHandler.getExtension()
         );
 
         sentMessage.edit(new EmbedBuilder()
@@ -398,8 +406,8 @@ public class RequestHandler implements Runnable {
                                 "**Director(s):** " + selectedMovie.Director + "\n" +
                                 "**Plot:** " + selectedMovie.Plot)
                         .setImage(selectedMovie.Poster)
-                        .setColor(BotColors.SUCCESS)
-                        .setFooter("Originally Requested by: " + Main.getBotApi().getUserById(userId).join().getDiscriminatedName())).exceptionally(ExceptionLogger.get()
+                        .setColor(BotColors.SUCCESS))
+                        .exceptionally(ExceptionLogger.get()
                 )
         );
 
@@ -435,7 +443,7 @@ public class RequestHandler implements Runnable {
      * This one also adds a specified error code to the footer of the message.
      *
      * @param errorMessage The error message to set the body of the message to.
-     * @param errorCode The error code to add to the message footer.
+     * @param errorCode    The error code to add to the message footer.
      */
     private void displayError(String errorMessage, String errorCode) {
         sentMessage.edit(new EmbedBuilder()
