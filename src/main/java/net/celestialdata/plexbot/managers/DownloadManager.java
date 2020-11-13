@@ -54,6 +54,9 @@ public class DownloadManager implements CustomRunnable {
 
     @Override
     public void run() {
+        // Configure task to run the endTask method if there was an error
+        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
+
         try {
             // Open a connection to the file being downloaded
             URLConnection connection = new URL(downloadLink).openConnection();

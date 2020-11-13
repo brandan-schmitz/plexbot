@@ -40,7 +40,6 @@ public class ResolutionManager {
     static void addUpgradableMovie(OmdbMovie movie, int oldResolution, int newResolution, String newSize) {
         MediaInfo mediaInfo = MediaInfo.mediaInfo(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + DatabaseDataManager.getMovieFilename(movie.imdbID));
 
-
         // First check to see if the movie is already listed in the upgrade list, if not add it and send the message
         if (!DatabaseDataManager.isMovieInUpgradableList(movie.imdbID)) {
             Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId()).ifPresent(

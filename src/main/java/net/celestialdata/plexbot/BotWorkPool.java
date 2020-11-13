@@ -15,13 +15,6 @@ public class BotWorkPool {
         // Configure the executor
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 
-        // Configure the thread factory to use named threads and remove failed threads from the BotStatusManager
-        executor.setThreadFactory(r -> {
-            Thread thread = new Thread(r);
-            thread.setUncaughtExceptionHandler((t, e) -> ((CustomRunnable) r).endTask(e));
-            return thread;
-        });
-
         // If the queue is full, wait 1 second and try again
         executor.setRejectedExecutionHandler((r, executor) -> {
             try {

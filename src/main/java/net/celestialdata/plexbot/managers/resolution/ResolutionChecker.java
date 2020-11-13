@@ -32,11 +32,13 @@ public class ResolutionChecker implements CustomRunnable {
     public void endTask(Throwable error) {
         BotStatusManager.getInstance().removeProcess(taskName());
         BotStatusManager.getInstance().clearResolutionManagerStatus();
-        error.printStackTrace();
     }
 
     @Override
     public void run() {
+        // Configure task to run the endTask method if there was an error
+        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
+
         // Create the list of movie objects that will contain a list of all movies on the server
         ArrayList<ResolutionManager.Movie> movies = new ArrayList<>();
 

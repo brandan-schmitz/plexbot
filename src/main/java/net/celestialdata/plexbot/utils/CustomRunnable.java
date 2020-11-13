@@ -11,6 +11,6 @@ public interface CustomRunnable extends Runnable {
 
     default void endTask(Throwable error) {
         BotStatusManager.getInstance().removeProcess(taskName());
-        error.printStackTrace();
+        // TODO: Configure logging of errors to discord error log channel
     }
 }

@@ -26,8 +26,12 @@ public class WaitlistDownloader implements CustomRunnable {
         return "Download " + movie.Title + " (" + movie.Year + ")";
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @Override
     public void run() {
+        // Configure task to run the endTask method if there was an error
+        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
+
         RealDebridHandler realDebridHandler;
         DownloadManager downloadManager;
         String magnetLink;

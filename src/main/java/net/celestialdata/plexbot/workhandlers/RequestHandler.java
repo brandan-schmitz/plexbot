@@ -66,6 +66,9 @@ public class RequestHandler implements CustomRunnable {
      */
     @Override
     public void run() {
+        // Configure task to run the endTask method if there was an error
+        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
+
         SearchResultResponse searchResponse;
         MovieSelectionHandler selectionHandler;
         OmdbMovie selectedMovie;

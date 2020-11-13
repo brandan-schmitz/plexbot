@@ -28,11 +28,13 @@ public class WaitlistChecker implements CustomRunnable {
     public void endTask(Throwable error) {
         BotStatusManager.getInstance().removeProcess(taskName());
         BotStatusManager.getInstance().clearWaitlistManagerStatus();
-        error.printStackTrace();
     }
 
     @Override
     public void run() {
+        // Configure task to run the endTask method if there was an error
+        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
+
         int progress = 0;
         ArrayList<String> movieIds = DatabaseDataManager.getMovieIdsInWaitlist();
 
