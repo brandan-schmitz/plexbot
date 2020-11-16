@@ -55,7 +55,7 @@ public class WaitlistChecker implements CustomRunnable {
             // Move to the next movie if the movie was manually added to the server/db
             // or already exists for some reason.
             if (DatabaseDataManager.doesMovieExistOnServer(movie.imdbID)) {
-                WaitlistManager.deleteWaitlistItem(movie.imdbID);
+                WaitlistUtilities.deleteWaitlistItem(movie.imdbID);
                 continue;
             }
 
@@ -71,10 +71,10 @@ public class WaitlistChecker implements CustomRunnable {
 
             // If the search failed or if the movie was not found then skip to the next movie
             if (torrentHandler.didSearchFail()) {
-                WaitlistManager.updateMessage(movie);
+                WaitlistUtilities.updateMessage(movie);
                 continue;
             } else if (torrentHandler.didSearchReturnNoResults()) {
-                WaitlistManager.updateMessage(movie);
+                WaitlistUtilities.updateMessage(movie);
                 continue;
             }
 

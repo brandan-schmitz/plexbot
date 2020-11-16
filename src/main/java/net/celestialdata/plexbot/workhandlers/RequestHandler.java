@@ -8,9 +8,8 @@ import net.celestialdata.plexbot.apis.omdb.objects.search.SearchResult;
 import net.celestialdata.plexbot.apis.omdb.objects.search.SearchResultResponse;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DatabaseDataManager;
-import net.celestialdata.plexbot.managers.BotStatusManager;
 import net.celestialdata.plexbot.managers.DownloadManager;
-import net.celestialdata.plexbot.managers.waitlist.WaitlistManager;
+import net.celestialdata.plexbot.managers.waitlist.WaitlistUtilities;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.utils.CustomRunnable;
@@ -105,7 +104,7 @@ public class RequestHandler implements CustomRunnable {
         // Send an error message if the search did not succeed
         if (searchResponse.Response.equalsIgnoreCase("false")) {
             displayError(searchResponse.Error, "omdb-search-fail");
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -118,7 +117,7 @@ public class RequestHandler implements CustomRunnable {
                 try {
                     selectionHandler.lock.wait();
                 } catch (InterruptedException e) {
-                    BotStatusManager.getInstance().removeProcess(processName);
+                    endTask(e);
                     return;
                 }
             }
@@ -126,7 +125,7 @@ public class RequestHandler implements CustomRunnable {
 
         // If the user canceled the movie selection, cancel this process
         if (selectionHandler.getWasCanceled()) {
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -135,14 +134,14 @@ public class RequestHandler implements CustomRunnable {
             selectedMovie = selectionHandler.getSelectedMovie();
         } catch (NullPointerException e) {
             displayError("Unable to get the selected movie.", "movie-select-error");
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask(e);
             return;
         }
 
         // Verify the movie requested does not already exist on the server
         if (DatabaseDataManager.doesMovieExistOnServer(selectedMovie.imdbID)) {
             displayError("This movie is already on Plex.");
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -167,7 +166,7 @@ public class RequestHandler implements CustomRunnable {
         torrentHandler.searchYts();
         if (torrentHandler.didSearchFail()) {
             displayError("An error has occurred while searching for this movie's file. Please try again later.", "yts-search-fail");
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         } else if (torrentHandler.didSearchReturnNoResults()) {
             if (DatabaseDataManager.isMovieInWaitlist(selectedMovie.imdbID)) {
@@ -176,9 +175,9 @@ public class RequestHandler implements CustomRunnable {
             } else {
                 displayError("Unable to locate the file for " + selectedMovie.Title + " at this time. It has been added to the waiting list " +
                         "and will be automatically when it becomes available.");
-                WaitlistManager.addWaitlistItem(selectedMovie, userId);
+                WaitlistUtilities.addWaitlistItem(selectedMovie, userId);
             }
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -186,7 +185,7 @@ public class RequestHandler implements CustomRunnable {
         torrentHandler.buildMovieList();
         if (torrentHandler.didBuildMovieListFail()) {
             displayError("An error has occurred while attempting to locate the movie file. Please try again later.", "yts-movie-list");
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -194,7 +193,7 @@ public class RequestHandler implements CustomRunnable {
         torrentHandler.buildTorrentList();
         if (torrentHandler.areNoTorrentsAvailable()) {
             displayError("An error has occurred while attempting to locate the movie file. Please try again later.", "yts-torrent-list");
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -202,7 +201,7 @@ public class RequestHandler implements CustomRunnable {
         torrentHandler.generateMagnetLink();
         if (torrentHandler.isNotMagnetLink()) {
             displayError("An error has occurred while attempting to locate the movie file. Please try again later.", "yts-magnet-link");
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -227,7 +226,7 @@ public class RequestHandler implements CustomRunnable {
         realDebridHandler.addMagnet();
         if (realDebridHandler.didMagnetAdditionFail()) {
             displayError("There was an error masking the download. Please try again later.", "rdb-add-fail");
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -236,7 +235,7 @@ public class RequestHandler implements CustomRunnable {
         if (realDebridHandler.didTorrentInfoError()) {
             displayError("There was an error masking the download. Please try again later.", "rdb-get-info");
             realDebridHandler.deleteTorrent();
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -245,7 +244,7 @@ public class RequestHandler implements CustomRunnable {
         if (realDebridHandler.didSelectOperationFail()) {
             displayError("There was an error masking the download. Please try again later.", "rdb-select-files");
             realDebridHandler.deleteTorrent();
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -274,7 +273,7 @@ public class RequestHandler implements CustomRunnable {
                                 .exceptionally(ExceptionLogger.get());
                     }
                 } catch (InterruptedException e) {
-                    BotStatusManager.getInstance().removeProcess(processName);
+                    endTask(e);
                     return;
                 }
             }
@@ -285,7 +284,7 @@ public class RequestHandler implements CustomRunnable {
         if (realDebridHandler.didUnrestrictOperationFail()) {
             displayError("There was an error masking the download. Please try again later.", "rdb-unrestrict-link");
             realDebridHandler.deleteTorrent();
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -334,7 +333,7 @@ public class RequestHandler implements CustomRunnable {
                         lastUpdated = LocalDateTime.now();
                     }
                 } catch (InterruptedException e) {
-                    BotStatusManager.getInstance().removeProcess(processName);
+                    endTask(e);
                     return;
                 }
             }
@@ -344,7 +343,7 @@ public class RequestHandler implements CustomRunnable {
         if (downloadManager.didDownloadFail()) {
             displayError("There was an error while downloading this movie. Please try again later.", "file-download-fail");
             realDebridHandler.deleteTorrent();
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -367,7 +366,7 @@ public class RequestHandler implements CustomRunnable {
         if (!downloadManager.renameFile(realDebridHandler.getExtension())) {
             displayError("There was an error while downloading this movie. Please try again later.", "file-rename-fail");
             realDebridHandler.deleteTorrent();
-            BotStatusManager.getInstance().removeProcess(processName);
+            endTask();
             return;
         }
 
@@ -426,7 +425,7 @@ public class RequestHandler implements CustomRunnable {
                 .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.")
         );
 
-        BotStatusManager.getInstance().removeProcess(processName);
+        endTask();
     }
 
     /**

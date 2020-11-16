@@ -1,6 +1,5 @@
 package net.celestialdata.plexbot.managers.resolution;
 
-import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.config.ConfigProvider;
@@ -10,24 +9,12 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 import uk.co.caprica.vlcjinfo.MediaInfo;
 
-import java.util.concurrent.TimeUnit;
-
-import static net.celestialdata.plexbot.Main.scheduledExecutorService;
-
 /**
  * A class for handling all things related to the upgrade manager
  *
  * @author Celestialdeath99
  */
-public class ResolutionManager {
-    /**
-     * Override the default constructor. This is used to schedule the checks used to
-     * check if a movie in the waitlist is now available.
-     */
-    public ResolutionManager() {
-        scheduledExecutorService.scheduleAtFixedRate(() ->
-                BotWorkPool.getInstance().submitProcess(new ResolutionChecker()), 0, 2, TimeUnit.HOURS);
-    }
+public class ResolutionUtilities {
 
     /**
      * Add a movie that can be upgraded to the database and upgradable-movies channel.
@@ -51,15 +38,17 @@ public class ResolutionManager {
                                             "**ID:** " + movie.imdbID + "\n" +
                                             "**Year:** " + movie.Year + "\n" +
                                             "**Director(s):** " + movie.Director + "\n" +
-                                            "**Plot:** " + movie.Plot)
+                                            "**Plot:** " + movie.Plot
+                            )
                             .setImage(movie.Poster)
                             .setColor(BotColors.INFO)
-                            .setFooter(
-                                    newResolution >= 2160 ?
-                                            "Upgradable to 4k" + " from " + oldResolution + "p" :
-                                            "Upgradable to " + newResolution + "p" + " from " + oldResolution + "p"))
-                            .exceptionally(ExceptionLogger.get()
-                            ).thenAccept(message -> DatabaseDataManager.addMovieToUpgradableList(movie.imdbID, newResolution, message.getId()))
+                            .setFooter(newResolution >= 2160 ?
+                                    "Upgradable to 4k" + " from " + oldResolution + "p" :
+                                    "Upgradable to " + newResolution + "p" + " from " + oldResolution + "p"
+                            )
+                    ).exceptionally(
+                            ExceptionLogger.get()).thenAccept(message ->
+                                    DatabaseDataManager.addMovieToUpgradableList(movie.imdbID, newResolution, message.getId()))
             );
         }
     }

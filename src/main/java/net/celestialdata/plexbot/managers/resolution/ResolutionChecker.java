@@ -3,6 +3,7 @@ package net.celestialdata.plexbot.managers.resolution;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.apis.omdb.Omdb;
+import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DatabaseDataManager;
 import net.celestialdata.plexbot.managers.BotStatusManager;
@@ -32,6 +33,7 @@ public class ResolutionChecker implements CustomRunnable {
     public void endTask(Throwable error) {
         BotStatusManager.getInstance().removeProcess(taskName());
         BotStatusManager.getInstance().clearResolutionManagerStatus();
+        error.printStackTrace();
     }
 
     @Override
@@ -40,16 +42,16 @@ public class ResolutionChecker implements CustomRunnable {
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
 
         // Create the list of movie objects that will contain a list of all movies on the server
-        ArrayList<ResolutionManager.Movie> movies = new ArrayList<>();
+        ArrayList<ResolutionUtilities.Movie> movies = new ArrayList<>();
 
         // Create a list of movies in the database
         for (String id : DatabaseDataManager.getAllMovieIDs()) {
-            movies.add(new ResolutionManager.Movie(id, DatabaseDataManager.getMovieResolution(id)));
+            movies.add(new ResolutionUtilities.Movie(id, DatabaseDataManager.getMovieResolution(id)));
         }
 
         // Cycle through all the movies in the database to find any that can be upgraded
         int progress = 0;
-        for (ResolutionManager.Movie m : movies) {
+        for (ResolutionUtilities.Movie m : movies) {
             TorrentHandler torrentHandler;
             torrentHandler = new TorrentHandler(m.id);
 
@@ -59,7 +61,7 @@ public class ResolutionChecker implements CustomRunnable {
             // Search YTS for the movie
             try {
                 torrentHandler.searchYts();
-            } catch (NullPointerException e) {
+            } catch (Exception e) {
                 continue;
             }
 
@@ -92,7 +94,7 @@ public class ResolutionChecker implements CustomRunnable {
             // Add the movie to the list of upgradable movies if the torrent has a higher resolution available
             if (m.oldResolution != 0 && torrentHandler.getTorrentQuality() > m.oldResolution) {
                 m.newResolution = torrentHandler.getTorrentQuality();
-                ResolutionManager.addUpgradableMovie(Omdb.getMovieInfo(m.id), m.oldResolution, m.newResolution, torrentHandler.getTorrentSize());
+                ResolutionUtilities.addUpgradableMovie(Omdb.getMovieInfo(m.id), m.oldResolution, m.newResolution, torrentHandler.getTorrentSize());
             }
         }
 
@@ -101,8 +103,10 @@ public class ResolutionChecker implements CustomRunnable {
         for (String id : DatabaseDataManager.getAllUpgradableMovieIds()) {
             Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId())
                     .flatMap(textChannel -> textChannel.getMessageById(DatabaseDataManager.getUpgradableMovieMessageId(id)).join()
-                            .getReactionByEmoji(BotEmojis.THUMBS_UP)).ifPresent(reaction -> BotWorkPool.getInstance().submitProcess(
-                    new ResolutionUpgrader(Omdb.getMovieInfo(id))));
+                            .getReactionByEmoji(BotEmojis.THUMBS_UP)).ifPresent(reaction -> {
+                OmdbMovie test = Omdb.getMovieInfo(id);
+                BotWorkPool.getInstance().submitProcess(new ResolutionUpgrader(test));
+            });
         }
 
         // Update the upgradable-movies channel to show when this check last finished running

@@ -40,7 +40,7 @@ public class WaitlistDownloader implements CustomRunnable {
         // Get a list of movies matching the movie id
         torrentHandler.buildMovieList();
         if (torrentHandler.didBuildMovieListFail()) {
-            WaitlistManager.updateMessage(movie);
+            WaitlistUtilities.updateMessage(movie);
             endTask();
             return;
         }
@@ -48,7 +48,7 @@ public class WaitlistDownloader implements CustomRunnable {
         // Build the list of torrent files for the movie
         torrentHandler.buildTorrentList();
         if (torrentHandler.areNoTorrentsAvailable()) {
-            WaitlistManager.updateMessage(movie);
+            WaitlistUtilities.updateMessage(movie);
             endTask();
             return;
         }
@@ -56,7 +56,7 @@ public class WaitlistDownloader implements CustomRunnable {
         // Generate the magnet link for the movie torrent file
         torrentHandler.generateMagnetLink();
         if (torrentHandler.isNotMagnetLink()) {
-            WaitlistManager.updateMessage(movie);
+            WaitlistUtilities.updateMessage(movie);
             endTask();
             return;
         }
@@ -66,7 +66,7 @@ public class WaitlistDownloader implements CustomRunnable {
         realDebridHandler = new RealDebridHandler(magnetLink);
         realDebridHandler.addMagnet();
         if (realDebridHandler.didMagnetAdditionFail()) {
-            WaitlistManager.updateMessage(movie);
+            WaitlistUtilities.updateMessage(movie);
             endTask();
             return;
         }
@@ -75,7 +75,7 @@ public class WaitlistDownloader implements CustomRunnable {
         realDebridHandler.getTorrentInformation();
         if (realDebridHandler.didTorrentInfoError()) {
             realDebridHandler.deleteTorrent();
-            WaitlistManager.updateMessage(movie);
+            WaitlistUtilities.updateMessage(movie);
             endTask();
             return;
         }
@@ -84,7 +84,7 @@ public class WaitlistDownloader implements CustomRunnable {
         realDebridHandler.selectTorrentFiles();
         if (realDebridHandler.didSelectOperationFail()) {
             realDebridHandler.deleteTorrent();
-            WaitlistManager.updateMessage(movie);
+            WaitlistUtilities.updateMessage(movie);
             endTask();
             return;
         }
@@ -105,7 +105,7 @@ public class WaitlistDownloader implements CustomRunnable {
         realDebridHandler.unrestrictLinks();
         if (realDebridHandler.didUnrestrictOperationFail()) {
             realDebridHandler.deleteTorrent();
-            WaitlistManager.updateMessage(movie);
+            WaitlistUtilities.updateMessage(movie);
             endTask();
             return;
         }
@@ -133,7 +133,7 @@ public class WaitlistDownloader implements CustomRunnable {
         if (downloadManager.didDownloadFail()) {
             // TODO: Delete any portion of the file that was downloaded before the failure occurred
             realDebridHandler.deleteTorrent();
-            WaitlistManager.updateMessage(movie);
+            WaitlistUtilities.updateMessage(movie);
             endTask();
             return;
         }
@@ -143,7 +143,7 @@ public class WaitlistDownloader implements CustomRunnable {
         if (!downloadManager.renameFile(realDebridHandler.getExtension())) {
             // TODO: Delete the file that was downloaded but failed to be renamed
             realDebridHandler.deleteTorrent();
-            WaitlistManager.updateMessage(movie);
+            WaitlistUtilities.updateMessage(movie);
             endTask();
             return;
         }
@@ -181,7 +181,7 @@ public class WaitlistDownloader implements CustomRunnable {
         );
 
         // Delete the movie from the waiting list
-        WaitlistManager.deleteWaitlistItem(movie.imdbID);
+        WaitlistUtilities.deleteWaitlistItem(movie.imdbID);
 
         // Remove the task info from the bot status manager
         endTask();

@@ -1,6 +1,5 @@
 package net.celestialdata.plexbot.managers.waitlist;
 
-import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.config.ConfigProvider;
@@ -12,24 +11,13 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.concurrent.TimeUnit;
-
-import static net.celestialdata.plexbot.Main.scheduledExecutorService;
 
 /**
  * A class for handling all things related to the waiting list.
  *
  * @author Celestialdeath99
  */
-public class WaitlistManager {
-
-    /**
-     * Override the default constructor. This is used to schedule the checks used to
-     * check if a movie in the waitlist is now available.
-     */
-    public WaitlistManager() {
-        scheduledExecutorService.scheduleAtFixedRate(() -> BotWorkPool.getInstance().submitProcess(new WaitlistChecker()), 0, 1, TimeUnit.HOURS);
-    }
+public class WaitlistUtilities {
 
     /**
      * Add a movie to the waitlist

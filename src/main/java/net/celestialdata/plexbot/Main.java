@@ -10,8 +10,8 @@ import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DataSource;
 import net.celestialdata.plexbot.database.DatabaseDataManager;
 import net.celestialdata.plexbot.managers.BotStatusManager;
-import net.celestialdata.plexbot.managers.resolution.ResolutionManager;
-import net.celestialdata.plexbot.managers.waitlist.WaitlistManager;
+import net.celestialdata.plexbot.managers.resolution.ResolutionChecker;
+import net.celestialdata.plexbot.managers.waitlist.WaitlistChecker;
 import net.celestialdata.plexbot.serverconfigurations.AddRemoveGuilds;
 import net.celestialdata.plexbot.serverconfigurations.UpdateGuildsUsersDB;
 import org.javacord.api.DiscordApi;
@@ -27,9 +27,10 @@ import org.javacord.api.util.logging.FallbackLoggerConfiguration;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
-    public static ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+    private static final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     private static DiscordApi botApi;
     private static CommandHandler commandHandler;
 
@@ -149,13 +150,15 @@ public class Main {
         System.out.println("Done");
 
         // Start the waitlist manager
-        System.out.print("Configuring the Waitlist Manager...");
-        new WaitlistManager();
+        System.out.print("Configuring Waitlist Manager...");
+        scheduledExecutorService.scheduleAtFixedRate(() ->
+                BotWorkPool.getInstance().submitProcess(new WaitlistChecker()), 0, 1, TimeUnit.HOURS);
         System.out.println("Done");
 
         // Start the resolution manager
-        System.out.print("Configuring the Resolution Manager...");
-        new ResolutionManager();
+        System.out.print("Configuring Resolution Manager...");
+        scheduledExecutorService.scheduleAtFixedRate(() ->
+                BotWorkPool.getInstance().submitProcess(new ResolutionChecker()), 0, 2, TimeUnit.HOURS);
         System.out.println("Done");
 
         // Register the bot commands

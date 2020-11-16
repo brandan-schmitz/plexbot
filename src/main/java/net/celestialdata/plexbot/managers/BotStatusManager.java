@@ -67,7 +67,7 @@ final public class BotStatusManager implements Runnable {
                 .setTitle("Bot Status")
                 .setColor(statusColor)
                 .setDescription("Below you can find the current status of the bot including all running processes. " +
-                        "Please note that only the first for tasks in the queue are actively being processed, anything " +
+                        "Please note that only the first four tasks in the queue are actively being processed, anything " +
                         "after that will be processed once a previous task is completed.\n\n" +
                         "**Waitlist Manager:**\n```" + waitlistManagerStatus + "```\n" +
                         "**Resolution Manager:**\n```" + resolutionManagerStatus + "```\n" +
