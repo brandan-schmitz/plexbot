@@ -6,7 +6,7 @@
 
     <groupId>net.celestialdata</groupId>
     <artifactId>plexbot</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -120,6 +120,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>plexbot</finalName>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
