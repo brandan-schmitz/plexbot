@@ -3,6 +3,7 @@ package net.celestialdata.plexbot;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
+import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
 import net.celestialdata.plexbot.commandhandler.JavacordHandler;
 import net.celestialdata.plexbot.commands.*;
@@ -130,6 +131,7 @@ public class Main {
 
         System.out.print("Configuring API resources...");
         initUnirest();
+        BotClient.getInstance();
         System.out.println("Done");
 
         System.out.print("Configuring Bot Work Pool...");

@@ -44,11 +44,18 @@ class MovieSelectionHandler {
      *                    original request message.
      */
     MovieSelectionHandler(SearchResultResponse response, Message sentMessage) {
+        String imgUrl = ConfigProvider.BOT_SETTINGS.noPosterImageUrl();
         this.sentMessage = sentMessage;
 
         // Build the list of movies returned in the search
         for (SearchResult r : response.Search) {
             movieList.add(Omdb.getMovieInfo(r.imdbID));
+        }
+
+        for (OmdbMovie movie : movieList) {
+            if (movie.Poster.equalsIgnoreCase("N/A")) {
+                movie.Poster = ConfigProvider.BOT_SETTINGS.noPosterImageUrl();
+            }
         }
 
         // Create the screens for displaying the movies and send the first one
@@ -73,11 +80,6 @@ class MovieSelectionHandler {
             // Build a screen for each movie in the list and add it to the array of screens.
             int posCounter = 1;
             for (OmdbMovie m : movieList) {
-                String imgUrl = ConfigProvider.BOT_SETTINGS.noPosterImageUrl();
-                if (!m.Poster.equalsIgnoreCase("N/A")) {
-                    imgUrl = m.Poster;
-                }
-
                 selectScreens.add(new EmbedBuilder()
                         .setTitle("Choose your movie")
                         .setDescription("It looks like your search returned " + movieList.size() + " results. Please use the arrow reactions to " +
@@ -87,7 +89,7 @@ class MovieSelectionHandler {
                                 "**Year:** " + m.Year + "\n" +
                                         "**Director(s):** " + m.Director + "\n" +
                                         "**Plot:** " + m.Plot)
-                        .setImage(imgUrl)
+                        .setImage(m.Poster)
                         .setColor(BotColors.INFO)
                 );
                 posCounter++;

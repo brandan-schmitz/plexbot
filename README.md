@@ -313,7 +313,7 @@ The plexbot was designed to be as lightweight as possible when it comes to resou
 Running the bot as a JAR file is simple and straight forward. Simply make sure the bot and the `config.yaml` file are located within the same directory and then run the following command *(replace the version if necessary)*:
 
 ```bash
-java -jar plexbot-1.0.jar
+java -jar plexbot.jar
 ```
 
 ###### Running as a service:
@@ -340,7 +340,7 @@ The second method of running the bot is as a service. There are different ways t
    After=network-online.target
    
    [Service]
-   ExecStart=/usr/bin/java -jar plexbot-1.0.jar
+   ExecStart=/usr/bin/java -jar plexbot.jar
    WorkingDirectory=/path/to/bot
    Restart=on-failure
    RestartSec=10
