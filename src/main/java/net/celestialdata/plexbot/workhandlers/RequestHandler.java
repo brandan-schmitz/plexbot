@@ -300,6 +300,12 @@ public class RequestHandler implements CustomRunnable {
                 }
             }
 
+            while (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.UPLOADING ||
+                    rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.COMPRESSING) {
+                rdbLock.wait(2000);
+                rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
+            }
+
             if (BotClient.getInstance().rdbApi.getTorrentInfo(rdbTorrentInfo.getId()).getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
                 displayError("There was an error masking the download. Please try again later.", "rdb-download-file");
                 endTask();
