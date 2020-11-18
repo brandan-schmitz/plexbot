@@ -2,10 +2,16 @@ package net.celestialdata.plexbot.workhandlers;
 
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
+import net.celestialdata.plexbot.client.ApiException;
+import net.celestialdata.plexbot.client.BotClient;
+import net.celestialdata.plexbot.client.model.RdbMagnetLink;
+import net.celestialdata.plexbot.client.model.RdbTorrentFile;
+import net.celestialdata.plexbot.client.model.RdbTorrentInfo;
 import net.celestialdata.plexbot.apis.omdb.Omdb;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.apis.omdb.objects.search.SearchResult;
 import net.celestialdata.plexbot.apis.omdb.objects.search.SearchResultResponse;
+import net.celestialdata.plexbot.client.model.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DatabaseDataManager;
 import net.celestialdata.plexbot.managers.DownloadManager;
@@ -37,6 +43,7 @@ public class RequestHandler implements CustomRunnable {
     private final String searchId;
     private final Message sentMessage;
     private final long userId;
+    private final Object rdbLock = new Object();
 
     /**
      * Constructor for the worker thread.
@@ -72,7 +79,6 @@ public class RequestHandler implements CustomRunnable {
         MovieSelectionHandler selectionHandler;
         OmdbMovie selectedMovie;
         TorrentHandler torrentHandler;
-        RealDebridHandler realDebridHandler;
         DownloadManager downloadManager;
         String magnetLink;
         String downloadLink;
@@ -117,6 +123,7 @@ public class RequestHandler implements CustomRunnable {
                 try {
                     selectionHandler.lock.wait();
                 } catch (InterruptedException e) {
+                    displayError(searchResponse.Error, "unknown-error");
                     endTask(e);
                     return;
                 }
@@ -221,75 +228,102 @@ public class RequestHandler implements CustomRunnable {
                 .setColor(BotColors.INFO))
                 .exceptionally(ExceptionLogger.get());
 
-        // Create the RealDebridHandler and add the torrent
-        realDebridHandler = new RealDebridHandler(magnetLink);
-        realDebridHandler.addMagnet();
-        if (realDebridHandler.didMagnetAdditionFail()) {
+        // Add the magnet link to real-debrid
+        RdbMagnetLink rdbMagnetLink;
+        try {
+            rdbMagnetLink = BotClient.getInstance().rdbApi.addMagnet(magnetLink);
+        } catch (ApiException e) {
             displayError("There was an error masking the download. Please try again later.", "rdb-add-fail");
-            endTask();
+            endTask(e);
             return;
         }
 
         // Get the torrent file information
-        realDebridHandler.getTorrentInformation();
-        if (realDebridHandler.didTorrentInfoError()) {
+        RdbTorrentInfo rdbTorrentInfo;
+        try {
+            rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
+        } catch (ApiException e) {
             displayError("There was an error masking the download. Please try again later.", "rdb-get-info");
-            realDebridHandler.deleteTorrent();
-            endTask();
+            endTask(e);
             return;
         }
 
         // Select the proper movie files to download
-        realDebridHandler.selectTorrentFiles();
-        if (realDebridHandler.didSelectOperationFail()) {
+        String fileToSelect = "";
+        String fileExtension = "";
+        for (RdbTorrentFile file : rdbTorrentInfo.getFiles()) {
+            if (file.getPath().contains(".mp4") || file.getPath().contains(".MP4")) {
+                fileToSelect = String.valueOf(file.getId());
+                fileExtension = ".mp4";
+            } else if (file.getPath().contains(".mkv") || file.getPath().contains(".MKV")) {
+                fileToSelect = String.valueOf(file.getId());
+                fileExtension = ".mkv";
+            }
+        }
+
+        try {
+            BotClient.getInstance().rdbApi.selectTorrentFiles(rdbTorrentInfo.getId(), fileToSelect);
+        } catch (ApiException e) {
             displayError("There was an error masking the download. Please try again later.", "rdb-select-files");
-            realDebridHandler.deleteTorrent();
-            endTask();
+            endTask(e);
             return;
         }
 
         // Wait for RealDebrid to download the movie file
-        synchronized (realDebridHandler.lock) {
-            LocalDateTime lastUpdated = LocalDateTime.now();
+        try {
+            rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
 
-            while (realDebridHandler.isNotReadyForDownload()) {
-                try {
-                    realDebridHandler.lock.wait();
+            synchronized (rdbLock) {
+                while (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.WAITING_FILES_SELECTION ||
+                        rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.QUEUED) {
+                    rdbLock.wait(2000);
+                    rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
+                }
 
-                    // Update the message timestamp and masking progress
-                    if (lastUpdated.plus(5, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
-                        sentMessage.edit(new EmbedBuilder()
-                                .setTitle("Addition Status")
-                                .setDescription("The movie **" + selectedMovie.Title + "** is being added.")
-                                .addField("Progress:",
-                                        BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
-                                                BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
-                                                BotEmojis.TODO_STEP + "  **Mask download file** - " + realDebridHandler.getProgress() + "%\n" +
-                                                BotEmojis.TODO_STEP + "  Download movie\n" +
-                                                BotEmojis.TODO_STEP + "  Add movie to database")
-                                .setFooter("Message updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
-                                        .format(ZonedDateTime.now()) + " CST")
-                                .setColor(BotColors.INFO))
-                                .exceptionally(ExceptionLogger.get());
-                    }
-                } catch (InterruptedException e) {
-                    endTask(e);
-                    return;
+                while (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.DOWNLOADING) {
+                    sentMessage.edit(new EmbedBuilder()
+                            .setTitle("Addition Status")
+                            .setDescription("The movie **" + selectedMovie.Title + "** is being added.")
+                            .addField("Progress:",
+                                    BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
+                                            BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
+                                            BotEmojis.TODO_STEP + "  **Mask download file:** " + rdbTorrentInfo.getProgress() + "%\n" +
+                                            BotEmojis.TODO_STEP + "  Download movie\n" +
+                                            BotEmojis.TODO_STEP + "  Add movie to database")
+                            .setFooter("Message updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                                    .format(ZonedDateTime.now()) + " CST")
+                            .setColor(BotColors.INFO))
+                            .exceptionally(ExceptionLogger.get());
+
+                    rdbLock.wait(5000);
+                    rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
                 }
             }
+
+            if (BotClient.getInstance().rdbApi.getTorrentInfo(rdbTorrentInfo.getId()).getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
+                displayError("There was an error masking the download. Please try again later.", "rdb-download-file");
+                endTask();
+                return;
+            }
+        } catch (InterruptedException | ApiException e) {
+            displayError("There was an error masking the download. Please try again later.", "rdb-download-file");
+            endTask(e);
+            return;
         }
 
-        // Make the link Unrestricted
-        realDebridHandler.unrestrictLinks();
-        if (realDebridHandler.didUnrestrictOperationFail()) {
+        // Make the link unrestricted
+        RdbUnrestrictedLink unrestrictedLink;
+        try {
+            unrestrictedLink = BotClient.getInstance().rdbApi.unrestrictLink(rdbTorrentInfo.getLinks().get(0));
+        } catch (ApiException e) {
             displayError("There was an error masking the download. Please try again later.", "rdb-unrestrict-link");
-            realDebridHandler.deleteTorrent();
-            endTask();
+            endTask(e);
             return;
         }
 
         // Get the download link
-        downloadLink = realDebridHandler.getDownloadLink();
+        //downloadLink = realDebridHandler.getDownloadLink();
+        downloadLink = unrestrictedLink.getDownload();
         sentMessage.edit(new EmbedBuilder()
                 .setTitle("Addition Status")
                 .setDescription("The movie **" + selectedMovie.Title + "** is being added.")
@@ -342,7 +376,12 @@ public class RequestHandler implements CustomRunnable {
         // Verify that the download did not fail
         if (downloadManager.didDownloadFail()) {
             displayError("There was an error while downloading this movie. Please try again later.", "file-download-fail");
-            realDebridHandler.deleteTorrent();
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (ApiException e) {
+                endTask(e);
+                return;
+            }
             endTask();
             return;
         }
@@ -363,15 +402,25 @@ public class RequestHandler implements CustomRunnable {
 
         // Rename the downloaded file to add the extension
         // Verify the rename operation succeeded
-        if (!downloadManager.renameFile(realDebridHandler.getExtension())) {
+        if (!downloadManager.renameFile(fileExtension)) {
             displayError("There was an error while downloading this movie. Please try again later.", "file-rename-fail");
-            realDebridHandler.deleteTorrent();
+            //realDebridHandler.deleteTorrent();
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (ApiException e) {
+                endTask(e);
+                return;
+            }
             endTask();
             return;
         }
 
         // Delete the torrent from RealDebrid
-        realDebridHandler.deleteTorrent();
+        try {
+            BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
 
         // Add the movie to the database
         DatabaseDataManager.addMovie(
@@ -379,7 +428,7 @@ public class RequestHandler implements CustomRunnable {
                 selectedMovie.Title,
                 selectedMovie.Year,
                 torrentHandler.getTorrentQuality(),
-                downloadManager.getFilename() + realDebridHandler.getExtension()
+                downloadManager.getFilename() + fileExtension
         );
 
         sentMessage.edit(new EmbedBuilder()
