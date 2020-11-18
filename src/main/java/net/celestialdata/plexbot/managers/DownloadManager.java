@@ -49,7 +49,7 @@ public class DownloadManager implements CustomRunnable {
 
     @Override
     public String taskName() {
-        return "Download " + filename;
+        return "Download: " + filename;
     }
 
     @Override

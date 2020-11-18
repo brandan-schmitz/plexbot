@@ -12,6 +12,8 @@
 
 package net.celestialdata.plexbot.client;
 
+import javax.annotation.processing.Generated;
+
 @Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")public class StringUtil {
   /**
    * Check if the given array contains the given value (with case-insensitive comparison).
