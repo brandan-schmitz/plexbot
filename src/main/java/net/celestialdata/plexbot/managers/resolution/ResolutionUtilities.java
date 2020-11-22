@@ -3,7 +3,8 @@ package net.celestialdata.plexbot.managers.resolution;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.config.ConfigProvider;
-import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.database.DbOperations;
+import net.celestialdata.plexbot.database.builders.UpgradeItemBuilder;
 import net.celestialdata.plexbot.utils.BotColors;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -25,10 +26,10 @@ public class ResolutionUtilities {
      * @param newSize       the size of the new video file
      */
     static void addUpgradableMovie(OmdbMovie movie, int oldResolution, int newResolution, String newSize) {
-        MediaInfo mediaInfo = MediaInfo.mediaInfo(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + DatabaseDataManager.getMovieFilename(movie.imdbID));
+        MediaInfo mediaInfo = MediaInfo.mediaInfo(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + DbOperations.movieOps.getMovieById(movie.imdbID).getFilename());
 
         // First check to see if the movie is already listed in the upgrade list, if not add it and send the message
-        if (!DatabaseDataManager.isMovieInUpgradableList(movie.imdbID)) {
+        if (!DbOperations.upgradeItemOps.exists(movie.imdbID)) {
             Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId()).ifPresent(
                     textChannel -> textChannel.sendMessage(new EmbedBuilder()
                             .setTitle(movie.Title)
@@ -47,8 +48,14 @@ public class ResolutionUtilities {
                                     "Upgradable to " + newResolution + "p" + " from " + oldResolution + "p"
                             )
                     ).exceptionally(
-                            ExceptionLogger.get()).thenAccept(message ->
-                                    DatabaseDataManager.addMovieToUpgradableList(movie.imdbID, newResolution, message.getId()))
+                            ExceptionLogger.get()).thenAccept(message -> DbOperations.saveObject(
+                            new UpgradeItemBuilder()
+                                    .withMovie(movie.imdbID)
+                                    .withNewResolution(newResolution)
+                                    .withMessageId(message.getId())
+                                    .build()
+                            )
+                    )
             );
         }
     }

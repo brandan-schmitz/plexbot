@@ -6,14 +6,12 @@ import net.celestialdata.plexbot.commandhandler.Command;
 import net.celestialdata.plexbot.commandhandler.CommandExecutor;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
 import net.celestialdata.plexbot.config.ConfigProvider;
-import net.celestialdata.plexbot.database.DatabaseDataManager;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.utils.PagedEmbed;
 import net.celestialdata.plexbot.utils.StringBuilderPlus;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.server.Server;
 import org.javacord.api.util.logging.ExceptionLogger;
 
 /**
@@ -31,7 +29,7 @@ public class HelpCommand implements CommandExecutor {
      */
     @Command(aliases = "help", description = "Gives information about the bots commands", async = true, category = "general", usage = "# help\n//Lists available commands\n# help [command]\n//Gives information about a command")
     public void onHelpCommand(Message message, String[] args) {
-        final String serverPrefix = DatabaseDataManager.getServerPrefix(message.getServer().map(Server::getId).get());
+        final String serverPrefix = ConfigProvider.BOT_SETTINGS.botPrefix();
 
         // If it is just the regular help command
         if (args.length == 0) {

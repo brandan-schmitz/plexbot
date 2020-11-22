@@ -3,19 +3,14 @@ package net.celestialdata.plexbot.commands;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.commandhandler.Command;
 import net.celestialdata.plexbot.commandhandler.CommandExecutor;
-import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.workhandlers.RequestHandler;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.util.logging.ExceptionLogger;
-
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 
 public class RequestMovieCommand implements CommandExecutor {
     private volatile String year = "";
@@ -37,7 +32,7 @@ public class RequestMovieCommand implements CommandExecutor {
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle(BotEmojis.ERROR + "  Command Error:")
                     .setDescription("You must specify the movie you wish to request. For more information please use " +
-                            DatabaseDataManager.getServerPrefix(message.getServer().map(Server::getId).orElseThrow()) + "help request")
+                            ConfigProvider.BOT_SETTINGS.botPrefix() + "help request")
                     .setColor(BotColors.ERROR);
 
             // Send the message

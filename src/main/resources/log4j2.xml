@@ -18,6 +18,9 @@
         <Logger name="com.zaxxer.hikari" level="ERROR">
             <AppenderRef ref="Console Appender"/>
         </Logger>
+        <Logger name="org.hibernate" level="ERROR">
+            <AppenderRef ref="Console Appender"/>
+        </Logger>
         <Logger name="org.cfg4j" level="ERROR">
             <AppenderRef ref="Console Appender"/>
         </Logger>
