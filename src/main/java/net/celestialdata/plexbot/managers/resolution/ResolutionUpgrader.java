@@ -3,10 +3,12 @@ package net.celestialdata.plexbot.managers.resolution;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.config.ConfigProvider;
-import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.database.DbOperations;
+import net.celestialdata.plexbot.database.builders.MovieBuilder;
+import net.celestialdata.plexbot.database.models.WaitlistItem;
+import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.CustomRunnable;
-import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.workhandlers.RealDebridHandler;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -151,7 +153,7 @@ public class ResolutionUpgrader implements CustomRunnable {
 
         // Attempt to delete the old movie files
         File oldVersion = new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() +
-                DatabaseDataManager.getMovieFilename(movie.imdbID));
+                DbOperations.movieOps.getMovieById(movie.imdbID).getFilename());
         if (!oldVersion.delete()) {
             realDebridHandler.deleteTorrent();
             endTask();
@@ -170,11 +172,15 @@ public class ResolutionUpgrader implements CustomRunnable {
         // Delete the torrent file from real-debrid
         realDebridHandler.deleteTorrent();
 
-        // Update the resolution of the movie in the database
-        DatabaseDataManager.updateMovieResolution(movie.imdbID, torrentHandler.getTorrentQuality());
-
-        // Update the filename of the movie in the database
-        DatabaseDataManager.updateMovieFilename(movie.imdbID, downloadManager.getFilename() + realDebridHandler.getExtension());
+        // Update the movie in the database
+        DbOperations.saveObject(new MovieBuilder()
+                .withId(movie.imdbID)
+                .withTitle(movie.Title)
+                .withYear(movie.Year)
+                .withResolution(torrentHandler.getTorrentQuality())
+                .withFilename(downloadManager.getFilename() + realDebridHandler.getExtension())
+                .build()
+        );
 
         // Use the default movie poster if one was not found on IMDB
         if (movie.Poster.equalsIgnoreCase("N/A")) {
@@ -196,12 +202,8 @@ public class ResolutionUpgrader implements CustomRunnable {
                 )
         );
 
-        // Delete the message in the upgradable-movies channel
-        Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId()).ifPresent(textChannel ->
-                textChannel.getMessageById(DatabaseDataManager.getUpgradableMovieMessageId(movie.imdbID)).join().delete().exceptionally(ExceptionLogger.get()));
-
         // Delete the movie from the list of upgradable movies
-        DatabaseDataManager.removeMovieFromUpgradableList(movie.imdbID);
+        DbOperations.deleteItem(WaitlistItem.class, movie.imdbID);
 
         // Remove the task info from the bot status manager
         endTask();

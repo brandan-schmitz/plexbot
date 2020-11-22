@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.commandhandler;
 
-import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.config.ConfigProvider;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.*;
@@ -31,29 +31,7 @@ public class JavacordHandler extends CommandHandler {
      * @param api The api.
      */
     public JavacordHandler(DiscordApi api) {
-        api.addMessageCreateListener(event -> handleMessageCreate(api, event, event.getServer()
-                .map(Server::getId).orElseThrow()));
-    }
-
-    /**
-     * Adds a permission for the user.
-     *
-     * @param user       The user.
-     * @param permission The permission to add.
-     */
-    public void addPermission(User user, String permission) {
-        addPermission(String.valueOf(user.getId()), permission);
-    }
-
-    /**
-     * Checks if the user has the required permission.
-     *
-     * @param user       The user.
-     * @param permission The permission to check.
-     * @return If the user has the given permission.
-     */
-    public boolean hasPermission(User user, String permission) {
-        return hasPermission(String.valueOf(user.getId()), permission);
+        api.addMessageCreateListener(event -> handleMessageCreate(api, event));
     }
 
     /**
@@ -62,9 +40,9 @@ public class JavacordHandler extends CommandHandler {
      * @param api   The api.
      * @param event The received event.
      */
-    private void handleMessageCreate(DiscordApi api, final MessageCreateEvent event, long serverID) {
+    private void handleMessageCreate(DiscordApi api, final MessageCreateEvent event) {
         Message message = event.getMessage();
-        String prefix = DatabaseDataManager.getServerPrefix(serverID);
+        String prefix = ConfigProvider.BOT_SETTINGS.botPrefix();
         if (message.getUserAuthor().map(User::isYourself).orElse(false)) {
             return;
         }

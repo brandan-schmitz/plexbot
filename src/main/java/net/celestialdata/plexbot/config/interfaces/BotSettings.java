@@ -21,6 +21,13 @@ public interface BotSettings {
     String botName();
 
     /**
+     * The character that the bot will use as a prefix for commands
+     *
+     * @return The bot prefix
+     */
+    String botPrefix();
+
+    /**
      * The folder to save the movie files into
      *
      * @return The folder path
@@ -57,7 +64,7 @@ public interface BotSettings {
     long upgradedMoviesChannelId();
 
     /**
-     * The ID of the channel where the bot's status message will be located
+     * The ID of the channel where the bots status message will be located
      *
      * @return The channel id
      */

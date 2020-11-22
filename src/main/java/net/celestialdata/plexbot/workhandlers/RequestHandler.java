@@ -13,7 +13,8 @@ import net.celestialdata.plexbot.apis.omdb.objects.search.SearchResult;
 import net.celestialdata.plexbot.apis.omdb.objects.search.SearchResultResponse;
 import net.celestialdata.plexbot.client.model.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.config.ConfigProvider;
-import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.database.DbOperations;
+import net.celestialdata.plexbot.database.builders.MovieBuilder;
 import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.managers.waitlist.WaitlistUtilities;
 import net.celestialdata.plexbot.utils.BotColors;
@@ -146,7 +147,7 @@ public class RequestHandler implements CustomRunnable {
         }
 
         // Verify the movie requested does not already exist on the server
-        if (DatabaseDataManager.doesMovieExistOnServer(selectedMovie.imdbID)) {
+        if (DbOperations.movieOps.exists(selectedMovie.imdbID)) {
             displayError("This movie is already on Plex.");
             endTask();
             return;
@@ -176,9 +177,8 @@ public class RequestHandler implements CustomRunnable {
             endTask();
             return;
         } else if (torrentHandler.didSearchReturnNoResults()) {
-            if (DatabaseDataManager.isMovieInWaitlist(selectedMovie.imdbID)) {
-                displayError("The movie " + selectedMovie.Title + " is not currently available and already exists on the waiting list.\n\n" +
-                        "Please remember to check the waiting list next time before making a request.");
+            if (DbOperations.waitlistItemOps.exists(selectedMovie.imdbID)) {
+                displayError("The movie " + selectedMovie.Title + " is not currently available and already exists on the waiting list.");
             } else {
                 displayError("Unable to locate the file for " + selectedMovie.Title + " at this time. It has been added to the waiting list " +
                         "and will be automatically when it becomes available.");
@@ -429,12 +429,13 @@ public class RequestHandler implements CustomRunnable {
         }
 
         // Add the movie to the database
-        DatabaseDataManager.addMovie(
-                selectedMovie.imdbID,
-                selectedMovie.Title,
-                selectedMovie.Year,
-                torrentHandler.getTorrentQuality(),
-                downloadManager.getFilename() + fileExtension
+        DbOperations.saveObject(new MovieBuilder()
+                .withId(selectedMovie.imdbID)
+                .withTitle(selectedMovie.Title)
+                .withYear(selectedMovie.Year)
+                .withResolution(torrentHandler.getTorrentQuality())
+                .withFilename(downloadManager.getFilename() + fileExtension)
+                .build()
         );
 
         sentMessage.edit(new EmbedBuilder()

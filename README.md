@@ -72,6 +72,9 @@ BotSettings:
 
   # The name of the bot displayed in all messages
   botName: Plexbot
+  
+  # The prefix the bot will use to listen for commands. Must be contained within ""
+  botPrefix: "!"
 
   # The folder that the movies will be downloaded to
   movieDownloadFolder: /path/to/movie/folder
@@ -140,160 +143,7 @@ ApiKeys:
 
 ### Database Creation
 
-In order to run the plexbot, you must have a database created for the bot to utulize. Currently the bot does not generate the database itself, but requires it to be created for it. This may change in the future, but for now you will need to execute the SQL script below on your database server to generate the database. Once the database is generated, create an account for the bot to access the database with, give it permissions to the database *(everything except grant permissions)* and add the database information to the configuration file created above.
-
-This script is also saved in the repository as `create-db.sql`
-
-You can change the name of the database that will be created by modifying lines 15 and 16 of this script to replace the `Plexbot` text with the new name of the database.
-
-```mysql
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `Plexbot`
---
-CREATE DATABASE IF NOT EXISTS `Plexbot` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `Plexbot`;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Guilds`
---
-
-CREATE TABLE `Guilds` (
-  `guild_ID` bigint(20) NOT NULL,
-  `guild_name` varchar(254) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `guild_prefix` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `guild_creation_date` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `guild_join_date` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `owner_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Movies`
---
-
-CREATE TABLE `Movies` (
-  `movie_id` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `movie_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `movie_year` varchar(4) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `movie_resolution` int(4) DEFAULT NULL,
-  `movie_filename` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Upgrades`
---
-
-CREATE TABLE `Upgrades` (
-  `movie_id` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `upgraded_resolution` int(11) NOT NULL,
-  `message_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Users`
---
-
-CREATE TABLE `Users` (
-  `user_ID` bigint(20) NOT NULL,
-  `discriminated_name` varchar(254) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Waitlist`
---
-
-CREATE TABLE `Waitlist` (
-  `movie_id` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `movie_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `movie_year` varchar(4) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `requester_id` bigint(20) NOT NULL,
-  `message_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `Guilds`
---
-ALTER TABLE `Guilds`
-  ADD PRIMARY KEY (`guild_ID`),
-  ADD KEY `fkIdx_36` (`owner_id`);
-
---
--- Indexes for table `Movies`
---
-ALTER TABLE `Movies`
-  ADD PRIMARY KEY (`movie_id`);
-
---
--- Indexes for table `Upgrades`
---
-ALTER TABLE `Upgrades`
-  ADD PRIMARY KEY (`movie_id`),
-  ADD KEY `fkIdx_42` (`movie_id`);
-
---
--- Indexes for table `Users`
---
-ALTER TABLE `Users`
-  ADD PRIMARY KEY (`user_ID`);
-
---
--- Indexes for table `Waitlist`
---
-ALTER TABLE `Waitlist`
-  ADD PRIMARY KEY (`movie_id`),
-  ADD KEY `fkIdx_33` (`requester_id`);
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `Guilds`
---
-ALTER TABLE `Guilds`
-  ADD CONSTRAINT `FK_36` FOREIGN KEY (`owner_id`) REFERENCES `Users` (`user_ID`);
-
---
--- Constraints for table `Upgrades`
---
-ALTER TABLE `Upgrades`
-  ADD CONSTRAINT `FK_42` FOREIGN KEY (`movie_id`) REFERENCES `Movies` (`movie_id`);
-
---
--- Constraints for table `Waitlist`
---
-ALTER TABLE `Waitlist`
-  ADD CONSTRAINT `FK_33` FOREIGN KEY (`requester_id`) REFERENCES `Users` (`user_ID`);
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-```
+In order to run the plexbot, you must have a MariaDB database created for the bot to utulize. Make sure the account you will use for the bot to access the database has all permissions except the grant permission. You do not need to populate the database, as that will be done for you the first time the bot starts up. The database can either be run locally on the same machine as the bot or on a external server.
 
 <br>
 

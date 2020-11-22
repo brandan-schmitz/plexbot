@@ -3,7 +3,9 @@ package net.celestialdata.plexbot.managers.waitlist;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.config.ConfigProvider;
-import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.database.DbOperations;
+import net.celestialdata.plexbot.database.builders.WaitlistItemBuilder;
+import net.celestialdata.plexbot.database.models.WaitlistItem;
 import net.celestialdata.plexbot.utils.BotColors;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -28,7 +30,7 @@ public class WaitlistUtilities {
      */
     public static void addWaitlistItem(OmdbMovie movie, long userId) {
         // Check if the movie is already in the waiting list, otherwise send a message about it and add it
-        if (!DatabaseDataManager.isMovieInWaitlist(movie.imdbID)) {
+        if (!DbOperations.waitlistItemOps.exists(movie.imdbID)) {
             Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.waitlistChannelId()).ifPresent(textChannel ->
                     textChannel.sendMessage(new EmbedBuilder()
                             .setTitle(movie.Title)
@@ -39,8 +41,16 @@ public class WaitlistUtilities {
                             .setColor(BotColors.INFO)
                             .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
                                     .format(ZonedDateTime.now()) + " CST")).exceptionally(ExceptionLogger.get()
-                    ).thenAccept(message ->
-                            DatabaseDataManager.addMovieToWaitlist(movie.imdbID, movie.Title, movie.Year, userId, message.getId())));
+                    ).thenAccept(message -> DbOperations.saveObject(
+                            new WaitlistItemBuilder()
+                                    .withId(movie.imdbID)
+                                    .withTitle(movie.Title)
+                                    .withYear(movie.Year)
+                                    .withRequestedBy(userId)
+                                    .withMessageId(message.getId())
+                                    .build()
+                    ))
+            );
         }
     }
 
@@ -54,7 +64,7 @@ public class WaitlistUtilities {
         // Get the channel the waitlist messages are in then fetch the message for the movie and update it with
         // the current date and time.
         Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.waitlistChannelId()).ifPresent(textChannel ->
-                textChannel.getMessageById(DatabaseDataManager.getWaitlistMessageId(movie.imdbID)).join().edit(new EmbedBuilder()
+                textChannel.getMessageById(DbOperations.waitlistItemOps.getItemById(movie.imdbID).getMessageId()).join().edit(new EmbedBuilder()
                         .setTitle(movie.Title)
                         .setDescription("**Year:** " + movie.Year + "\n" +
                                 "**Director(s):** " + movie.Director + "\n" +
@@ -64,19 +74,5 @@ public class WaitlistUtilities {
                         // TODO: Allow the timezone label to be changed in the bot configuration file
                         .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
                                 .format(ZonedDateTime.now()) + " CST")).exceptionally(ExceptionLogger.get()));
-    }
-
-    /**
-     * Delete a movie from the waiting list.
-     *
-     * @param movieId the IMDB ID of the movie
-     */
-    static void deleteWaitlistItem(String movieId) {
-        // Remove the message about the movie from the waiting-list channel
-        Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.waitlistChannelId()).ifPresent(textChannel ->
-                textChannel.getMessageById(DatabaseDataManager.getWaitlistMessageId(movieId)).join().delete().exceptionally(ExceptionLogger.get()));
-
-        // Remove the movie from the waiting-list table in the database
-        DatabaseDataManager.removeMovieFromWaitlist(movieId);
     }
 }

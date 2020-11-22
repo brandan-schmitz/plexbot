@@ -6,26 +6,28 @@ import com.mashape.unirest.http.Unirest;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
 import net.celestialdata.plexbot.commandhandler.JavacordHandler;
-import net.celestialdata.plexbot.commands.*;
+import net.celestialdata.plexbot.commands.HelpCommand;
+import net.celestialdata.plexbot.commands.PingCommand;
+import net.celestialdata.plexbot.commands.PurgeCommand;
+import net.celestialdata.plexbot.commands.RequestMovieCommand;
 import net.celestialdata.plexbot.config.ConfigProvider;
-import net.celestialdata.plexbot.database.DataSource;
-import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.database.DbOperations;
+import net.celestialdata.plexbot.database.HibernateUtil;
+import net.celestialdata.plexbot.database.builders.UserBuilder;
 import net.celestialdata.plexbot.managers.BotStatusManager;
 import net.celestialdata.plexbot.managers.resolution.ResolutionChecker;
 import net.celestialdata.plexbot.managers.waitlist.WaitlistChecker;
-import net.celestialdata.plexbot.serverconfigurations.AddRemoveGuilds;
-import net.celestialdata.plexbot.serverconfigurations.UpdateGuildsUsersDB;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.permission.PermissionState;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.entity.permission.PermissionsBuilder;
-import org.javacord.api.listener.server.ServerJoinListener;
-import org.javacord.api.listener.server.ServerLeaveListener;
+import org.javacord.api.entity.server.Server;
 import org.javacord.api.listener.server.member.ServerMemberJoinListener;
 import org.javacord.api.util.logging.FallbackLoggerConfiguration;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +41,6 @@ public class Main {
         commandHandler = new JavacordHandler(botApi);
 
         commandHandler.registerCommand(new PingCommand());
-        commandHandler.registerCommand(new NewPrefixCommand());
         commandHandler.registerCommand(new HelpCommand());
         commandHandler.registerCommand(new PurgeCommand());
         commandHandler.registerCommand(new RequestMovieCommand());
@@ -109,7 +110,7 @@ public class Main {
 
         // Initialize the database connections
         System.out.print("Connecting to the database...");
-        DataSource.init();
+        HibernateUtil.getSessionFactory();
         System.out.println("Done");
 
         // Start the bot
@@ -119,14 +120,33 @@ public class Main {
 
         // Register guild join and leaver listeners
         System.out.print("Registering event listeners...");
-        botApi.addListener((ServerJoinListener) event -> AddRemoveGuilds.addGuild(event.getServer()));
-        botApi.addListener((ServerLeaveListener) event -> AddRemoveGuilds.removeGuild(event.getServer()));
-        botApi.addListener((ServerMemberJoinListener) event -> DatabaseDataManager.addUser(event.getUser()));
+        botApi.addListener((ServerMemberJoinListener) event ->
+                DbOperations.saveObject(new UserBuilder()
+                        .withId(event.getUser().getId())
+                        .withDiscriminatedName(event.getUser().getDiscriminatedName())
+                        .build()
+                )
+        );
         System.out.println("Done");
 
-        // Update the database with any new guilds or users that may have been added while the bot was offline
-        System.out.print("Scanning for new Guilds and Users...");
-        UpdateGuildsUsersDB.runScan();
+        // Update the database with to add or remove users that may have joined or left while the bot was offline
+        System.out.print("Scanning for new Users...");
+        List<net.celestialdata.plexbot.database.models.User> dbUsers = DbOperations.userOps.getAllUsers();
+        for (Server s : Main.getBotApi().getServers()) {
+            for (org.javacord.api.entity.user.User u : s.getMembers()) {
+                if (!u.isBot()) {
+                    DbOperations.saveObject(new UserBuilder()
+                            .withId(u.getId())
+                            .withDiscriminatedName(u.getDiscriminatedName())
+                            .build()
+                    );
+                    dbUsers.removeIf(o -> o.getId() == u.getId());
+                }
+            }
+        }
+        for (net.celestialdata.plexbot.database.models.User u : dbUsers) {
+            DbOperations.deleteItem(net.celestialdata.plexbot.database.models.User.class, u.getId());
+        }
         System.out.println("Done");
 
         System.out.print("Configuring API resources...");
@@ -145,6 +165,9 @@ public class Main {
 
             // Ensure all bot work is stopped cleanly
             BotWorkPool.getInstance().executor.shutdown();
+
+            // Disconnect from the database
+            HibernateUtil.shutdown();
         }));
 
         System.out.print("Configuring Bot Status Manager...");
