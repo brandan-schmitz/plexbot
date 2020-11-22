@@ -15,6 +15,42 @@
     </properties>
 
     <dependencies>
+        <!-- Database Dependencies -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>2.7.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.4.24.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-hikaricp</artifactId>
+            <version>5.4.24.Final</version>
+        </dependency>
+
+        <!-- Javacord -->
+        <dependency>
+            <groupId>org.javacord</groupId>
+            <artifactId>javacord</artifactId>
+            <version>3.1.1</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.javacord</groupId>
+            <artifactId>javacord-core</artifactId>
+            <version>3.1.1</version>
+        </dependency>
+
+        <!-- API Client Dependencies -->
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
@@ -38,7 +74,7 @@
         <dependency>
             <groupId>io.gsonfire</groupId>
             <artifactId>gson-fire</artifactId>
-            <version>1.8.3</version>
+            <version>1.8.5</version>
         </dependency>
         <dependency>
             <groupId>org.threeten</groupId>
@@ -46,21 +82,11 @@
             <version>1.3.5</version>
         </dependency>
 
+        <!-- Logging Dependencies -->
         <dependency>
-            <groupId>org.javacord</groupId>
-            <artifactId>javacord</artifactId>
-            <version>3.1.1</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>org.javacord</groupId>
-            <artifactId>javacord-core</artifactId>
-            <version>3.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.8.0-beta4</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.11.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -68,24 +94,28 @@
             <version>2.11.2</version>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.6</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.30</version>
         </dependency>
+
+        <!-- Old API Dependencies -->
+        <dependency>
+            <groupId>com.mashape.unirest</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>1.4.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.8</version>
+        </dependency>
+
+        <!-- Bot Functions Dependencies -->
         <dependency>
             <groupId>org.cfg4j</groupId>
             <artifactId>cfg4j-core</artifactId>
             <version>4.4.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.11.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>3.3.1</version>
         </dependency>
         <dependency>
             <groupId>com.vdurmont</groupId>
@@ -93,34 +123,21 @@
             <version>5.1.1</version>
         </dependency>
         <dependency>
-            <groupId>commons-dbutils</groupId>
-            <artifactId>commons-dbutils</artifactId>
-            <version>1.7</version>
+            <groupId>uk.co.caprica</groupId>
+            <artifactId>vlcj-info</artifactId>
+            <version>2.0.0</version>
         </dependency>
+
+        <!-- Common/Helper Dependencies -->
         <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <version>2.4.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.9.8</version>
-        </dependency>
-        <dependency>
-            <groupId>com.mashape.unirest</groupId>
-            <artifactId>unirest-java</artifactId>
-            <version>1.4.9</version>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>28.0-jre</version>
-        </dependency>
-        <dependency>
-            <groupId>uk.co.caprica</groupId>
-            <artifactId>vlcj-info</artifactId>
-            <version>2.0.0</version>
         </dependency>
     </dependencies>
 

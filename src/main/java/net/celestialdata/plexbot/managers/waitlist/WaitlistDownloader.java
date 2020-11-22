@@ -3,10 +3,12 @@ package net.celestialdata.plexbot.managers.waitlist;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.config.ConfigProvider;
-import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.database.DbOperations;
+import net.celestialdata.plexbot.database.builders.MovieBuilder;
+import net.celestialdata.plexbot.database.models.WaitlistItem;
+import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.CustomRunnable;
-import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.workhandlers.RealDebridHandler;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -152,7 +154,14 @@ public class WaitlistDownloader implements CustomRunnable {
         realDebridHandler.deleteTorrent();
 
         // Add the movie to the database
-        DatabaseDataManager.addMovie(movie.imdbID, movie.Title, movie.Year, torrentHandler.getTorrentQuality(), downloadManager.getFilename());
+        DbOperations.saveObject(new MovieBuilder()
+                .withId(movie.imdbID)
+                .withTitle(movie.Title)
+                .withYear(movie.Year)
+                .withResolution(torrentHandler.getTorrentQuality())
+                .withFilename(downloadManager.getFilename() + realDebridHandler.getExtension())
+                .build()
+        );
 
         // Send a message to the new-movies notification channel stating the movie is now available on Plex
         Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.newMoviesChannelId()).ifPresent(textChannel ->
@@ -168,7 +177,7 @@ public class WaitlistDownloader implements CustomRunnable {
         );
 
         // Send a message to the person who requested the movie stating it is now available on Plex
-        Main.getBotApi().getUserById(DatabaseDataManager.getWhoRequestedWaitlistItem(movie.imdbID)).join().sendMessage(new EmbedBuilder()
+        Main.getBotApi().getUserById(DbOperations.waitlistItemOps.getItemById(movie.imdbID).getRequestedBy().getId()).join().sendMessage(new EmbedBuilder()
                 .setTitle("Movie Added")
                 .setDescription("You requested the following movie be added to the Celestial Movies Plex Server. This message is to notify you that the movie is now available on Plex.\n\n" +
                         "**Title:** " + movie.Title + "\n" +
@@ -181,7 +190,7 @@ public class WaitlistDownloader implements CustomRunnable {
         );
 
         // Delete the movie from the waiting list
-        WaitlistUtilities.deleteWaitlistItem(movie.imdbID);
+        DbOperations.deleteItem(WaitlistItem.class, movie.imdbID);
 
         // Remove the task info from the bot status manager
         endTask();

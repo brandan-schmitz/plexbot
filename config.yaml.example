@@ -8,6 +8,9 @@ BotSettings:
   # The name of the bot displayed in all messages
   botName: Plexbot
 
+  # The prefix the bot will use to listen for commands. Must be contained within ""
+  botPrefix: "!"
+
   # The folder that the movies will be downloaded to
   movieDownloadFolder: /path/to/movie/folder
 

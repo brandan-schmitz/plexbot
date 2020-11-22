@@ -5,7 +5,9 @@ import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.apis.omdb.Omdb;
 import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
 import net.celestialdata.plexbot.config.ConfigProvider;
-import net.celestialdata.plexbot.database.DatabaseDataManager;
+import net.celestialdata.plexbot.database.DbOperations;
+import net.celestialdata.plexbot.database.models.Movie;
+import net.celestialdata.plexbot.database.models.UpgradeItem;
 import net.celestialdata.plexbot.managers.BotStatusManager;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.utils.CustomRunnable;
@@ -45,8 +47,8 @@ public class ResolutionChecker implements CustomRunnable {
         ArrayList<ResolutionUtilities.Movie> movies = new ArrayList<>();
 
         // Create a list of movies in the database
-        for (String id : DatabaseDataManager.getAllMovieIDs()) {
-            movies.add(new ResolutionUtilities.Movie(id, DatabaseDataManager.getMovieResolution(id)));
+        for (Movie m : DbOperations.movieOps.getAllMovies()) {
+            movies.add(new ResolutionUtilities.Movie(m.getId(), m.getResolution()));
         }
 
         // Cycle through all the movies in the database to find any that can be upgraded
@@ -100,11 +102,11 @@ public class ResolutionChecker implements CustomRunnable {
 
         // Cycle through all the movies that can be upgraded, and start a task for any that have the
         // thumbsup reaction on the message for the upgrade availability.
-        for (String id : DatabaseDataManager.getAllUpgradableMovieIds()) {
+        for (UpgradeItem item : DbOperations.upgradeItemOps.getAllItems()) {
             Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId())
-                    .flatMap(textChannel -> textChannel.getMessageById(DatabaseDataManager.getUpgradableMovieMessageId(id)).join()
+                    .flatMap(textChannel -> textChannel.getMessageById(item.getMessageId()).join()
                             .getReactionByEmoji(BotEmojis.THUMBS_UP)).ifPresent(reaction -> {
-                OmdbMovie test = Omdb.getMovieInfo(id);
+                OmdbMovie test = Omdb.getMovieInfo(item.getMovie().getId());
                 BotWorkPool.getInstance().submitProcess(new ResolutionUpgrader(test));
             });
         }
