@@ -21,91 +21,100 @@ import java.util.Objects;
 /**
  * Ratings for a movie from OMDb
  */
+@SuppressWarnings("unused")
 @Schema(description = "Ratings for a movie from OMDb")
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class OmdbMovieRating {
-  @SerializedName("Source")
-  private String source = null;
+    @SerializedName("Source")
+    private String source = null;
 
-  @SerializedName("Value")
-  private String value = null;
+    @SerializedName("Value")
+    private String value = null;
 
-  public OmdbMovieRating source(String source) {
-    this.source = source;
-    return this;
-  }
-
-   /**
-   * Rating Source
-   * @return source
-  **/
-  @Schema(description = "Rating Source")
-  public String getSource() {
-    return source;
-  }
-
-  public void setSource(String source) {
-    this.source = source;
-  }
-
-  public OmdbMovieRating value(String value) {
-    this.value = value;
-    return this;
-  }
-
-   /**
-   * Rating Value
-   * @return value
-  **/
-  @Schema(description = "Rating Value")
-  public String getValue() {
-    return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    @SuppressWarnings("unused")
+    public OmdbMovieRating source(String source) {
+        this.source = source;
+        return this;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    /**
+     * Rating Source
+     *
+     * @return source
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Rating Source")
+    public String getSource() {
+        return source;
     }
-    OmdbMovieRating omdbMovieRating = (OmdbMovieRating) o;
-    return Objects.equals(this.source, omdbMovieRating.source) &&
-        Objects.equals(this.value, omdbMovieRating.value);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(source, value);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class OmdbMovieRating {\n");
-
-    sb.append("    source: ").append(toIndentedString(source)).append("\n");
-    sb.append("    value: ").append(toIndentedString(value)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
+    @SuppressWarnings("unused")
+    public void setSource(String source) {
+        this.source = source;
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+    @SuppressWarnings("unused")
+    public OmdbMovieRating value(String value) {
+        this.value = value;
+        return this;
+    }
+
+    /**
+     * Rating Value
+     *
+     * @return value
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Rating Value")
+    public String getValue() {
+        return value;
+    }
+
+    @SuppressWarnings("unused")
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        OmdbMovieRating omdbMovieRating = (OmdbMovieRating) o;
+        return Objects.equals(this.source, omdbMovieRating.source) &&
+                Objects.equals(this.value, omdbMovieRating.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(source, value);
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class OmdbMovieRating {\n");
+
+        sb.append("    source: ").append(toIndentedString(source)).append("\n");
+        sb.append("    value: ").append(toIndentedString(value)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
 
 }

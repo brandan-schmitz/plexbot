@@ -23,7 +23,7 @@ public class DbOperations {
      * @see net.celestialdata.plexbot.database.models.User
      * @see net.celestialdata.plexbot.database.models.WaitlistItem
      */
-    @SuppressWarnings("TryFinallyCanBeTryWithResources")
+    @SuppressWarnings({"TryFinallyCanBeTryWithResources", "UnusedReturnValue"})
     public static boolean saveObject(Object object) {
         Transaction transaction = null;
         Session session = HibernateUtil.getSessionFactory().openSession();
@@ -42,7 +42,7 @@ public class DbOperations {
         }
     }
 
-    @SuppressWarnings("TryFinallyCanBeTryWithResources")
+    @SuppressWarnings({"TryFinallyCanBeTryWithResources", "UnusedReturnValue"})
     public static boolean deleteItem(Class<?> type, Serializable id) {
         Transaction transaction = null;
         Session session = HibernateUtil.getSessionFactory().openSession();
@@ -68,6 +68,7 @@ public class DbOperations {
     /**
      * Organizes the database operations relating to Movies
      */
+    @SuppressWarnings("unused")
     public static class movieOps {
         /**
          * Fetch a list of all the movies in the database
@@ -124,6 +125,7 @@ public class DbOperations {
     /**
      * Organizes database operations related to UpgradeItems
      */
+    @SuppressWarnings("unused")
     public static class upgradeItemOps {
         /**
          * Fetch a list of all the UpgradeItems in the database
@@ -180,6 +182,7 @@ public class DbOperations {
     /**
      * Organizes database operations related to Users
      */
+    @SuppressWarnings("unused")
     public static class userOps {
         /**
          * Fetch a list of all the Users in the database

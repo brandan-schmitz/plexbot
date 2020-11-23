@@ -22,113 +22,124 @@ import java.util.Objects;
  * Base response of request to YTS
  */
 @Schema(description = "Base response of request to YTS")
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class YtsBaseResponse {
-  @SerializedName("status")
-  private String status = null;
+    @SerializedName("status")
+    private String status = null;
 
-  @SerializedName("status_message")
-  private String statusMessage = null;
+    @SerializedName("status_message")
+    private String statusMessage = null;
 
-  @SerializedName("data")
-  private OneOfYtsBaseResponseData data = null;
+    @SerializedName("data")
+    private YtsSearchResult data = null;
 
-  public YtsBaseResponse status(String status) {
-    this.status = status;
-    return this;
-  }
-
-   /**
-   * Request status
-   * @return status
-  **/
-  @Schema(description = "Request status")
-  public String getStatus() {
-    return status;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
-  }
-
-  public YtsBaseResponse statusMessage(String statusMessage) {
-    this.statusMessage = statusMessage;
-    return this;
-  }
-
-   /**
-   * Request status message
-   * @return statusMessage
-  **/
-  @Schema(description = "Request status message")
-  public String getStatusMessage() {
-    return statusMessage;
-  }
-
-  public void setStatusMessage(String statusMessage) {
-    this.statusMessage = statusMessage;
-  }
-
-  public YtsBaseResponse data(OneOfYtsBaseResponseData data) {
-    this.data = data;
-    return this;
-  }
-
-   /**
-   * Data for the request
-   * @return data
-  **/
-  @Schema(description = "Data for the request")
-  public OneOfYtsBaseResponseData getData() {
-    return data;
-  }
-
-  public void setData(OneOfYtsBaseResponseData data) {
-    this.data = data;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    @SuppressWarnings("unused")
+    public YtsBaseResponse status(String status) {
+        this.status = status;
+        return this;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    /**
+     * Request status
+     *
+     * @return status
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Request status")
+    public String getStatus() {
+        return status;
     }
-    YtsBaseResponse ytsBaseResponse = (YtsBaseResponse) o;
-    return Objects.equals(this.status, ytsBaseResponse.status) &&
-        Objects.equals(this.statusMessage, ytsBaseResponse.statusMessage) &&
-        Objects.equals(this.data, ytsBaseResponse.data);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(status, statusMessage, data);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class YtsBaseResponse {\n");
-
-    sb.append("    status: ").append(toIndentedString(status)).append("\n");
-    sb.append("    statusMessage: ").append(toIndentedString(statusMessage)).append("\n");
-    sb.append("    data: ").append(toIndentedString(data)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
+    @SuppressWarnings("unused")
+    public void setStatus(String status) {
+        this.status = status;
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+    @SuppressWarnings("unused")
+    public YtsBaseResponse statusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+        return this;
+    }
+
+    /**
+     * Request status message
+     *
+     * @return statusMessage
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Request status message")
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    @SuppressWarnings("unused")
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsBaseResponse data(YtsSearchResult data) {
+        this.data = data;
+        return this;
+    }
+
+    /**
+     * Get data
+     *
+     * @return data
+     **/
+    @Schema(description = "")
+    public YtsSearchResult getData() {
+        return data;
+    }
+
+    @SuppressWarnings("unused")
+    public void setData(YtsSearchResult data) {
+        this.data = data;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        YtsBaseResponse ytsBaseResponse = (YtsBaseResponse) o;
+        return Objects.equals(this.status, ytsBaseResponse.status) &&
+                Objects.equals(this.statusMessage, ytsBaseResponse.statusMessage) &&
+                Objects.equals(this.data, ytsBaseResponse.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(status, statusMessage, data);
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class YtsBaseResponse {\n");
+
+        sb.append("    status: ").append(toIndentedString(status)).append("\n");
+        sb.append("    statusMessage: ").append(toIndentedString(statusMessage)).append("\n");
+        sb.append("    data: ").append(toIndentedString(data)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
 
 }

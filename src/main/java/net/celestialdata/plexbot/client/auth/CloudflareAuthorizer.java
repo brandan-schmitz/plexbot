@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.apis;
+package net.celestialdata.plexbot.client.auth;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -44,10 +44,11 @@ public class CloudflareAuthorizer {
     }
 
     private String convertStreamToString(InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+        Scanner s = new Scanner(is).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     public boolean tryAuthorization(String url) throws IOException, ScriptException {
         URL cloudFlareUrl = new URL(url);
 

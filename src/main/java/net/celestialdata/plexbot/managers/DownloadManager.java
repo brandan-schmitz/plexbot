@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.managers;
 
-import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
+import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 
@@ -23,18 +23,18 @@ import java.text.DecimalFormat;
 public class DownloadManager implements CustomRunnable {
     public final Object lock = new Object();
     private final DecimalFormat decimalFormat = new DecimalFormat("#0.0");
+    private final String downloadLink;
     private boolean isDownloading = true;
     private boolean didDownloadFail = false;
     private long progress = 0;
     private long size = 0;
     private String filename;
-    private final String downloadLink;
 
-    public DownloadManager(String downloadLink, OmdbMovie movie) {
+    public DownloadManager(String downloadLink, OmdbMovieInfo movieInfo) {
         this.downloadLink = downloadLink;
 
         // Remove anything from the filename that may cause issues
-        filename = movie.Title + " (" + movie.Year + ")";
+        filename = movieInfo.getTitle() + " (" + movieInfo.getYear() + ")";
         filename = filename.replace("<", "");
         filename = filename.replace(">", "");
         filename = filename.replace(":", "");
@@ -98,6 +98,7 @@ public class DownloadManager implements CustomRunnable {
      * @param newExtension the file extension to save the file as.
      * @return if the rename operation was successful or not
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean renameFile(String newExtension) {
         File file = new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + filename);
         return file.renameTo(new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + filename + newExtension));

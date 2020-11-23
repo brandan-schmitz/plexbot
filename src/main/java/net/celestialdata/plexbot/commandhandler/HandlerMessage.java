@@ -5,6 +5,7 @@ package net.celestialdata.plexbot.commandhandler;
  *
  * @author Celestialdeath99
  */
+@SuppressWarnings("unused")
 public enum HandlerMessage {
 
     MISSING_PERMISSIONS("You are not allowed to use this command!");

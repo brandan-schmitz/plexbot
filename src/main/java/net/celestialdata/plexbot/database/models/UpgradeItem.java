@@ -10,6 +10,7 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import javax.persistence.*;
 import java.io.Serializable;
 
+@SuppressWarnings("unused")
 @Entity
 @Table(name = "Upgrades")
 @Proxy(lazy = false)

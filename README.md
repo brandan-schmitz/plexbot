@@ -36,14 +36,14 @@ Plexbot was originally created for the purpose of automating the process of down
   !r --id=tt0371746
   ```
 
-- **Waiting List:** Allows the bot to periodically (1x/hr) check to see if a move is now avaialble for download. A movie is automatically added to the waiting list if a user uses the request command and the bot is unable to find the movie at the time. During its hourly check, if a movie is found to have become available, the bot will automatically download the movie that was requested and then send the user that requested it a message stating the movie was added.
-- **Resolution Upgrader:** Simply adding a movie is often not the end of the road for a movie. Occassionally a new version of a movie that has already been downloaded to the server becomes available. If a new version that has a higher resolution that what is current downloaded does become available, the bot is capable of informing the administator that there an upgrade is available. If the administrator replies with a :thumbsup: reaction, the bot will then download the new version of the movie to replace the old one.
+- **Waiting List:** Allows the bot to periodically (1x/hr) check to see if a movie is now available to be downloaded. A movie gets added to the waiting list if a user uses the request movie command, but the bot is unable to find the movie at the time. If a movie becomes available during one of the bots hourly checks, the bot will automatically download the movie that was requested and then send the user that requested it a message stating the movie has been added to the server.
+- **Resolution Upgrader:** Simply adding a movie is often not the end of the road for a movie. Occasionally a new version of a movie that has already been downloaded to the server becomes available. If a new version that has a higher resolution that what is current downloaded does become available, the bot is capable of informing the administrator that there an upgrade is available. If the administrator replies with a :thumbsup: reaction, the bot will then download the new version of the movie to replace the old one.
 
 <br>
 
 ### Required Channels
 
-Below is a table that describes all the channels that Plexbot requires to function. You can change the name of the channels if you wish, since when you configure the plexbot, you will use the ID of the channel and put it in the bots configuration file. Also described are the suggested permissions for the channels. The server administator can be a role or an individual user and represent the person who can make decisions about what can go in the media library and administer the bot.
+Below is a table that describes all the channels that Plexbot requires in order to properly function. You can change the name of the channels if you wish, since when you configure the plexbot, you will use the ID of the channel and put it in the configuration file for the bot. Also, listed below are the suggested permissions for each channel. The server administrator can be a role or an individual user and represent the person who can make decisions about what can go in the media library and administer the bot.
 
 | **Channel Name**  | **Channel Description**                                      | **Suggested Permissions**                                    |
 | :---------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
@@ -84,7 +84,7 @@ BotSettings:
 
   # Base URL of the current YTS domain to look at for API requests
   # At the time of this commit, this is the current domain so this can be left as is
-  currentYtsDomain: yts.mx
+  currentYtsDomain: https://yts.mx
 
   # The ID of the channel for listing movies that can be upgraded to a better resolution
   upgradableMoviesChannelId: 012345678901234567
@@ -92,7 +92,7 @@ BotSettings:
   # The ID of the channel for notifications about movies that have been upgraded to a better resolution
   upgradedMoviesChannelId: 012345678901234567
 
-  # The ID of the channel where the bot's status message will be located
+  # The ID of the channel where the bots status message will be located
   botStatusChannelId: 012345678901234567
 
   # The ID of the channel for notifications about movies that have been added to the library
@@ -122,6 +122,30 @@ DatabaseSettings:
   password: somepassword
 
 
+##################################
+### Plex Media Server Settings ###
+##################################
+PlexServerSettings:
+  # The IP address of the Plex Media Server. If the bot is on the same network as the Plex server,
+  # this can be the private/local IP address, otherwise this should be the public IP address of the server
+  ipAddress: 192.168.1.50
+
+  # The port of the Plex Media Server. Plex defaults to 32400 unless it is manually changed
+  port: 32400
+
+  # The username to your plex.tv account
+  username: username
+
+  # The password to your plex.tv account.
+  password: Password1234
+
+  # The Client Identifier used to identify individual devices on a Plex account. This needs to be a unique
+  # UUID. You can generate one with the following commands:
+  #   Windows (Powershell): [guid]::NewGuid()
+  #   macOS and Linux: uuidgen
+  clientIdentifier: 8A3029AF-05EC-488B-91F5-FBA66706000F
+
+
 ################
 ### API Keys ###
 ################
@@ -143,24 +167,24 @@ ApiKeys:
 
 ### Database Creation
 
-In order to run the plexbot, you must have a MariaDB database created for the bot to utulize. Make sure the account you will use for the bot to access the database has all permissions except the grant permission. You do not need to populate the database, as that will be done for you the first time the bot starts up. The database can either be run locally on the same machine as the bot or on a external server.
+In order to run the plexbot, you must have a MariaDB database created for the bot to utilize. Make sure the account you will use for the bot to access the database has all permissions except the grant permission. You do not need to populate the database, as that will be done for you the first time the bot starts up. The database can either be run locally on the same machine as the bot or on an external server.
 
 <br>
 
 ### Running the bot
 
-When running the bot you have several options. The first option is to simply run it manually by starting the JAR file. This is the simplest option, but if the bot crashes or the user account logs out the bot will be stopped as well. The second option is to create and register a service for the bot.
+When running the bot you have several options. The first option is to simply run it manually by starting the JAR file. This is the simplest option, but if the bot crashes, or the user account logs out the bot will be stopped as well. The second option is to create and register a service for the bot.
 
 ###### System Requirements:
 
-The plexbot was designed to be as lightweight as possible when it comes to resources, and contains all libraries it requires to run packaged within itself except from the database. In order to run, you need the following installed.
+The plexbot was designed as lightweight as possible when it comes to resources, and contains all libraries it requires are packaged within itself except from the database. In order to run, you need the following installed.
 
-- Java Runtime Enviroment *(11 or above)*
+- Java Runtime Environment *(11 or above)*
 - MariaDB Database Server *(can be a remote server)*
 
 ###### Running as a JAR:
 
-Running the bot as a JAR file is simple and straight forward. Simply make sure the bot and the `config.yaml` file are located within the same directory and then run the following command *(replace the version if necessary)*:
+Running the bot as a JAR file is simple and straight forward. Simply make sure the bot and the `config.yaml` file reside within the same directory and then run the following command *(replace the version if necessary)*:
 
 ```bash
 java -jar plexbot.jar
@@ -176,7 +200,7 @@ The second method of running the bot is as a service. There are different ways t
    cd /etc/systemd/system/
    ```
 
-2. Create a the service file for the bot: 
+2. Create the service file for the bot: 
 
    ```bash
    nano plexbot.service

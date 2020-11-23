@@ -1,7 +1,9 @@
 package net.celestialdata.plexbot.managers.resolution;
 
 import net.celestialdata.plexbot.Main;
-import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
+import net.celestialdata.plexbot.client.ApiException;
+import net.celestialdata.plexbot.client.BotClient;
+import net.celestialdata.plexbot.client.model.*;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
@@ -9,23 +11,22 @@ import net.celestialdata.plexbot.database.models.WaitlistItem;
 import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.CustomRunnable;
-import net.celestialdata.plexbot.workhandlers.RealDebridHandler;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.util.logging.ExceptionLogger;
 
 import java.io.File;
 
 public class ResolutionUpgrader implements CustomRunnable {
-    private final OmdbMovie movie;
+    private final OmdbMovieInfo movieInfo;
+    private final Object rdbLock = new Object();
 
-    public ResolutionUpgrader(OmdbMovie movie) {
-        this.movie = movie;
+    public ResolutionUpgrader(OmdbMovieInfo movieInfo) {
+        this.movieInfo = movieInfo;
     }
 
     @Override
     public String taskName() {
-        return "Upgrade " + movie.Title + " (" + movie.Year + ")";
+        return "Upgrade " + movieInfo.getTitle() + " (" + movieInfo.getYear() + ")";
     }
 
     @SuppressWarnings("DuplicatedCode")
@@ -35,25 +36,22 @@ public class ResolutionUpgrader implements CustomRunnable {
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
 
         TorrentHandler torrentHandler;
-        RealDebridHandler realDebridHandler;
         DownloadManager downloadManager;
         String magnetLink;
 
-        // Search YTS for the movie
-        torrentHandler = new TorrentHandler(movie.imdbID);
+        // Setup the torrent handler
+        torrentHandler = new TorrentHandler(movieInfo.getImdbID());
 
+        // Search YTS for the movie
         try {
             torrentHandler.searchYts();
-        } catch (NullPointerException e) {
-            endTask(e);
+        } catch (ApiException e) {
+            endTask();
             return;
         }
 
-        // If the search failed or if the movie was not found then cancel the download
-        if (torrentHandler.didSearchFail()) {
-            endTask();
-            return;
-        } else if (torrentHandler.didSearchReturnNoResults()) {
+        // If the movie was not found then cancel the download
+        if (torrentHandler.didSearchReturnNoResults()) {
             endTask();
             return;
         }
@@ -79,54 +77,99 @@ public class ResolutionUpgrader implements CustomRunnable {
             return;
         }
 
-        // Add the torrent to real-debrid through its magnet link
+        // Get the magnet link
         magnetLink = torrentHandler.getMagnetLink();
-        realDebridHandler = new RealDebridHandler(magnetLink);
-        realDebridHandler.addMagnet();
-        if (realDebridHandler.didMagnetAdditionFail()) {
-            endTask();
+
+        // Add the magnet link to real-debrid
+        RdbMagnetLink rdbMagnetLink;
+        try {
+            rdbMagnetLink = BotClient.getInstance().rdbApi.addMagnet(magnetLink);
+        } catch (ApiException e) {
+            endTask(e);
             return;
         }
 
-        // Get the information about the torrent on real-debrid
-        realDebridHandler.getTorrentInformation();
-        if (realDebridHandler.didTorrentInfoError()) {
-            realDebridHandler.deleteTorrent();
-            endTask();
+        // Get the torrent file information
+        RdbTorrentInfo rdbTorrentInfo;
+        try {
+            rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
+        } catch (ApiException e) {
+            endTask(e);
             return;
         }
 
-        // Select the proper files to download on real-debrid
-        realDebridHandler.selectTorrentFiles();
-        if (realDebridHandler.didSelectOperationFail()) {
-            realDebridHandler.deleteTorrent();
-            endTask();
-            return;
-        }
-
-        // Wait for real-debrid to have the movie ready for downloading
-        synchronized (realDebridHandler.lock) {
-            while (realDebridHandler.isNotReadyForDownload()) {
-                try {
-                    realDebridHandler.lock.wait();
-                } catch (InterruptedException e) {
-                    endTask(e);
-                    return;
-                }
+        // Select the files to download
+        String fileToSelect = "";
+        String fileExtension = "";
+        for (RdbTorrentFile file : rdbTorrentInfo.getFiles()) {
+            if (file.getPath().contains(".mp4") || file.getPath().contains(".MP4")) {
+                fileToSelect = String.valueOf(file.getId());
+                fileExtension = ".mp4";
+            } else if (file.getPath().contains(".mkv") || file.getPath().contains(".MKV")) {
+                fileToSelect = String.valueOf(file.getId());
+                fileExtension = ".mkv";
             }
         }
 
+        // Select the proper files on RDB
+        try {
+            BotClient.getInstance().rdbApi.selectTorrentFiles(rdbTorrentInfo.getId(), fileToSelect);
+        } catch (ApiException e) {
+            endTask(e);
+            return;
+        }
+
+        // Wait for RealDebrid to download the movie file
+        try {
+            rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
+
+            synchronized (rdbLock) {
+                while (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.WAITING_FILES_SELECTION ||
+                        rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.QUEUED) {
+                    rdbLock.wait(2000);
+                    rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
+                }
+
+                while (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.DOWNLOADING) {
+                    rdbLock.wait(5000);
+                    rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
+                }
+            }
+
+            while (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.UPLOADING ||
+                    rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.COMPRESSING) {
+                rdbLock.wait(2000);
+                rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
+            }
+
+            if (BotClient.getInstance().rdbApi.getTorrentInfo(rdbTorrentInfo.getId()).getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
+                endTask();
+                return;
+            }
+        } catch (InterruptedException | ApiException e) {
+            endTask(e);
+            return;
+        }
+
         // Unrestrict the download link on real-debrid to allow the bot to download it
-        realDebridHandler.unrestrictLinks();
-        if (realDebridHandler.didUnrestrictOperationFail()) {
-            realDebridHandler.deleteTorrent();
-            endTask();
+        // Make the link unrestricted
+        RdbUnrestrictedLink unrestrictedLink;
+        try {
+            unrestrictedLink = BotClient.getInstance().rdbApi.unrestrictLink(rdbTorrentInfo.getLinks().get(0));
+        } catch (ApiException e) {
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (ApiException e1) {
+                endTask(e1);
+                return;
+            }
+            endTask(e);
             return;
         }
 
         // Get the download link and create the DownloadHandler for the movie
-        String downloadLink = realDebridHandler.getDownloadLink();
-        downloadManager = new DownloadManager(downloadLink, movie);
+        String downloadLink = unrestrictedLink.getDownload();
+        downloadManager = new DownloadManager(downloadLink, movieInfo);
 
         // Start the download process
         downloadManager.run();
@@ -145,56 +188,79 @@ public class ResolutionUpgrader implements CustomRunnable {
 
         // Exit if the download failed, cleaning up the torrent on real-debrid in the process
         if (downloadManager.didDownloadFail()) {
-            // TODO: Delete any portion of the file that was downloaded before the failure occurred
-            realDebridHandler.deleteTorrent();
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (ApiException e) {
+                endTask(e);
+                return;
+            }
             endTask();
             return;
         }
 
         // Attempt to delete the old movie files
         File oldVersion = new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() +
-                DbOperations.movieOps.getMovieById(movie.imdbID).getFilename());
+                DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename());
         if (!oldVersion.delete()) {
-            realDebridHandler.deleteTorrent();
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (ApiException e) {
+                endTask(e);
+                return;
+            }
             endTask();
             return;
         }
 
-        // Rename the movie file using the proper extension so that Plex will find it
-        // Exit if the rename process failed, and clean up the torrent on real-debrid in the process
-        if (!downloadManager.renameFile(realDebridHandler.getExtension())) {
-            // TODO: Delete the file that was downloaded but failed to be renamed
-            realDebridHandler.deleteTorrent();
+        // Rename the downloaded file to add the extension
+        // Verify the rename operation succeeded
+        if (!downloadManager.renameFile(fileExtension)) {
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (ApiException e) {
+                endTask(e);
+                return;
+            }
             endTask();
             return;
         }
 
-        // Delete the torrent file from real-debrid
-        realDebridHandler.deleteTorrent();
+        // Delete the torrent from RealDebrid
+        try {
+            BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+        } catch (ApiException ignored) {
+        }
 
         // Update the movie in the database
         DbOperations.saveObject(new MovieBuilder()
-                .withId(movie.imdbID)
-                .withTitle(movie.Title)
-                .withYear(movie.Year)
+                .withId(movieInfo.getImdbID())
+                .withTitle(movieInfo.getTitle())
+                .withYear(movieInfo.getYear())
                 .withResolution(torrentHandler.getTorrentQuality())
-                .withFilename(downloadManager.getFilename() + realDebridHandler.getExtension())
+                .withFilename(downloadManager.getFilename() + fileExtension)
                 .build()
         );
 
+        // Trigger a refresh of the media libraries on the plex server
+        try {
+            BotClient.getInstance().plexApi.refreshLibraries();
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
+
         // Use the default movie poster if one was not found on IMDB
-        if (movie.Poster.equalsIgnoreCase("N/A")) {
-            movie.Poster = ConfigProvider.BOT_SETTINGS.noPosterImageUrl();
+        if (movieInfo.getPoster().equalsIgnoreCase("N/A")) {
+            movieInfo.setPoster(ConfigProvider.BOT_SETTINGS.noPosterImageUrl());
         }
 
         // Send a message to the upgraded-movies notification channel
         Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradedMoviesChannelId()).ifPresent(textChannel ->
                 textChannel.sendMessage(new EmbedBuilder()
-                        .setTitle(movie.Title)
-                        .setDescription("**Year:** " + movie.Year + "\n" +
-                                "**Director(s):** " + movie.Director + "\n" +
-                                "**Plot:** " + movie.Plot)
-                        .setImage(movie.Poster)
+                        .setTitle(movieInfo.getTitle())
+                        .setDescription("**Year:** " + movieInfo.getYear() + "\n" +
+                                "**Director(s):** " + movieInfo.getDirector() + "\n" +
+                                "**Plot:** " + movieInfo.getPlot())
+                        .setImage(movieInfo.getPoster())
                         .setColor(BotColors.SUCCESS)
                         .setFooter(torrentHandler.getTorrentQuality() >= 2160 ?
                                 "Upgraded to 4k" :
@@ -203,7 +269,7 @@ public class ResolutionUpgrader implements CustomRunnable {
         );
 
         // Delete the movie from the list of upgradable movies
-        DbOperations.deleteItem(WaitlistItem.class, movie.imdbID);
+        DbOperations.deleteItem(WaitlistItem.class, movieInfo.getImdbID());
 
         // Remove the task info from the bot status manager
         endTask();

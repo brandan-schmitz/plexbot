@@ -19,7 +19,7 @@ BotSettings:
 
   # Base URL of the current YTS domain to look at for API requests
   # At the time of this commit, this is the current domain so this can be left as is
-  currentYtsDomain: yts.mx
+  currentYtsDomain: https://yts.mx
 
   # The ID of the channel for listing movies that can be upgraded to a better resolution
   upgradableMoviesChannelId: 012345678901234567
@@ -27,7 +27,7 @@ BotSettings:
   # The ID of the channel for notifications about movies that have been upgraded to a better resolution
   upgradedMoviesChannelId: 012345678901234567
 
-  # The ID of the channel where the bot's status message will be located
+  # The ID of the channel where the bots status message will be located
   botStatusChannelId: 012345678901234567
 
   # The ID of the channel for notifications about movies that have been added to the library
@@ -55,6 +55,30 @@ DatabaseSettings:
 
   # The password the bot will use to access the database
   password: somepassword
+
+
+##################################
+### Plex Media Server Settings ###
+##################################
+PlexServerSettings:
+  # The IP address of the Plex Media Server. If the bot is on the same network as the Plex server,
+  # this can be the private/local IP address, otherwise this should be the public IP address of the server
+  ipAddress: 192.168.1.50
+
+  # The port of the Plex Media Server. Plex defaults to 32400 unless it is manually changed
+  port: 32400
+
+  # The username to your plex.tv account
+  username: username
+
+  # The password to your plex.tv account.
+  password: Password1234
+
+  # The Client Identifier used to identify individual devices on a Plex account. This needs to be a unique
+  # UUID. You can generate one with the following commands:
+  #   Windows (Powershell): [guid]::NewGuid()
+  #   macOS and Linux: uuidgen
+  clientIdentifier: 8A3029AF-05EC-488B-91F5-FBA66706000F
 
 
 ################

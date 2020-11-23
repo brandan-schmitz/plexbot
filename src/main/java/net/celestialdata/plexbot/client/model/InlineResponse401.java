@@ -19,19 +19,17 @@ import javax.annotation.processing.Generated;
 import java.util.Objects;
 
 /**
- * Displays errors for Real-Debrid calls
+ * InlineResponse401
  */
-@Schema(description = "Displays errors for Real-Debrid calls")
+
+@SuppressWarnings("unused")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
-public class RdbError {
+public class InlineResponse401 {
     @SerializedName("error")
     private String error = null;
 
-    @SerializedName("error_code")
-    private Integer errorCode = null;
-
     @SuppressWarnings("unused")
-    public RdbError error(String error) {
+    public InlineResponse401 error(String error) {
         this.error = error;
         return this;
     }
@@ -52,28 +50,6 @@ public class RdbError {
         this.error = error;
     }
 
-    @SuppressWarnings("unused")
-    public RdbError errorCode(Integer errorCode) {
-        this.errorCode = errorCode;
-        return this;
-    }
-
-    /**
-     * Error code, reference here: https://api.real-debrid.com/#api_error_codes
-     *
-     * @return errorCode
-     **/
-    @SuppressWarnings("unused")
-    @Schema(description = "Error code, reference here: https://api.real-debrid.com/#api_error_codes")
-    public Integer getErrorCode() {
-        return errorCode;
-    }
-
-    @SuppressWarnings("unused")
-    public void setErrorCode(Integer errorCode) {
-        this.errorCode = errorCode;
-    }
-
 
     @Override
     public boolean equals(Object o) {
@@ -83,24 +59,22 @@ public class RdbError {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        RdbError rdbError = (RdbError) o;
-        return Objects.equals(this.error, rdbError.error) &&
-                Objects.equals(this.errorCode, rdbError.errorCode);
+        InlineResponse401 inlineResponse401 = (InlineResponse401) o;
+        return Objects.equals(this.error, inlineResponse401.error);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(error, errorCode);
+        return Objects.hash(error);
     }
 
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class RdbError {\n");
+        sb.append("class InlineResponse401 {\n");
 
         sb.append("    error: ").append(toIndentedString(error)).append("\n");
-        sb.append("    errorCode: ").append(toIndentedString(errorCode)).append("\n");
         sb.append("}");
         return sb.toString();
     }

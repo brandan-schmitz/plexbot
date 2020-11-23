@@ -72,7 +72,7 @@ final public class BotStatusManager implements Runnable {
                         "**Waitlist Manager:**\n```" + waitlistManagerStatus + "```\n" +
                         "**Resolution Manager:**\n```" + resolutionManagerStatus + "```\n" +
                         "**Task Queue:**\n```" + buildProcessList() + "```")
-                .setFooter("Updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                .setFooter("Plexbot v" + getClass().getPackage().getImplementationVersion() + " - " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         .format(ZonedDateTime.now()) + " CST");
     }
 

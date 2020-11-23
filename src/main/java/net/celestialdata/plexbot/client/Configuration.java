@@ -14,7 +14,9 @@ package net.celestialdata.plexbot.client;
 
 import javax.annotation.processing.Generated;
 
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")public class Configuration {
+@SuppressWarnings("unused")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
+public class Configuration {
     private static ApiClient defaultApiClient = new ApiClient();
 
     /**
@@ -33,6 +35,7 @@ import javax.annotation.processing.Generated;
      *
      * @param apiClient API client
      */
+    @SuppressWarnings("unused")
     public static void setDefaultApiClient(ApiClient apiClient) {
         defaultApiClient = apiClient;
     }

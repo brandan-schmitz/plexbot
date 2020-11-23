@@ -16,13 +16,13 @@ import com.google.gson.reflect.TypeToken;
 import net.celestialdata.plexbot.client.*;
 import net.celestialdata.plexbot.client.model.*;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class RdbApi {
     private ApiClient apiClient;
 
@@ -44,63 +44,58 @@ public class RdbApi {
 
     /**
      * Build call for addMagnet
-     * @param magnet  (optional)
-     * @param progressListener Progress listener
+     *
+     * @param magnet                  (optional)
+     * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
+    @SuppressWarnings("DuplicatedCode")
     public com.squareup.okhttp.Call addMagnetCall(String magnet, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/torrents/addMagnet";
 
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarQueryParams = new ArrayList<>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<>();
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarHeaderParams = new HashMap<>();
 
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        Map<String, Object> localVarFormParams = new HashMap<>();
         if (magnet != null)
-        localVarFormParams.put("magnet", magnet);
+            localVarFormParams.put("magnet", magnet);
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "multipart/form-data"
+                "multipart/form-data"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
+        if (progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(chain -> {
+                com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                return originalResponse.newBuilder()
+                        .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                        .build();
             });
         }
 
-        String[] localVarAuthNames = new String[] { "rdbApiKey" };
+        String[] localVarAuthNames = new String[]{"rdbApiKey"};
+        //noinspection ConstantConditions
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
 
-    @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call addMagnetValidateBeforeCall(String magnet, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
 
-        com.squareup.okhttp.Call call = addMagnetCall(magnet, progressListener, progressRequestListener);
-        return call;
-
-
-
+        return addMagnetCall(magnet, progressListener, progressRequestListener);
 
 
     }
@@ -108,7 +103,8 @@ public class RdbApi {
     /**
      * RDB - Add Magnet
      * Add a magnet to Real-Debrid
-     * @param magnet  (optional)
+     *
+     * @param magnet (optional)
      * @return RdbMagnetLink
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -120,20 +116,23 @@ public class RdbApi {
     /**
      * RDB - Add Magnet
      * Add a magnet to Real-Debrid
-     * @param magnet  (optional)
+     *
+     * @param magnet (optional)
      * @return ApiResponse&lt;RdbMagnetLink&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
     public ApiResponse<RdbMagnetLink> addMagnetWithHttpInfo(String magnet) throws ApiException {
         com.squareup.okhttp.Call call = addMagnetValidateBeforeCall(magnet, null, null);
-        Type localVarReturnType = new TypeToken<RdbMagnetLink>(){}.getType();
+        Type localVarReturnType = new TypeToken<RdbMagnetLink>() {
+        }.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
     /**
      * RDB - Add Magnet (asynchronously)
      * Add a magnet to Real-Debrid
-     * @param magnet  (optional)
+     *
+     * @param magnet   (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -144,50 +143,44 @@ public class RdbApi {
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
 
         if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
+            progressListener = callback::onDownloadProgress;
 
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
+            progressRequestListener = callback::onUploadProgress;
         }
 
         com.squareup.okhttp.Call call = addMagnetValidateBeforeCall(magnet, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<RdbMagnetLink>(){}.getType();
+        Type localVarReturnType = new TypeToken<RdbMagnetLink>() {
+        }.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
+
     /**
      * Build call for deleteTorrent
-     * @param id Torrent ID (required)
-     * @param progressListener Progress listener
+     *
+     * @param id                      Torrent ID (required)
+     * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
+    @SuppressWarnings("DuplicatedCode")
     public com.squareup.okhttp.Call deleteTorrentCall(String id, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
         String localVarPath = "/torrents/delete/{id}"
-            .replaceAll("\\{" + "id" + "\\}", apiClient.escapeString(id.toString()));
+                .replaceAll("\\{" + "id" + "}", apiClient.escapeString(id));
 
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarQueryParams = new ArrayList<>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<>();
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarHeaderParams = new HashMap<>();
 
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        Map<String, Object> localVarFormParams = new HashMap<>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
@@ -198,41 +191,34 @@ public class RdbApi {
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
+        if (progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(chain -> {
+                com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                return originalResponse.newBuilder()
+                        .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                        .build();
             });
         }
 
-        String[] localVarAuthNames = new String[] { "rdbApiKey" };
+        String[] localVarAuthNames = new String[]{"rdbApiKey"};
+        //noinspection ConstantConditions
         return apiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
 
-    @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call deleteTorrentValidateBeforeCall(String id, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         // verify the required parameter 'id' is set
         if (id == null) {
             throw new ApiException("Missing the required parameter 'id' when calling deleteTorrent(Async)");
         }
 
-        com.squareup.okhttp.Call call = deleteTorrentCall(id, progressListener, progressRequestListener);
-        return call;
-
-
-
+        return deleteTorrentCall(id, progressListener, progressRequestListener);
 
 
     }
 
     /**
-     *
      * Delete a torrent from real-debrid
+     *
      * @param id Torrent ID (required)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -241,8 +227,8 @@ public class RdbApi {
     }
 
     /**
-     *
      * Delete a torrent from real-debrid
+     *
      * @param id Torrent ID (required)
      * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -253,9 +239,10 @@ public class RdbApi {
     }
 
     /**
-     *  (asynchronously)
+     * (asynchronously)
      * Delete a torrent from real-debrid
-     * @param id Torrent ID (required)
+     *
+     * @param id       Torrent ID (required)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -266,49 +253,42 @@ public class RdbApi {
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
 
         if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
+            progressListener = callback::onDownloadProgress;
 
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
+            progressRequestListener = callback::onUploadProgress;
         }
 
         com.squareup.okhttp.Call call = deleteTorrentValidateBeforeCall(id, progressListener, progressRequestListener);
         apiClient.executeAsync(call, callback);
         return call;
     }
+
     /**
      * Build call for getTorrentInfo
-     * @param id Torrent ID (required)
-     * @param progressListener Progress listener
+     *
+     * @param id                      Torrent ID (required)
+     * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
+    @SuppressWarnings("DuplicatedCode")
     public com.squareup.okhttp.Call getTorrentInfoCall(String id, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
         String localVarPath = "/torrents/info/{id}"
-            .replaceAll("\\{" + "id" + "\\}", apiClient.escapeString(id.toString()));
+                .replaceAll("\\{" + "id" + "}", apiClient.escapeString(id));
 
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarQueryParams = new ArrayList<>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<>();
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarHeaderParams = new HashMap<>();
 
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        Map<String, Object> localVarFormParams = new HashMap<>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
@@ -319,34 +299,27 @@ public class RdbApi {
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
+        if (progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(chain -> {
+                com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                return originalResponse.newBuilder()
+                        .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                        .build();
             });
         }
 
-        String[] localVarAuthNames = new String[] { "rdbApiKey" };
+        String[] localVarAuthNames = new String[]{"rdbApiKey"};
+        //noinspection ConstantConditions
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
 
-    @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call getTorrentInfoValidateBeforeCall(String id, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         // verify the required parameter 'id' is set
         if (id == null) {
             throw new ApiException("Missing the required parameter 'id' when calling getTorrentInfo(Async)");
         }
 
-        com.squareup.okhttp.Call call = getTorrentInfoCall(id, progressListener, progressRequestListener);
-        return call;
-
-
-
+        return getTorrentInfoCall(id, progressListener, progressRequestListener);
 
 
     }
@@ -354,6 +327,7 @@ public class RdbApi {
     /**
      * RDB - Get a torrent&#x27;s info
      * Get all information about the specified torrent on real-debrid
+     *
      * @param id Torrent ID (required)
      * @return RdbTorrentInfo
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -366,20 +340,23 @@ public class RdbApi {
     /**
      * RDB - Get a torrent&#x27;s info
      * Get all information about the specified torrent on real-debrid
+     *
      * @param id Torrent ID (required)
      * @return ApiResponse&lt;RdbTorrentInfo&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
     public ApiResponse<RdbTorrentInfo> getTorrentInfoWithHttpInfo(String id) throws ApiException {
         com.squareup.okhttp.Call call = getTorrentInfoValidateBeforeCall(id, null, null);
-        Type localVarReturnType = new TypeToken<RdbTorrentInfo>(){}.getType();
+        Type localVarReturnType = new TypeToken<RdbTorrentInfo>() {
+        }.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
     /**
      * RDB - Get a torrent&#x27;s info (asynchronously)
      * Get all information about the specified torrent on real-debrid
-     * @param id Torrent ID (required)
+     *
+     * @param id       Torrent ID (required)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -390,48 +367,42 @@ public class RdbApi {
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
 
         if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
+            progressListener = callback::onDownloadProgress;
 
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
+            progressRequestListener = callback::onUploadProgress;
         }
 
         com.squareup.okhttp.Call call = getTorrentInfoValidateBeforeCall(id, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<RdbTorrentInfo>(){}.getType();
+        Type localVarReturnType = new TypeToken<RdbTorrentInfo>() {
+        }.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
+
     /**
      * Build call for getUser
-     * @param progressListener Progress listener
+     *
+     * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
+    @SuppressWarnings("DuplicatedCode")
     public com.squareup.okhttp.Call getUserCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
         String localVarPath = "/user";
 
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarQueryParams = new ArrayList<>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<>();
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarHeaderParams = new HashMap<>();
 
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        Map<String, Object> localVarFormParams = new HashMap<>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
@@ -442,30 +413,23 @@ public class RdbApi {
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
+        if (progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(chain -> {
+                com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                return originalResponse.newBuilder()
+                        .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                        .build();
             });
         }
 
-        String[] localVarAuthNames = new String[] { "rdbApiKey" };
+        String[] localVarAuthNames = new String[]{"rdbApiKey"};
+        //noinspection ConstantConditions
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
 
-    @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call getUserValidateBeforeCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
 
-        com.squareup.okhttp.Call call = getUserCall(progressListener, progressRequestListener);
-        return call;
-
-
-
+        return getUserCall(progressListener, progressRequestListener);
 
 
     }
@@ -473,6 +437,7 @@ public class RdbApi {
     /**
      * RDB - Get Current User
      * Get the current real-debrid user info
+     *
      * @return RdbUser
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -484,18 +449,21 @@ public class RdbApi {
     /**
      * RDB - Get Current User
      * Get the current real-debrid user info
+     *
      * @return ApiResponse&lt;RdbUser&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
     public ApiResponse<RdbUser> getUserWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = getUserValidateBeforeCall(null, null);
-        Type localVarReturnType = new TypeToken<RdbUser>(){}.getType();
+        Type localVarReturnType = new TypeToken<RdbUser>() {
+        }.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
     /**
      * RDB - Get Current User (asynchronously)
      * Get the current real-debrid user info
+     *
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -506,91 +474,78 @@ public class RdbApi {
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
 
         if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
+            progressListener = callback::onDownloadProgress;
 
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
+            progressRequestListener = callback::onUploadProgress;
         }
 
         com.squareup.okhttp.Call call = getUserValidateBeforeCall(progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<RdbUser>(){}.getType();
+        Type localVarReturnType = new TypeToken<RdbUser>() {
+        }.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
+
     /**
      * Build call for selectTorrentFiles
-     * @param id Torrent ID (required)
-     * @param files  (optional)
-     * @param progressListener Progress listener
+     *
+     * @param id                      Torrent ID (required)
+     * @param files                   (optional)
+     * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
+    @SuppressWarnings("DuplicatedCode")
     public com.squareup.okhttp.Call selectTorrentFilesCall(String id, String files, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
         String localVarPath = "/torrents/selectFiles/{id}"
-            .replaceAll("\\{" + "id" + "\\}", apiClient.escapeString(id.toString()));
+                .replaceAll("\\{" + "id" + "}", apiClient.escapeString(id));
 
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarQueryParams = new ArrayList<>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<>();
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarHeaderParams = new HashMap<>();
 
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        Map<String, Object> localVarFormParams = new HashMap<>();
         if (files != null)
-        localVarFormParams.put("files", files);
+            localVarFormParams.put("files", files);
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "multipart/form-data"
+                "multipart/form-data"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
+        if (progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(chain -> {
+                com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                return originalResponse.newBuilder()
+                        .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                        .build();
             });
         }
 
-        String[] localVarAuthNames = new String[] { "rdbApiKey" };
+        String[] localVarAuthNames = new String[]{"rdbApiKey"};
+        //noinspection ConstantConditions
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
 
-    @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call selectTorrentFilesValidateBeforeCall(String id, String files, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         // verify the required parameter 'id' is set
         if (id == null) {
             throw new ApiException("Missing the required parameter 'id' when calling selectTorrentFiles(Async)");
         }
 
-        com.squareup.okhttp.Call call = selectTorrentFilesCall(id, files, progressListener, progressRequestListener);
-        return call;
-
-
-
+        return selectTorrentFilesCall(id, files, progressListener, progressRequestListener);
 
 
     }
@@ -598,8 +553,9 @@ public class RdbApi {
     /**
      * RDB - Select Torrent Files
      * Select which files included in a torrent should be downloaded by Real-Debrid
-     * @param id Torrent ID (required)
-     * @param files  (optional)
+     *
+     * @param id    Torrent ID (required)
+     * @param files (optional)
      * @return RdbError
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -611,22 +567,25 @@ public class RdbApi {
     /**
      * RDB - Select Torrent Files
      * Select which files included in a torrent should be downloaded by Real-Debrid
-     * @param id Torrent ID (required)
-     * @param files  (optional)
+     *
+     * @param id    Torrent ID (required)
+     * @param files (optional)
      * @return ApiResponse&lt;RdbError&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
     public ApiResponse<RdbError> selectTorrentFilesWithHttpInfo(String id, String files) throws ApiException {
         com.squareup.okhttp.Call call = selectTorrentFilesValidateBeforeCall(id, files, null, null);
-        Type localVarReturnType = new TypeToken<RdbError>(){}.getType();
+        Type localVarReturnType = new TypeToken<RdbError>() {
+        }.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
     /**
      * RDB - Select Torrent Files (asynchronously)
      * Select which files included in a torrent should be downloaded by Real-Debrid
-     * @param id Torrent ID (required)
-     * @param files  (optional)
+     *
+     * @param id       Torrent ID (required)
+     * @param files    (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -637,93 +596,81 @@ public class RdbApi {
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
 
         if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
+            progressListener = callback::onDownloadProgress;
 
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
+            progressRequestListener = callback::onUploadProgress;
         }
 
         com.squareup.okhttp.Call call = selectTorrentFilesValidateBeforeCall(id, files, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<RdbError>(){}.getType();
+        Type localVarReturnType = new TypeToken<RdbError>() {
+        }.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
+
     /**
      * Build call for unrestrictLink
-     * @param link  (optional)
-     * @param progressListener Progress listener
+     *
+     * @param link                    (optional)
+     * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
+    @SuppressWarnings("DuplicatedCode")
     public com.squareup.okhttp.Call unrestrictLinkCall(String link, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
         String localVarPath = "/unrestrict/link";
 
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarQueryParams = new ArrayList<>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<>();
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarHeaderParams = new HashMap<>();
 
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        Map<String, Object> localVarFormParams = new HashMap<>();
         if (link != null)
-        localVarFormParams.put("link", link);
+            localVarFormParams.put("link", link);
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "multipart/form-data"
+                "multipart/form-data"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
+        if (progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(chain -> {
+                com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                return originalResponse.newBuilder()
+                        .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                        .build();
             });
         }
 
-        String[] localVarAuthNames = new String[] { "rdbApiKey" };
+        String[] localVarAuthNames = new String[]{"rdbApiKey"};
+        //noinspection ConstantConditions
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
-    @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call unrestrictLinkValidateBeforeCall(String link, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
-        com.squareup.okhttp.Call call = unrestrictLinkCall(link, progressListener, progressRequestListener);
-        return call;
 
-        
-        
-        
-        
+    private com.squareup.okhttp.Call unrestrictLinkValidateBeforeCall(String link, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+
+        return unrestrictLinkCall(link, progressListener, progressRequestListener);
+
+
     }
 
     /**
      * RDB - Unrestrict a link
      * Unrestrict a real-debrid download link so it can be downloaded
-     * @param link  (optional)
+     *
+     * @param link (optional)
      * @return RdbUnrestrictedLink
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -735,20 +682,23 @@ public class RdbApi {
     /**
      * RDB - Unrestrict a link
      * Unrestrict a real-debrid download link so it can be downloaded
-     * @param link  (optional)
+     *
+     * @param link (optional)
      * @return ApiResponse&lt;RdbUnrestrictedLink&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
     public ApiResponse<RdbUnrestrictedLink> unrestrictLinkWithHttpInfo(String link) throws ApiException {
         com.squareup.okhttp.Call call = unrestrictLinkValidateBeforeCall(link, null, null);
-        Type localVarReturnType = new TypeToken<RdbUnrestrictedLink>(){}.getType();
+        Type localVarReturnType = new TypeToken<RdbUnrestrictedLink>() {
+        }.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
     /**
      * RDB - Unrestrict a link (asynchronously)
      * Unrestrict a real-debrid download link so it can be downloaded
-     * @param link  (optional)
+     *
+     * @param link     (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -759,23 +709,14 @@ public class RdbApi {
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
 
         if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
+            progressListener = callback::onDownloadProgress;
 
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
+            progressRequestListener = callback::onUploadProgress;
         }
 
         com.squareup.okhttp.Call call = unrestrictLinkValidateBeforeCall(link, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<RdbUnrestrictedLink>(){}.getType();
+        Type localVarReturnType = new TypeToken<RdbUnrestrictedLink>() {
+        }.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }

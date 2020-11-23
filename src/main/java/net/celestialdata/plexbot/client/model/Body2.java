@@ -22,67 +22,72 @@ import java.util.Objects;
  * Body2
  */
 
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
+@SuppressWarnings("unused")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class Body2 {
-  @SerializedName("files")
-  private String files = null;
+    @SerializedName("files")
+    private String files = null;
 
-  public Body2 files(String files) {
-    this.files = files;
-    return this;
-  }
-
-   /**
-   * Selected files IDs (comma separated) or \&quot;all\&quot;
-   * @return files
-  **/
-  @Schema(description = "Selected files IDs (comma separated) or \"all\"")
-  public String getFiles() {
-    return files;
-  }
-
-  public void setFiles(String files) {
-    this.files = files;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    @SuppressWarnings("unused")
+    public Body2 files(String files) {
+        this.files = files;
+        return this;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    /**
+     * Selected files IDs (comma separated) or \&quot;all\&quot;
+     *
+     * @return files
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Selected files IDs (comma separated) or \"all\"")
+    public String getFiles() {
+        return files;
     }
-    Body2 body2 = (Body2) o;
-    return Objects.equals(this.files, body2.files);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(files);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class Body2 {\n");
-
-    sb.append("    files: ").append(toIndentedString(files)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
+    @SuppressWarnings("unused")
+    public void setFiles(String files) {
+        this.files = files;
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Body2 body2 = (Body2) o;
+        return Objects.equals(this.files, body2.files);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(files);
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class Body2 {\n");
+
+        sb.append("    files: ").append(toIndentedString(files)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
 
 }

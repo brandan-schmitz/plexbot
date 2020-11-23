@@ -14,13 +14,19 @@ package net.celestialdata.plexbot.client;
 
 import javax.annotation.processing.Generated;
 
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")public class Pair {
+@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
+public class Pair {
     private String name = "";
     private String value = "";
 
-    public Pair (String name, String value) {
+    public Pair(String name, String value) {
         setName(name);
         setValue(value);
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     private void setName(String name) {
@@ -29,18 +35,14 @@ import javax.annotation.processing.Generated;
         this.name = name;
     }
 
+    public String getValue() {
+        return this.value;
+    }
+
     private void setValue(String value) {
         if (!isValidString(value)) return;
 
         this.value = value;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public String getValue() {
-        return this.value;
     }
 
     private boolean isValidString(String arg) {

@@ -21,160 +21,181 @@ import java.util.Objects;
 /**
  * Alternative download links for an unrestricted link on Real-Debrid.
  */
+@SuppressWarnings("unused")
 @Schema(description = "Alternative download links for an unrestricted link on Real-Debrid.")
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RbdUnrestrictedAlternativeLink {
-  @SerializedName("id")
-  private String id = null;
+    @SerializedName("id")
+    private String id = null;
 
-  @SerializedName("filename")
-  private String filename = null;
+    @SerializedName("filename")
+    private String filename = null;
 
-  @SerializedName("download")
-  private String download = null;
+    @SerializedName("download")
+    private String download = null;
 
-  @SerializedName("mimeType")
-  private String mimeType = null;
+    @SerializedName("mimeType")
+    private String mimeType = null;
 
-  @SerializedName("type")
-  private String type = null;
+    @SerializedName("type")
+    private String type = null;
 
-  public RbdUnrestrictedAlternativeLink id(String id) {
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * Unrestricted Link ID
-   * @return id
-  **/
-  @Schema(description = "Unrestricted Link ID")
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public RbdUnrestrictedAlternativeLink filename(String filename) {
-    this.filename = filename;
-    return this;
-  }
-
-   /**
-   * File Name
-   * @return filename
-  **/
-  @Schema(description = "File Name")
-  public String getFilename() {
-    return filename;
-  }
-
-  public void setFilename(String filename) {
-    this.filename = filename;
-  }
-
-  public RbdUnrestrictedAlternativeLink download(String download) {
-    this.download = download;
-    return this;
-  }
-
-   /**
-   * Download Link
-   * @return download
-  **/
-  @Schema(description = "Download Link")
-  public String getDownload() {
-    return download;
-  }
-
-  public void setDownload(String download) {
-    this.download = download;
-  }
-
-  public RbdUnrestrictedAlternativeLink mimeType(String mimeType) {
-    this.mimeType = mimeType;
-    return this;
-  }
-
-   /**
-   * Type of file, generally based off its extension
-   * @return mimeType
-  **/
-  @Schema(description = "Type of file, generally based off its extension")
-  public String getMimeType() {
-    return mimeType;
-  }
-
-  public void setMimeType(String mimeType) {
-    this.mimeType = mimeType;
-  }
-
-  public RbdUnrestrictedAlternativeLink type(String type) {
-    this.type = type;
-    return this;
-  }
-
-   /**
-   * Type of file, generally based off its quality
-   * @return type
-  **/
-  @Schema(description = "Type of file, generally based off its quality")
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    @SuppressWarnings("unused")
+    public RbdUnrestrictedAlternativeLink id(String id) {
+        this.id = id;
+        return this;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    /**
+     * Unrestricted Link ID
+     *
+     * @return id
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Unrestricted Link ID")
+    public String getId() {
+        return id;
     }
-    RbdUnrestrictedAlternativeLink rbdUnrestrictedAlternativeLink = (RbdUnrestrictedAlternativeLink) o;
-    return Objects.equals(this.id, rbdUnrestrictedAlternativeLink.id) &&
-        Objects.equals(this.filename, rbdUnrestrictedAlternativeLink.filename) &&
-        Objects.equals(this.download, rbdUnrestrictedAlternativeLink.download) &&
-        Objects.equals(this.mimeType, rbdUnrestrictedAlternativeLink.mimeType) &&
-        Objects.equals(this.type, rbdUnrestrictedAlternativeLink.type);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, filename, download, mimeType, type);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class RbdUnrestrictedAlternativeLink {\n");
-
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    filename: ").append(toIndentedString(filename)).append("\n");
-    sb.append("    download: ").append(toIndentedString(download)).append("\n");
-    sb.append("    mimeType: ").append(toIndentedString(mimeType)).append("\n");
-    sb.append("    type: ").append(toIndentedString(type)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
+    @SuppressWarnings("unused")
+    public void setId(String id) {
+        this.id = id;
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+    @SuppressWarnings("unused")
+    public RbdUnrestrictedAlternativeLink filename(String filename) {
+        this.filename = filename;
+        return this;
+    }
+
+    /**
+     * File Name
+     *
+     * @return filename
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "File Name")
+    public String getFilename() {
+        return filename;
+    }
+
+    @SuppressWarnings("unused")
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    @SuppressWarnings("unused")
+    public RbdUnrestrictedAlternativeLink download(String download) {
+        this.download = download;
+        return this;
+    }
+
+    /**
+     * Download Link
+     *
+     * @return download
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Download Link")
+    public String getDownload() {
+        return download;
+    }
+
+    @SuppressWarnings("unused")
+    public void setDownload(String download) {
+        this.download = download;
+    }
+
+    @SuppressWarnings("unused")
+    public RbdUnrestrictedAlternativeLink mimeType(String mimeType) {
+        this.mimeType = mimeType;
+        return this;
+    }
+
+    /**
+     * Type of file, generally based off its extension
+     *
+     * @return mimeType
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Type of file, generally based off its extension")
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    @SuppressWarnings("unused")
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    @SuppressWarnings("unused")
+    public RbdUnrestrictedAlternativeLink type(String type) {
+        this.type = type;
+        return this;
+    }
+
+    /**
+     * Type of file, generally based off its quality
+     *
+     * @return type
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Type of file, generally based off its quality")
+    public String getType() {
+        return type;
+    }
+
+    @SuppressWarnings("unused")
+    public void setType(String type) {
+        this.type = type;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RbdUnrestrictedAlternativeLink rbdUnrestrictedAlternativeLink = (RbdUnrestrictedAlternativeLink) o;
+        return Objects.equals(this.id, rbdUnrestrictedAlternativeLink.id) &&
+                Objects.equals(this.filename, rbdUnrestrictedAlternativeLink.filename) &&
+                Objects.equals(this.download, rbdUnrestrictedAlternativeLink.download) &&
+                Objects.equals(this.mimeType, rbdUnrestrictedAlternativeLink.mimeType) &&
+                Objects.equals(this.type, rbdUnrestrictedAlternativeLink.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, filename, download, mimeType, type);
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class RbdUnrestrictedAlternativeLink {\n");
+
+        sb.append("    id: ").append(toIndentedString(id)).append("\n");
+        sb.append("    filename: ").append(toIndentedString(filename)).append("\n");
+        sb.append("    download: ").append(toIndentedString(download)).append("\n");
+        sb.append("    mimeType: ").append(toIndentedString(mimeType)).append("\n");
+        sb.append("    type: ").append(toIndentedString(type)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
 
 }

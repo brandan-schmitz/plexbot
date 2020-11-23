@@ -16,62 +16,49 @@ import com.google.gson.annotations.SerializedName;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
- * Displays errors for Real-Debrid calls
+ * User roles
  */
-@Schema(description = "Displays errors for Real-Debrid calls")
+@SuppressWarnings("unused")
+@Schema(description = "User roles")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
-public class RdbError {
-    @SerializedName("error")
-    private String error = null;
-
-    @SerializedName("error_code")
-    private Integer errorCode = null;
+public class PlexUserUserRoles {
+    @SerializedName("roles")
+    private List<String> roles = null;
 
     @SuppressWarnings("unused")
-    public RdbError error(String error) {
-        this.error = error;
+    public PlexUserUserRoles roles(List<String> roles) {
+        this.roles = roles;
+        return this;
+    }
+
+    @SuppressWarnings("unused")
+    public PlexUserUserRoles addRolesItem(String rolesItem) {
+        if (this.roles == null) {
+            this.roles = new ArrayList<String>();
+        }
+        this.roles.add(rolesItem);
         return this;
     }
 
     /**
-     * Error message
+     * List of user roles
      *
-     * @return error
+     * @return roles
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Error message")
-    public String getError() {
-        return error;
+    @Schema(description = "List of user roles")
+    public List<String> getRoles() {
+        return roles;
     }
 
     @SuppressWarnings("unused")
-    public void setError(String error) {
-        this.error = error;
-    }
-
-    @SuppressWarnings("unused")
-    public RdbError errorCode(Integer errorCode) {
-        this.errorCode = errorCode;
-        return this;
-    }
-
-    /**
-     * Error code, reference here: https://api.real-debrid.com/#api_error_codes
-     *
-     * @return errorCode
-     **/
-    @SuppressWarnings("unused")
-    @Schema(description = "Error code, reference here: https://api.real-debrid.com/#api_error_codes")
-    public Integer getErrorCode() {
-        return errorCode;
-    }
-
-    @SuppressWarnings("unused")
-    public void setErrorCode(Integer errorCode) {
-        this.errorCode = errorCode;
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
     }
 
 
@@ -83,24 +70,22 @@ public class RdbError {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        RdbError rdbError = (RdbError) o;
-        return Objects.equals(this.error, rdbError.error) &&
-                Objects.equals(this.errorCode, rdbError.errorCode);
+        PlexUserUserRoles plexUserUserRoles = (PlexUserUserRoles) o;
+        return Objects.equals(this.roles, plexUserUserRoles.roles);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(error, errorCode);
+        return Objects.hash(roles);
     }
 
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class RdbError {\n");
+        sb.append("class PlexUserUserRoles {\n");
 
-        sb.append("    error: ").append(toIndentedString(error)).append("\n");
-        sb.append("    errorCode: ").append(toIndentedString(errorCode)).append("\n");
+        sb.append("    roles: ").append(toIndentedString(roles)).append("\n");
         sb.append("}");
         return sb.toString();
     }

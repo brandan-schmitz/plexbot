@@ -16,12 +16,15 @@ import javax.annotation.processing.Generated;
 import java.util.List;
 import java.util.Map;
 
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")public class ApiException extends Exception {
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
+public class ApiException extends Exception {
     private int code = 0;
     private Map<String, List<String>> responseHeaders = null;
     private String responseBody = null;
 
-    public ApiException() {}
+    @SuppressWarnings("unused")
+    public ApiException() {
+    }
 
     public ApiException(Throwable throwable) {
         super(throwable);
@@ -46,6 +49,7 @@ import java.util.Map;
         this(message, throwable, code, responseHeaders, null);
     }
 
+    @SuppressWarnings("unused")
     public ApiException(int code, Map<String, List<String>> responseHeaders, String responseBody) {
         this((String) null, (Throwable) null, code, responseHeaders, responseBody);
     }
@@ -55,6 +59,7 @@ import java.util.Map;
         this.code = code;
     }
 
+    @SuppressWarnings("unused")
     public ApiException(int code, String message, Map<String, List<String>> responseHeaders, String responseBody) {
         this(code, message);
         this.responseHeaders = responseHeaders;
@@ -75,6 +80,7 @@ import java.util.Map;
      *
      * @return A map of list of string
      */
+    @SuppressWarnings("unused")
     public Map<String, List<String>> getResponseHeaders() {
         return responseHeaders;
     }
@@ -84,6 +90,7 @@ import java.util.Map;
      *
      * @return Response body in the form of string
      */
+    @SuppressWarnings("unused")
     public String getResponseBody() {
         return responseBody;
     }

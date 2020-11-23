@@ -22,90 +22,97 @@ import java.util.Objects;
  * Response generated when adding a magnet link
  */
 @Schema(description = "Response generated when adding a magnet link")
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RdbMagnetLink {
-  @SerializedName("id")
-  private String id = null;
+    @SerializedName("id")
+    private String id = null;
 
-  @SerializedName("uri")
-  private String uri = null;
+    @SerializedName("uri")
+    private String uri = null;
 
-  public RdbMagnetLink id(String id) {
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * ID of the created torrent
-   * @return id
-  **/
-  @Schema(description = "ID of the created torrent")
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public RdbMagnetLink uri(String uri) {
-    this.uri = uri;
-    return this;
-  }
-
-   /**
-   * URL of the created torrent
-   * @return uri
-  **/
-  @Schema(description = "URL of the created torrent")
-  public String getUri() {
-    return uri;
-  }
-
-  public void setUri(String uri) {
-    this.uri = uri;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    @SuppressWarnings("unused")
+    public RdbMagnetLink id(String id) {
+        this.id = id;
+        return this;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    /**
+     * ID of the created torrent
+     *
+     * @return id
+     **/
+    @Schema(description = "ID of the created torrent")
+    public String getId() {
+        return id;
     }
-    RdbMagnetLink rdbMagnetLink = (RdbMagnetLink) o;
-    return Objects.equals(this.id, rdbMagnetLink.id) &&
-        Objects.equals(this.uri, rdbMagnetLink.uri);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, uri);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class RdbMagnetLink {\n");
-
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    uri: ").append(toIndentedString(uri)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
+    @SuppressWarnings("unused")
+    public void setId(String id) {
+        this.id = id;
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+    @SuppressWarnings("unused")
+    public RdbMagnetLink uri(String uri) {
+        this.uri = uri;
+        return this;
+    }
+
+    /**
+     * URL of the created torrent
+     *
+     * @return uri
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "URL of the created torrent")
+    public String getUri() {
+        return uri;
+    }
+
+    @SuppressWarnings("unused")
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RdbMagnetLink rdbMagnetLink = (RdbMagnetLink) o;
+        return Objects.equals(this.id, rdbMagnetLink.id) &&
+                Objects.equals(this.uri, rdbMagnetLink.uri);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, uri);
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class RdbMagnetLink {\n");
+
+        sb.append("    id: ").append(toIndentedString(id)).append("\n");
+        sb.append("    uri: ").append(toIndentedString(uri)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
 
 }

@@ -27,16 +27,17 @@ public class ApiResponse<T> {
 
     /**
      * @param statusCode The status code of HTTP response
-     * @param headers The headers of HTTP response
+     * @param headers    The headers of HTTP response
      */
+    @SuppressWarnings("unused")
     public ApiResponse(int statusCode, Map<String, List<String>> headers) {
         this(statusCode, headers, null);
     }
 
     /**
      * @param statusCode The status code of HTTP response
-     * @param headers The headers of HTTP response
-     * @param data The object deserialized from response bod
+     * @param headers    The headers of HTTP response
+     * @param data       The object deserialized from response bod
      */
     public ApiResponse(int statusCode, Map<String, List<String>> headers, T data) {
         this.statusCode = statusCode;
@@ -44,10 +45,12 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
+    @SuppressWarnings("unused")
     public int getStatusCode() {
         return statusCode;
     }
 
+    @SuppressWarnings("unused")
     public Map<String, List<String>> getHeaders() {
         return headers;
     }

@@ -1,14 +1,17 @@
 package net.celestialdata.plexbot.managers.waitlist;
 
 import net.celestialdata.plexbot.BotWorkPool;
-import net.celestialdata.plexbot.apis.omdb.Omdb;
-import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
+import net.celestialdata.plexbot.client.ApiException;
+import net.celestialdata.plexbot.client.BotClient;
+import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.models.WaitlistItem;
 import net.celestialdata.plexbot.managers.BotStatusManager;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
+
+import java.util.Objects;
 
 public class WaitlistChecker implements CustomRunnable {
 
@@ -42,12 +45,17 @@ public class WaitlistChecker implements CustomRunnable {
             BotStatusManager.getInstance().setWaitlistManagerStatus(progress, DbOperations.waitlistItemOps.getCount());
 
             // Get the info about the movie from IMDB
-            OmdbMovie movieInfo = Omdb.getMovieInfo(item.getId());
+            OmdbMovieInfo movieInfo = null;
+            try {
+                movieInfo = BotClient.getInstance().omdbApi.getById(item.getId());
+            } catch (ApiException e) {
+                e.printStackTrace();
+            }
             TorrentHandler torrentHandler;
 
             // Set the default movie poster if one is not available
-            if (movieInfo.Poster.equalsIgnoreCase("N/A")) {
-                movieInfo.Poster = ConfigProvider.BOT_SETTINGS.noPosterImageUrl();
+            if (Objects.requireNonNull(movieInfo).getPoster().equalsIgnoreCase("N/A")) {
+                movieInfo.setPoster(ConfigProvider.BOT_SETTINGS.noPosterImageUrl());
             }
 
             // Move to the next movie if the movie was manually added to the server/db
@@ -63,15 +71,13 @@ public class WaitlistChecker implements CustomRunnable {
             // Search YTS for the movie
             try {
                 torrentHandler.searchYts();
-            } catch (NullPointerException e) {
+            } catch (ApiException e) {
+                WaitlistUtilities.updateMessage(movieInfo);
                 continue;
             }
 
             // If the search failed or if the movie was not found then skip to the next movie
-            if (torrentHandler.didSearchFail()) {
-                WaitlistUtilities.updateMessage(movieInfo);
-                continue;
-            } else if (torrentHandler.didSearchReturnNoResults()) {
+            if (torrentHandler.didSearchReturnNoResults()) {
                 WaitlistUtilities.updateMessage(movieInfo);
                 continue;
             }

@@ -7,6 +7,7 @@ import java.awt.*;
  *
  * @author Celestialdeath99
  */
+@SuppressWarnings("unused")
 public interface BotColors {
     /**
      * Returns the color used for bot info messages

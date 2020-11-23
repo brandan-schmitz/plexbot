@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 public class BotWorkPool {
     private static BotWorkPool single_instance = null;
-    public ThreadPoolExecutor executor;
+    public final ThreadPoolExecutor executor;
 
     private BotWorkPool() {
         // Configure the executor

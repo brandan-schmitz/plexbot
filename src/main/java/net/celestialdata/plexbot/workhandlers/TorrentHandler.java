@@ -1,44 +1,42 @@
 package net.celestialdata.plexbot.workhandlers;
 
-import net.celestialdata.plexbot.apis.yts.Yts;
-import net.celestialdata.plexbot.apis.yts.objects.YtsMovie;
-import net.celestialdata.plexbot.apis.yts.objects.YtsSearchResponse;
-import net.celestialdata.plexbot.apis.yts.objects.YtsTorrent;
+import net.celestialdata.plexbot.client.ApiException;
+import net.celestialdata.plexbot.client.BotClient;
+import net.celestialdata.plexbot.client.model.YtsMovieInfo;
+import net.celestialdata.plexbot.client.model.YtsSearchResult;
+import net.celestialdata.plexbot.client.model.YtsTorrentInfo;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class TorrentHandler {
     private final String movieId;
-    private ArrayList<YtsMovie> movieList = new ArrayList<>();
-    private ArrayList<YtsTorrent> torrents = new ArrayList<>();
-    private YtsSearchResponse response;
+    private List<YtsMovieInfo> movieList = new ArrayList<>();
+    private List<YtsTorrentInfo> torrents = new ArrayList<>();
+    private YtsSearchResult response;
     private String magnetLink;
-    private YtsTorrent selectedTorrent = new YtsTorrent();
+    private YtsTorrentInfo selectedTorrent = new YtsTorrentInfo();
 
     public TorrentHandler(String movieId) {
         this.movieId = movieId;
     }
 
-    public void searchYts() {
-        response = Yts.search(movieId);
-    }
-
-    public boolean didSearchFail() {
-        return !response.status_message.equalsIgnoreCase("Query was successful");
+    public void searchYts() throws ApiException {
+        response = BotClient.getInstance().ytsApi.searchYts(this.movieId).getData();
     }
 
     public boolean didSearchReturnNoResults() {
-        return response.data.movie_count == 0;
+        return response.getMovieCount() == 0;
     }
 
     public void buildMovieList() {
-        movieList = response.data.movies;
+        movieList = response.getMovies();
     }
 
     public void buildTorrentList() {
-        for (YtsMovie movie : movieList) {
-            if (movie.imdb_code.equalsIgnoreCase(movieId)) {
-                torrents = movie.torrents;
+        for (YtsMovieInfo movieInfo : movieList) {
+            if (movieInfo.getImdbCode().equalsIgnoreCase(movieId)) {
+                torrents = movieInfo.getTorrents();
             }
         }
     }
@@ -52,38 +50,38 @@ public class TorrentHandler {
     }
 
     private void chooseBestTorrent() {
-        for (YtsTorrent torrent : torrents) {
-            if (torrent.quality.contains("720")) {
+        for (YtsTorrentInfo torrent : torrents) {
+            if (torrent.getQuality().contains("720")) {
                 selectedTorrent = torrent;
             }
         }
 
-        for (YtsTorrent torrent : torrents) {
-            if (torrent.quality.contains("720") && torrent.type.contains("bluray")) {
+        for (YtsTorrentInfo torrent : torrents) {
+            if (torrent.getQuality().contains("720") && torrent.getType().contains("bluray")) {
                 selectedTorrent = torrent;
             }
         }
 
-        for (YtsTorrent torrent : torrents) {
-            if (torrent.quality.contains("1080")) {
+        for (YtsTorrentInfo torrent : torrents) {
+            if (torrent.getQuality().contains("1080")) {
                 selectedTorrent = torrent;
             }
         }
 
-        for (YtsTorrent torrent : torrents) {
-            if (torrent.quality.contains("1080") && torrent.type.contains("bluray")) {
+        for (YtsTorrentInfo torrent : torrents) {
+            if (torrent.getQuality().contains("1080") && torrent.getType().contains("bluray")) {
                 selectedTorrent = torrent;
             }
         }
 
-        for (YtsTorrent torrent : torrents) {
-            if (torrent.quality.contains("2160")) {
+        for (YtsTorrentInfo torrent : torrents) {
+            if (torrent.getQuality().contains("2160")) {
                 selectedTorrent = torrent;
             }
         }
 
-        for (YtsTorrent torrent : torrents) {
-            if (torrent.quality.contains("2160") && torrent.type.contains("bluray")) {
+        for (YtsTorrentInfo torrent : torrents) {
+            if (torrent.getQuality().contains("2160") && torrent.getType().contains("bluray")) {
                 selectedTorrent = torrent;
             }
         }
@@ -91,7 +89,7 @@ public class TorrentHandler {
 
     public void generateMagnetLink() {
         chooseBestTorrent();
-        magnetLink = "magnet:?xt=urn:btih:" + selectedTorrent.hash + "&tr=udp://open.demonii.com:1337/announce&tr=" +
+        magnetLink = "magnet:?xt=urn:btih:" + selectedTorrent.getHash() + "&tr=udp://open.demonii.com:1337/announce&tr=" +
                 "udp://tracker.openbittorrent.com:80&tr=udp://tracker.coppersurfer.tk:6969&tr=" +
                 "udp://glotorrents.pw:6969/announce&tr=udp://tracker.opentrackr.org:1337/announce&tr=" +
                 "udp://torrent.gresille.org:80/announce&tr=udp://p4p.arenabg.com:1337&tr=" +
@@ -109,11 +107,11 @@ public class TorrentHandler {
     public int getTorrentQuality() {
         int quality = 0;
 
-        if (selectedTorrent.quality.contains("720")) {
+        if (selectedTorrent.getQuality().contains("720")) {
             quality = 720;
-        } else if (selectedTorrent.quality.contains("1080")) {
+        } else if (selectedTorrent.getQuality().contains("1080")) {
             quality = 1080;
-        } else if (selectedTorrent.quality.contains("2160")) {
+        } else if (selectedTorrent.getQuality().contains("2160")) {
             quality = 2160;
         }
 
@@ -121,6 +119,6 @@ public class TorrentHandler {
     }
 
     public String getTorrentSize() {
-        return selectedTorrent.size;
+        return selectedTorrent.getSize();
     }
 }
