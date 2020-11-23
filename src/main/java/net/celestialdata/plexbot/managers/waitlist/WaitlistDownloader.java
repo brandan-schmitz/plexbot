@@ -70,7 +70,7 @@ public class WaitlistDownloader implements CustomRunnable {
         RdbMagnetLink rdbMagnetLink;
         try {
             rdbMagnetLink = BotClient.getInstance().rdbApi.addMagnet(magnetLink);
-        } catch (ApiException e) {
+        } catch (Exception e) {
             WaitlistUtilities.updateMessage(movieInfo);
             endTask(e);
             return;
@@ -80,7 +80,7 @@ public class WaitlistDownloader implements CustomRunnable {
         RdbTorrentInfo rdbTorrentInfo;
         try {
             rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
-        } catch (ApiException e) {
+        } catch (Exception e) {
             WaitlistUtilities.updateMessage(movieInfo);
             endTask(e);
             return;
@@ -102,7 +102,7 @@ public class WaitlistDownloader implements CustomRunnable {
         // Select the proper files on RDB
         try {
             BotClient.getInstance().rdbApi.selectTorrentFiles(rdbTorrentInfo.getId(), fileToSelect);
-        } catch (ApiException e) {
+        } catch (Exception e) {
             WaitlistUtilities.updateMessage(movieInfo);
             endTask(e);
             return;
@@ -147,7 +147,7 @@ public class WaitlistDownloader implements CustomRunnable {
         RdbUnrestrictedLink unrestrictedLink;
         try {
             unrestrictedLink = BotClient.getInstance().rdbApi.unrestrictLink(rdbTorrentInfo.getLinks().get(0));
-        } catch (ApiException e) {
+        } catch (Exception e) {
             try {
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
             } catch (ApiException e1) {
@@ -184,7 +184,7 @@ public class WaitlistDownloader implements CustomRunnable {
         if (downloadManager.didDownloadFail()) {
             try {
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 WaitlistUtilities.updateMessage(movieInfo);
                 endTask(e);
                 return;
@@ -199,7 +199,7 @@ public class WaitlistDownloader implements CustomRunnable {
         if (!downloadManager.renameFile(fileExtension)) {
             try {
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 endTask(e);
                 return;
             }
@@ -228,7 +228,7 @@ public class WaitlistDownloader implements CustomRunnable {
         // Trigger a refresh of the media libraries on the plex server
         try {
             BotClient.getInstance().plexApi.refreshLibraries();
-        } catch (ApiException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

@@ -127,7 +127,7 @@ public class Main {
         BotClient.getInstance();
         try {
             BotClient.getInstance().plexApi.refreshLibraries();
-        } catch (ApiException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         System.out.println("Done");

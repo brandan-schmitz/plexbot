@@ -48,7 +48,7 @@ public class WaitlistChecker implements CustomRunnable {
             OmdbMovieInfo movieInfo = null;
             try {
                 movieInfo = BotClient.getInstance().omdbApi.getById(item.getId());
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             TorrentHandler torrentHandler;
@@ -71,7 +71,7 @@ public class WaitlistChecker implements CustomRunnable {
             // Search YTS for the movie
             try {
                 torrentHandler.searchYts();
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 WaitlistUtilities.updateMessage(movieInfo);
                 continue;
             }

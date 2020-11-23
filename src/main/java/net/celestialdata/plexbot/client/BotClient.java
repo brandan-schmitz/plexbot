@@ -42,7 +42,7 @@ public class BotClient {
         // Set the plex AuthToken for accessing the plex server
         try {
             plexApiClient.setPlexAuthToken(new PlexApi(plexApiClient).signIn().getUser().getAuthToken());
-        } catch (ApiException e) {
+        } catch (Exception e) {
             System.out.println("\n\nERROR: Unable to login to Plex API. Please check your credentials " +
                     "in the config.yaml file and try again.\nError:");
             e.printStackTrace();

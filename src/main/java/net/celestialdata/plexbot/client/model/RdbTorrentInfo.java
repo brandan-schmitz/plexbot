@@ -44,10 +44,10 @@ public class RdbTorrentInfo {
     private String hash = null;
 
     @SerializedName("bytes")
-    private Integer bytes = null;
+    private Long bytes = null;
 
     @SerializedName("original_bytes")
-    private Integer originalBytes = null;
+    private Long originalBytes = null;
 
     @SerializedName("host")
     private String host = null;
@@ -160,7 +160,7 @@ public class RdbTorrentInfo {
     }
 
     @SuppressWarnings("unused")
-    public RdbTorrentInfo bytes(Integer bytes) {
+    public RdbTorrentInfo bytes(Long bytes) {
         this.bytes = bytes;
         return this;
     }
@@ -172,17 +172,17 @@ public class RdbTorrentInfo {
      **/
     @SuppressWarnings("unused")
     @Schema(description = "Size of selected files only")
-    public Integer getBytes() {
+    public Long getBytes() {
         return bytes;
     }
 
     @SuppressWarnings("unused")
-    public void setBytes(Integer bytes) {
+    public void setBytes(Long bytes) {
         this.bytes = bytes;
     }
 
     @SuppressWarnings("unused")
-    public RdbTorrentInfo originalBytes(Integer originalBytes) {
+    public RdbTorrentInfo originalBytes(Long originalBytes) {
         this.originalBytes = originalBytes;
         return this;
     }
@@ -194,12 +194,12 @@ public class RdbTorrentInfo {
      **/
     @SuppressWarnings("unused")
     @Schema(description = "Total size of the torrent")
-    public Integer getOriginalBytes() {
+    public Long getOriginalBytes() {
         return originalBytes;
     }
 
     @SuppressWarnings("unused")
-    public void setOriginalBytes(Integer originalBytes) {
+    public void setOriginalBytes(Long originalBytes) {
         this.originalBytes = originalBytes;
     }
 

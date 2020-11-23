@@ -91,7 +91,7 @@ public class RequestHandler implements CustomRunnable {
                     endTask();
                     return;
                 }
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 displayError(e.getMessage(), "omdb-lookup-id");
                 endTask();
                 return;
@@ -111,7 +111,7 @@ public class RequestHandler implements CustomRunnable {
                         endTask();
                         return;
                     }
-                } catch (ApiException e) {
+                } catch (Exception e) {
                     displayError(e.getMessage(), "omdb-search-year");
                     endTask();
                     return;
@@ -127,7 +127,7 @@ public class RequestHandler implements CustomRunnable {
                     endTask();
                     return;
                 }
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 displayError(e.getMessage(), "omdb-search");
                 endTask();
                 return;
@@ -138,7 +138,7 @@ public class RequestHandler implements CustomRunnable {
         for (int i = 0; i < resultList.size(); i++) {
             try {
                 resultList.set(i, BotClient.getInstance().omdbApi.getById(resultList.get(i).getImdbID()));
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 displayError("Unable to parse results. Please try again later.", "omdb-search-details");
                 endTask(e);
                 return;
@@ -203,7 +203,7 @@ public class RequestHandler implements CustomRunnable {
         // Search YTS for the movie
         try {
             torrentHandler.searchYts();
-        } catch (ApiException e) {
+        } catch (Exception e) {
             displayError("An error has occurred while searching for this movie's file. Please try again later.", "yts-search-fail");
             endTask();
             return;
@@ -266,7 +266,7 @@ public class RequestHandler implements CustomRunnable {
         RdbMagnetLink rdbMagnetLink;
         try {
             rdbMagnetLink = BotClient.getInstance().rdbApi.addMagnet(magnetLink);
-        } catch (ApiException e) {
+        } catch (Exception e) {
             displayError("There was an error masking the download. Please try again later.", "rdb-add-fail");
             endTask(e);
             return;
@@ -276,7 +276,8 @@ public class RequestHandler implements CustomRunnable {
         RdbTorrentInfo rdbTorrentInfo;
         try {
             rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
-        } catch (ApiException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             displayError("There was an error masking the download. Please try again later.", "rdb-get-info");
             endTask(e);
             return;
@@ -297,7 +298,8 @@ public class RequestHandler implements CustomRunnable {
 
         try {
             BotClient.getInstance().rdbApi.selectTorrentFiles(rdbTorrentInfo.getId(), fileToSelect);
-        } catch (ApiException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             displayError("There was an error masking the download. Please try again later.", "rdb-select-files");
             endTask(e);
             return;
@@ -346,6 +348,7 @@ public class RequestHandler implements CustomRunnable {
                 return;
             }
         } catch (InterruptedException | ApiException e) {
+            e.printStackTrace();
             displayError("There was an error masking the download. Please try again later.", "rdb-download-file");
             endTask(e);
             return;
@@ -355,12 +358,13 @@ public class RequestHandler implements CustomRunnable {
         RdbUnrestrictedLink unrestrictedLink;
         try {
             unrestrictedLink = BotClient.getInstance().rdbApi.unrestrictLink(rdbTorrentInfo.getLinks().get(0));
-        } catch (ApiException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             displayError("There was an error masking the download. Please try again later.", "rdb-unrestrict-link");
             try {
+                e.printStackTrace();
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-            } catch (ApiException ignored) {
-            }
+            } catch (ApiException ignored) {}
             endTask(e);
             return;
         }
@@ -421,7 +425,7 @@ public class RequestHandler implements CustomRunnable {
             displayError("There was an error while downloading this movie. Please try again later.", "file-download-fail");
             try {
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 endTask(e);
                 return;
             }
@@ -450,7 +454,7 @@ public class RequestHandler implements CustomRunnable {
             //realDebridHandler.deleteTorrent();
             try {
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 endTask(e);
                 return;
             }
@@ -461,7 +465,7 @@ public class RequestHandler implements CustomRunnable {
         // Delete the torrent from RealDebrid
         try {
             BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-        } catch (ApiException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -478,7 +482,7 @@ public class RequestHandler implements CustomRunnable {
         // Trigger a refresh of the media libraries on the plex server
         try {
             BotClient.getInstance().plexApi.refreshLibraries();
-        } catch (ApiException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

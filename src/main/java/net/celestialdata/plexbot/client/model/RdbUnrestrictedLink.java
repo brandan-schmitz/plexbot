@@ -38,7 +38,7 @@ public class RdbUnrestrictedLink {
     private String filename = null;
 
     @SerializedName("filesize")
-    private Integer filesize = null;
+    private Long filesize = null;
 
     @SerializedName("link")
     private String link = null;
@@ -106,7 +106,7 @@ public class RdbUnrestrictedLink {
     }
 
     @SuppressWarnings("unused")
-    public RdbUnrestrictedLink filesize(Integer filesize) {
+    public RdbUnrestrictedLink filesize(Long filesize) {
         this.filesize = filesize;
         return this;
     }
@@ -118,12 +118,12 @@ public class RdbUnrestrictedLink {
      **/
     @SuppressWarnings("unused")
     @Schema(description = "Size of the file in bytes (0 if unknown)")
-    public Integer getFilesize() {
+    public Long getFilesize() {
         return filesize;
     }
 
     @SuppressWarnings("unused")
-    public void setFilesize(Integer filesize) {
+    public void setFilesize(Long filesize) {
         this.filesize = filesize;
     }
 

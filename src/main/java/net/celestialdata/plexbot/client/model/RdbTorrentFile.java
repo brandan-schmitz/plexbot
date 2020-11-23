@@ -37,7 +37,7 @@ public class RdbTorrentFile {
     private String path = null;
 
     @SerializedName("bytes")
-    private Integer bytes = null;
+    private Long bytes = null;
     @SerializedName("selected")
     private SelectedEnum selected = null;
 
@@ -86,7 +86,7 @@ public class RdbTorrentFile {
     }
 
     @SuppressWarnings("unused")
-    public RdbTorrentFile bytes(Integer bytes) {
+    public RdbTorrentFile bytes(Long bytes) {
         this.bytes = bytes;
         return this;
     }
@@ -98,12 +98,12 @@ public class RdbTorrentFile {
      **/
     @SuppressWarnings("unused")
     @Schema(description = "Size of file in bytes")
-    public Integer getBytes() {
+    public Long getBytes() {
         return bytes;
     }
 
     @SuppressWarnings("unused")
-    public void setBytes(Integer bytes) {
+    public void setBytes(Long bytes) {
         this.bytes = bytes;
     }
 
