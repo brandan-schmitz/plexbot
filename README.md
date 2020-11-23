@@ -128,11 +128,7 @@ DatabaseSettings:
 PlexServerSettings:
   # The IP address of the Plex Media Server. If the bot is on the same network as the Plex server,
   # this can be the private/local IP address, otherwise this should be the public IP address of the server
-<<<<<<< Updated upstream
-  ipAddress: 192.168.1.50
-=======
   ipAddress: 127.0.0.1
->>>>>>> Stashed changes
 
   # The port of the Plex Media Server. Plex defaults to 32400 unless it is manually changed
   port: 32400
