@@ -82,6 +82,8 @@ public class PlexApi {
         localVarHeaderParams.put("X-Plex-Product", "Plexbot for Discord");
         localVarHeaderParams.put("X-Plex-Version", getClass().getPackage().getImplementationVersion());
         localVarHeaderParams.put("X-Plex-Device", System.getProperty("os.name"));
+        localVarHeaderParams.put("X-Plex-Platform", System.getProperty("os.name"));
+        localVarHeaderParams.put("X-Plex-Platform-Version", System.getProperty("os.version"));
         localVarHeaderParams.put("X-Plex-Device-Name", "Plexbot");
 
         if (progressListener != null) {
@@ -198,6 +200,8 @@ public class PlexApi {
         localVarHeaderParams.put("X-Plex-Product", "Plexbot for Discord");
         localVarHeaderParams.put("X-Plex-Version", getClass().getPackage().getImplementationVersion());
         localVarHeaderParams.put("X-Plex-Device", System.getProperty("os.name"));
+        localVarHeaderParams.put("X-Plex-Platform", System.getProperty("os.name"));
+        localVarHeaderParams.put("X-Plex-Platform-Version", System.getProperty("os.version"));
         localVarHeaderParams.put("X-Plex-Device-Name", "Plexbot");
 
         if (progressListener != null) {

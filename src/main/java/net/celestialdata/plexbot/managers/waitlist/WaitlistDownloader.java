@@ -225,6 +225,13 @@ public class WaitlistDownloader implements CustomRunnable {
                 .build()
         );
 
+        // Trigger a refresh of the media libraries on the plex server
+        try {
+            BotClient.getInstance().plexApi.refreshLibraries();
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
+
         // Send a message to the new-movies notification channel stating the movie is now available on Plex
         Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.newMoviesChannelId()).ifPresent(textChannel ->
                 textChannel.sendMessage(new EmbedBuilder()

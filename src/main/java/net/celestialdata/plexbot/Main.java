@@ -1,5 +1,6 @@
 package net.celestialdata.plexbot;
 
+import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
 import net.celestialdata.plexbot.commandhandler.JavacordHandler;
@@ -124,6 +125,11 @@ public class Main {
 
         System.out.print("Configuring API resources...");
         BotClient.getInstance();
+        try {
+            BotClient.getInstance().plexApi.refreshLibraries();
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
         System.out.println("Done");
 
         System.out.print("Configuring Bot Work Pool...");

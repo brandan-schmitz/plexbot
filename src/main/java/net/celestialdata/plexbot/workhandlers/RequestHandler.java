@@ -475,6 +475,13 @@ public class RequestHandler implements CustomRunnable {
                 .build()
         );
 
+        // Trigger a refresh of the media libraries on the plex server
+        try {
+            BotClient.getInstance().plexApi.refreshLibraries();
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
+
         sentMessage.edit(new EmbedBuilder()
                 .setTitle("Addition Status")
                 .setDescription("The movie **" + selectedMovie.getTitle() + "** has been added.")

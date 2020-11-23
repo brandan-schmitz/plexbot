@@ -241,6 +241,13 @@ public class ResolutionUpgrader implements CustomRunnable {
                 .build()
         );
 
+        // Trigger a refresh of the media libraries on the plex server
+        try {
+            BotClient.getInstance().plexApi.refreshLibraries();
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
+
         // Use the default movie poster if one was not found on IMDB
         if (movieInfo.getPoster().equalsIgnoreCase("N/A")) {
             movieInfo.setPoster(ConfigProvider.BOT_SETTINGS.noPosterImageUrl());
