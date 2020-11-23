@@ -20,14 +20,9 @@ import java.io.IOException;
 
 public class ProgressResponseBody extends ResponseBody {
 
-    public interface ProgressListener {
-        void update(long bytesRead, long contentLength, boolean done);
-    }
-
     private final ResponseBody responseBody;
     private final ProgressListener progressListener;
     private BufferedSource bufferedSource;
-
     public ProgressResponseBody(ResponseBody responseBody, ProgressListener progressListener) {
         this.responseBody = responseBody;
         this.progressListener = progressListener;
@@ -55,6 +50,7 @@ public class ProgressResponseBody extends ResponseBody {
         return new ForwardingSource(source) {
             long totalBytesRead = 0L;
 
+            @SuppressWarnings("NullableProblems")
             @Override
             public long read(Buffer sink, long byteCount) throws IOException {
                 long bytesRead = super.read(sink, byteCount);
@@ -64,6 +60,10 @@ public class ProgressResponseBody extends ResponseBody {
                 return bytesRead;
             }
         };
+    }
+
+    public interface ProgressListener {
+        void update(long bytesRead, long contentLength, boolean done);
     }
 }
 

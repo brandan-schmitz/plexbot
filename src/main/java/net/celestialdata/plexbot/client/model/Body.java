@@ -22,67 +22,72 @@ import java.util.Objects;
  * Body
  */
 
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
+@SuppressWarnings("unused")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class Body {
-  @SerializedName("link")
-  private String link = null;
+    @SerializedName("link")
+    private String link = null;
 
-  public Body link(String link) {
-    this.link = link;
-    return this;
-  }
-
-   /**
-   * The original hoster link
-   * @return link
-  **/
-  @Schema(required = true, description = "The original hoster link")
-  public String getLink() {
-    return link;
-  }
-
-  public void setLink(String link) {
-    this.link = link;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    @SuppressWarnings("unused")
+    public Body link(String link) {
+        this.link = link;
+        return this;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    /**
+     * The original hoster link
+     *
+     * @return link
+     **/
+    @SuppressWarnings("unused")
+    @Schema(required = true, description = "The original hoster link")
+    public String getLink() {
+        return link;
     }
-    Body body = (Body) o;
-    return Objects.equals(this.link, body.link);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(link);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class Body {\n");
-
-    sb.append("    link: ").append(toIndentedString(link)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
+    @SuppressWarnings("unused")
+    public void setLink(String link) {
+        this.link = link;
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Body body = (Body) o;
+        return Objects.equals(this.link, body.link);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(link);
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class Body {\n");
+
+        sb.append("    link: ").append(toIndentedString(link)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
 
 }

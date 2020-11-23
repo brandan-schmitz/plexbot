@@ -4,14 +4,7 @@ import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
-import net.celestialdata.plexbot.client.model.RdbMagnetLink;
-import net.celestialdata.plexbot.client.model.RdbTorrentFile;
-import net.celestialdata.plexbot.client.model.RdbTorrentInfo;
-import net.celestialdata.plexbot.apis.omdb.Omdb;
-import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
-import net.celestialdata.plexbot.apis.omdb.objects.search.SearchResult;
-import net.celestialdata.plexbot.apis.omdb.objects.search.SearchResultResponse;
-import net.celestialdata.plexbot.client.model.RdbUnrestrictedLink;
+import net.celestialdata.plexbot.client.model.*;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
@@ -29,6 +22,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -37,6 +32,7 @@ import java.time.temporal.ChronoUnit;
  *
  * @author Celestialdeath99
  */
+@SuppressWarnings("DuplicatedCode")
 public class RequestHandler implements CustomRunnable {
     private final String processName;
     private final String searchTitle;
@@ -76,47 +72,81 @@ public class RequestHandler implements CustomRunnable {
         // Configure task to run the endTask method if there was an error
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
 
-        SearchResultResponse searchResponse;
         MovieSelectionHandler selectionHandler;
-        OmdbMovie selectedMovie;
+        OmdbMovieInfo selectedMovie;
         TorrentHandler torrentHandler;
         DownloadManager downloadManager;
         String magnetLink;
         String downloadLink;
 
         // Search for the movie
+        List<OmdbMovieInfo> resultList = new ArrayList<>();
         if (!searchId.isEmpty()) {
-            searchResponse = new SearchResultResponse();
-            OmdbMovie searchedMovie = Omdb.getMovieInfo(searchId);
-
-            if (searchedMovie.Response.equalsIgnoreCase("False")) {
-                searchResponse.Response = "False";
-                searchResponse.Error = searchedMovie.Error;
-            } else {
-                SearchResult result = new SearchResult();
-
-                result.Title = searchedMovie.Title;
-                result.Year = Integer.valueOf(searchedMovie.Year);
-                result.imdbID = searchedMovie.imdbID;
-                result.Type = searchedMovie.Type;
-                result.Poster = searchedMovie.Poster;
-
-                searchResponse.addSearchResult(result);
-                searchResponse.Response = "True";
+            try {
+                var result = BotClient.getInstance().omdbApi.getById(searchId);
+                if (result.getResponse() == OmdbMovieInfo.ResponseEnum.TRUE) {
+                    resultList.add(result);
+                } else {
+                    displayError("Unrecognized IMDB Code, please check your code and try again.");
+                    endTask();
+                    return;
+                }
+            } catch (ApiException e) {
+                displayError(e.getMessage(), "omdb-lookup-id");
+                endTask();
+                return;
             }
         } else if (!searchYear.isEmpty()) {
-            searchResponse = Omdb.movieSearch(searchTitle, searchYear);
-        } else searchResponse = Omdb.movieSearch(searchTitle);
+            if (searchTitle.isEmpty()) {
+                displayError("You must provide a movie title to search for in addition to a year.");
+                endTask();
+                return;
+            } else {
+                try {
+                    var result = BotClient.getInstance().omdbApi.search(searchTitle, searchYear);
+                    if (result.getResponse() == OmdbSearchResult.ResponseEnum.TRUE) {
+                        resultList = result.getSearch();
+                    } else {
+                        displayError("No movies found. Please adjust your search parameters and try again.");
+                        endTask();
+                        return;
+                    }
+                } catch (ApiException e) {
+                    displayError(e.getMessage(), "omdb-search-year");
+                    endTask();
+                    return;
+                }
+            }
+        } else {
+            try {
+                var result = BotClient.getInstance().omdbApi.search(searchTitle);
+                if (result.getResponse() == OmdbSearchResult.ResponseEnum.TRUE) {
+                    resultList = result.getSearch();
+                } else {
+                    displayError("No movies found. Please adjust your search parameters and try again.");
+                    endTask();
+                    return;
+                }
+            } catch (ApiException e) {
+                displayError(e.getMessage(), "omdb-search");
+                endTask();
+                return;
+            }
+        }
 
-        // Send an error message if the search did not succeed
-        if (searchResponse.Response.equalsIgnoreCase("false")) {
-            displayError(searchResponse.Error, "omdb-search-fail");
-            endTask();
-            return;
+        // Fetch more detailed information about the search results
+        for (int i = 0; i < resultList.size(); i++) {
+            try {
+                resultList.set(i, BotClient.getInstance().omdbApi.getById(resultList.get(i).getImdbID()));
+            } catch (ApiException e) {
+                displayError("Unable to parse results. Please try again later.", "omdb-search-details");
+                endTask(e);
+                return;
+            }
         }
 
         // Create the selection handler
-        selectionHandler = new MovieSelectionHandler(searchResponse, sentMessage);
+        selectionHandler = new MovieSelectionHandler(resultList, sentMessage);
 
         // Wait for a movie to be selected in the selection handler
         synchronized (selectionHandler.lock) {
@@ -124,7 +154,7 @@ public class RequestHandler implements CustomRunnable {
                 try {
                     selectionHandler.lock.wait();
                 } catch (InterruptedException e) {
-                    displayError(searchResponse.Error, "unknown-error");
+                    displayError(e.getMessage(), "unknown-error");
                     endTask(e);
                     return;
                 }
@@ -147,7 +177,7 @@ public class RequestHandler implements CustomRunnable {
         }
 
         // Verify the movie requested does not already exist on the server
-        if (DbOperations.movieOps.exists(selectedMovie.imdbID)) {
+        if (DbOperations.movieOps.exists(selectedMovie.getImdbID())) {
             displayError("This movie is already on Plex.");
             endTask();
             return;
@@ -155,7 +185,7 @@ public class RequestHandler implements CustomRunnable {
 
         sentMessage.edit(new EmbedBuilder()
                 .setTitle("Addition Status")
-                .setDescription("The movie **" + selectedMovie.Title + "** is being added.")
+                .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
                 .addField("Progress:",
                         BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
                                 BotEmojis.TODO_STEP + "  **Locate movie file**\n" +
@@ -168,19 +198,23 @@ public class RequestHandler implements CustomRunnable {
                 .exceptionally(ExceptionLogger.get());
 
         // Setup the torrent handler
-        torrentHandler = new TorrentHandler(selectedMovie.imdbID);
+        torrentHandler = new TorrentHandler(selectedMovie.getImdbID());
 
         // Search YTS for the movie
-        torrentHandler.searchYts();
-        if (torrentHandler.didSearchFail()) {
+        try {
+            torrentHandler.searchYts();
+        } catch (ApiException e) {
             displayError("An error has occurred while searching for this movie's file. Please try again later.", "yts-search-fail");
             endTask();
             return;
-        } else if (torrentHandler.didSearchReturnNoResults()) {
-            if (DbOperations.waitlistItemOps.exists(selectedMovie.imdbID)) {
-                displayError("The movie " + selectedMovie.Title + " is not currently available and already exists on the waiting list.");
+        }
+
+        // Add movie to waitinglist if it was not located
+        if (torrentHandler.didSearchReturnNoResults()) {
+            if (DbOperations.waitlistItemOps.exists(selectedMovie.getImdbID())) {
+                displayError("The movie " + selectedMovie.getTitle() + " is not currently available and already exists on the waiting list.");
             } else {
-                displayError("Unable to locate the file for " + selectedMovie.Title + " at this time. It has been added to the waiting list " +
+                displayError("Unable to locate the file for " + selectedMovie.getTitle() + " at this time. It has been added to the waiting list " +
                         "and will be automatically when it becomes available.");
                 WaitlistUtilities.addWaitlistItem(selectedMovie, userId);
             }
@@ -216,7 +250,7 @@ public class RequestHandler implements CustomRunnable {
         magnetLink = torrentHandler.getMagnetLink();
         sentMessage.edit(new EmbedBuilder()
                 .setTitle("Addition Status")
-                .setDescription("The movie **" + selectedMovie.Title + "** is being added.")
+                .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
                 .addField("Progress:",
                         BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
                                 BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
@@ -283,7 +317,7 @@ public class RequestHandler implements CustomRunnable {
                 while (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.DOWNLOADING) {
                     sentMessage.edit(new EmbedBuilder()
                             .setTitle("Addition Status")
-                            .setDescription("The movie **" + selectedMovie.Title + "** is being added.")
+                            .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
                             .addField("Progress:",
                                     BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
                                             BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
@@ -323,16 +357,19 @@ public class RequestHandler implements CustomRunnable {
             unrestrictedLink = BotClient.getInstance().rdbApi.unrestrictLink(rdbTorrentInfo.getLinks().get(0));
         } catch (ApiException e) {
             displayError("There was an error masking the download. Please try again later.", "rdb-unrestrict-link");
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (ApiException ignored) {
+            }
             endTask(e);
             return;
         }
 
         // Get the download link
-        //downloadLink = realDebridHandler.getDownloadLink();
         downloadLink = unrestrictedLink.getDownload();
         sentMessage.edit(new EmbedBuilder()
                 .setTitle("Addition Status")
-                .setDescription("The movie **" + selectedMovie.Title + "** is being added.")
+                .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
                 .addField("Progress:",
                         BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
                                 BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
@@ -359,7 +396,7 @@ public class RequestHandler implements CustomRunnable {
                     if (lastUpdated.plus(5, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
                         sentMessage.edit(new EmbedBuilder()
                                 .setTitle("Addition Status")
-                                .setDescription("The movie **" + selectedMovie.Title + "** is being added.")
+                                .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
                                 .addField("Progress:",
                                         BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
                                                 BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
@@ -394,7 +431,7 @@ public class RequestHandler implements CustomRunnable {
 
         sentMessage.edit(new EmbedBuilder()
                 .setTitle("Addition Status")
-                .setDescription("The movie **" + selectedMovie.Title + "** is being added.")
+                .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
                 .addField("Progress:",
                         BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
                                 BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
@@ -430,9 +467,9 @@ public class RequestHandler implements CustomRunnable {
 
         // Add the movie to the database
         DbOperations.saveObject(new MovieBuilder()
-                .withId(selectedMovie.imdbID)
-                .withTitle(selectedMovie.Title)
-                .withYear(selectedMovie.Year)
+                .withId(selectedMovie.getImdbID())
+                .withTitle(selectedMovie.getTitle())
+                .withYear(selectedMovie.getYear())
                 .withResolution(torrentHandler.getTorrentQuality())
                 .withFilename(downloadManager.getFilename() + fileExtension)
                 .build()
@@ -440,18 +477,18 @@ public class RequestHandler implements CustomRunnable {
 
         sentMessage.edit(new EmbedBuilder()
                 .setTitle("Addition Status")
-                .setDescription("The movie **" + selectedMovie.Title + "** has been added.")
+                .setDescription("The movie **" + selectedMovie.getTitle() + "** has been added.")
                 .addField("Progress:",
                         BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
                                 BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
                                 BotEmojis.FINISHED_STEP + "  Mask download file\n" +
                                 BotEmojis.FINISHED_STEP + "  Download movie\n" +
                                 BotEmojis.FINISHED_STEP + "  Add movie to database\n\u200b")
-                .addField(selectedMovie.Title,
-                        "**Year:** " + selectedMovie.Year + "\n" +
-                                "**Director(s):** " + selectedMovie.Director + "\n" +
-                                "**Plot:** " + selectedMovie.Plot)
-                .setImage(selectedMovie.Poster)
+                .addField(selectedMovie.getTitle(),
+                        "**Year:** " + selectedMovie.getYear() + "\n" +
+                                "**Director(s):** " + selectedMovie.getDirector() + "\n" +
+                                "**Plot:** " + selectedMovie.getPlot())
+                .setImage(selectedMovie.getPoster())
                 .setFooter("Added on: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         .format(ZonedDateTime.now()) + " CST")
                 .setColor(BotColors.SUCCESS)
@@ -459,24 +496,24 @@ public class RequestHandler implements CustomRunnable {
 
         Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.newMoviesChannelId()).ifPresent(textChannel ->
                 textChannel.sendMessage(new EmbedBuilder()
-                        .setTitle(selectedMovie.Title)
-                        .setDescription("**Year:** " + selectedMovie.Year + "\n" +
-                                "**Director(s):** " + selectedMovie.Director + "\n" +
-                                "**Plot:** " + selectedMovie.Plot)
-                        .setImage(selectedMovie.Poster)
+                        .setTitle(selectedMovie.getTitle())
+                        .setDescription("**Year:** " + selectedMovie.getYear() + "\n" +
+                                "**Director(s):** " + selectedMovie.getDirector() + "\n" +
+                                "**Plot:** " + selectedMovie.getPlot())
+                        .setImage(selectedMovie.getPoster())
                         .setColor(BotColors.SUCCESS))
                         .exceptionally(ExceptionLogger.get()
-                )
+                        )
         );
 
         Main.getBotApi().getUserById(userId).join().sendMessage(new EmbedBuilder()
                 .setTitle("Movie Added")
                 .setDescription("You requested the following movie be added to Celestial Movies Plex Server. This message is to notify you that the movie is now available on Plex.\n\n" +
-                        "**Title:** " + selectedMovie.Title + "\n" +
-                        "**Year:** " + selectedMovie.Year + "\n" +
-                        "**Director(s):** " + selectedMovie.Director + "\n" +
-                        "**Plot:** " + selectedMovie.Plot)
-                .setImage(selectedMovie.Poster)
+                        "**Title:** " + selectedMovie.getTitle() + "\n" +
+                        "**Year:** " + selectedMovie.getYear() + "\n" +
+                        "**Director(s):** " + selectedMovie.getDirector() + "\n" +
+                        "**Plot:** " + selectedMovie.getPlot())
+                .setImage(selectedMovie.getPoster())
                 .setColor(BotColors.SUCCESS)
                 .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.")
         );

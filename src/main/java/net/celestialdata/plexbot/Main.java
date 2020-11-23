@@ -1,8 +1,5 @@
 package net.celestialdata.plexbot;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mashape.unirest.http.ObjectMapper;
-import com.mashape.unirest.http.Unirest;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
 import net.celestialdata.plexbot.commandhandler.JavacordHandler;
@@ -26,7 +23,6 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.listener.server.member.ServerMemberJoinListener;
 import org.javacord.api.util.logging.FallbackLoggerConfiguration;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -81,29 +77,6 @@ public class Main {
                 .build());
     }
 
-    private static void initUnirest() {
-        Unirest.setObjectMapper(new ObjectMapper() {
-            private final com.fasterxml.jackson.databind.ObjectMapper jacksonObjectMapper
-                    = new com.fasterxml.jackson.databind.ObjectMapper();
-
-            public <T> T readValue(String value, Class<T> valueType) {
-                try {
-                    return jacksonObjectMapper.readValue(value, valueType);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            public String writeValue(Object value) {
-                try {
-                    return jacksonObjectMapper.writeValueAsString(value);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-    }
-
     public static void main(String[] args) {
         // Disable debug logging
         FallbackLoggerConfiguration.setDebug(false);
@@ -150,7 +123,6 @@ public class Main {
         System.out.println("Done");
 
         System.out.print("Configuring API resources...");
-        initUnirest();
         BotClient.getInstance();
         System.out.println("Done");
 

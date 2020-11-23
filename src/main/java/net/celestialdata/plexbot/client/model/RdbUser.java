@@ -26,293 +26,332 @@ import java.util.Objects;
 /**
  * Real-Debrid User
  */
+@SuppressWarnings("unused")
 @Schema(description = "Real-Debrid User")
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RdbUser {
-  @SerializedName("id")
-  private Integer id = null;
+    @SerializedName("id")
+    private Integer id = null;
 
-  @SerializedName("username")
-  private String username = null;
+    @SerializedName("username")
+    private String username = null;
 
-  @SerializedName("email")
-  private String email = null;
+    @SerializedName("email")
+    private String email = null;
 
-  @SerializedName("points")
-  private Integer points = null;
+    @SerializedName("points")
+    private Integer points = null;
 
-  @SerializedName("locale")
-  private String locale = null;
+    @SerializedName("locale")
+    private String locale = null;
 
-  @SerializedName("avatar")
-  private String avatar = null;
+    @SerializedName("avatar")
+    private String avatar = null;
+    @SerializedName("type")
+    private TypeEnum type = null;
+    @SerializedName("premium")
+    private Integer premium = null;
+    @SerializedName("expiration")
+    private String expiration = null;
 
-  /**
-   * User&#x27;s Premium Status
-   */
-  @JsonAdapter(TypeEnum.Adapter.class)
-  public enum TypeEnum {
-    PREMIUM("premium"),
-    FREE("free");
-
-    private String value;
-
-    TypeEnum(String value) {
-      this.value = value;
+    @SuppressWarnings("unused")
+    public RdbUser id(Integer id) {
+        this.id = id;
+        return this;
     }
-    public String getValue() {
-      return value;
+
+    /**
+     * User&#x27;s ID
+     *
+     * @return id
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "User's ID")
+    public Integer getId() {
+        return id;
+    }
+
+    @SuppressWarnings("unused")
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUser username(String username) {
+        this.username = username;
+        return this;
+    }
+
+    /**
+     * User&#x27;s Username
+     *
+     * @return username
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "User's Username")
+    public String getUsername() {
+        return username;
+    }
+
+    @SuppressWarnings("unused")
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUser email(String email) {
+        this.email = email;
+        return this;
+    }
+
+    /**
+     * User&#x27;s Email
+     *
+     * @return email
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "User's Email")
+    public String getEmail() {
+        return email;
+    }
+
+    @SuppressWarnings("unused")
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUser points(Integer points) {
+        this.points = points;
+        return this;
+    }
+
+    /**
+     * User&#x27;s Fidelity Points
+     *
+     * @return points
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "User's Fidelity Points")
+    public Integer getPoints() {
+        return points;
+    }
+
+    @SuppressWarnings("unused")
+    public void setPoints(Integer points) {
+        this.points = points;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUser locale(String locale) {
+        this.locale = locale;
+        return this;
+    }
+
+    /**
+     * User&#x27;s Language
+     *
+     * @return locale
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "User's Language")
+    public String getLocale() {
+        return locale;
+    }
+
+    @SuppressWarnings("unused")
+    public void setLocale(String locale) {
+        this.locale = locale;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUser avatar(String avatar) {
+        this.avatar = avatar;
+        return this;
+    }
+
+    /**
+     * User&#x27;s Avatar Image URL
+     *
+     * @return avatar
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "User's Avatar Image URL")
+    public String getAvatar() {
+        return avatar;
+    }
+
+    @SuppressWarnings("unused")
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUser type(TypeEnum type) {
+        this.type = type;
+        return this;
+    }
+
+    /**
+     * User&#x27;s Premium Status
+     *
+     * @return type
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "User's Premium Status")
+    public TypeEnum getType() {
+        return type;
+    }
+
+    @SuppressWarnings("unused")
+    public void setType(TypeEnum type) {
+        this.type = type;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUser premium(Integer premium) {
+        this.premium = premium;
+        return this;
+    }
+
+    /**
+     * User&#x27;s emaining time as a premium user in seconds
+     *
+     * @return premium
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "User's emaining time as a premium user in seconds")
+    public Integer getPremium() {
+        return premium;
+    }
+
+    @SuppressWarnings("unused")
+    public void setPremium(Integer premium) {
+        this.premium = premium;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUser expiration(String expiration) {
+        this.expiration = expiration;
+        return this;
+    }
+
+    /**
+     * Date at which the user loses their premium status
+     *
+     * @return expiration
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Date at which the user loses their premium status")
+    public String getExpiration() {
+        return expiration;
+    }
+
+    @SuppressWarnings("unused")
+    public void setExpiration(String expiration) {
+        this.expiration = expiration;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RdbUser rdbUser = (RdbUser) o;
+        return Objects.equals(this.id, rdbUser.id) &&
+                Objects.equals(this.username, rdbUser.username) &&
+                Objects.equals(this.email, rdbUser.email) &&
+                Objects.equals(this.points, rdbUser.points) &&
+                Objects.equals(this.locale, rdbUser.locale) &&
+                Objects.equals(this.avatar, rdbUser.avatar) &&
+                Objects.equals(this.type, rdbUser.type) &&
+                Objects.equals(this.premium, rdbUser.premium) &&
+                Objects.equals(this.expiration, rdbUser.expiration);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, username, email, points, locale, avatar, type, premium, expiration);
     }
 
     @Override
     public String toString() {
-      return String.valueOf(value);
+        StringBuilder sb = new StringBuilder();
+        sb.append("class RdbUser {\n");
+
+        sb.append("    id: ").append(toIndentedString(id)).append("\n");
+        sb.append("    username: ").append(toIndentedString(username)).append("\n");
+        sb.append("    email: ").append(toIndentedString(email)).append("\n");
+        sb.append("    points: ").append(toIndentedString(points)).append("\n");
+        sb.append("    locale: ").append(toIndentedString(locale)).append("\n");
+        sb.append("    avatar: ").append(toIndentedString(avatar)).append("\n");
+        sb.append("    type: ").append(toIndentedString(type)).append("\n");
+        sb.append("    premium: ").append(toIndentedString(premium)).append("\n");
+        sb.append("    expiration: ").append(toIndentedString(expiration)).append("\n");
+        sb.append("}");
+        return sb.toString();
     }
-    public static TypeEnum fromValue(String text) {
-      for (TypeEnum b : TypeEnum.values()) {
-        if (String.valueOf(b.value).equals(text)) {
-          return b;
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
         }
-      }
-      return null;
+        return o.toString().replace("\n", "\n    ");
     }
-    public static class Adapter extends TypeAdapter<TypeEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final TypeEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
 
-      @Override
-      public TypeEnum read(final JsonReader jsonReader) throws IOException {
-        String value = jsonReader.nextString();
-        return TypeEnum.fromValue(String.valueOf(value));
-      }
+    /**
+     * User&#x27;s Premium Status
+     */
+    @JsonAdapter(TypeEnum.Adapter.class)
+    public enum TypeEnum {
+        PREMIUM("premium"),
+        FREE("free");
+
+        private final String value;
+
+        @SuppressWarnings("unused")
+        TypeEnum(String value) {
+            this.value = value;
+        }
+
+        public static TypeEnum fromValue(String text) {
+            for (TypeEnum b : TypeEnum.values()) {
+                if (String.valueOf(b.value).equals(text)) {
+                    return b;
+                }
+            }
+            return null;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @SuppressWarnings("unused")
+        public static class Adapter extends TypeAdapter<TypeEnum> {
+            @Override
+            public void write(final JsonWriter jsonWriter, final TypeEnum enumeration) throws IOException {
+                jsonWriter.value(enumeration.getValue());
+            }
+
+            @Override
+            public TypeEnum read(final JsonReader jsonReader) throws IOException {
+                String value = jsonReader.nextString();
+                return TypeEnum.fromValue(String.valueOf(value));
+            }
+        }
     }
-  }  @SerializedName("type")
-  private TypeEnum type = null;
-
-  @SerializedName("premium")
-  private Integer premium = null;
-
-  @SerializedName("expiration")
-  private String expiration = null;
-
-  public RdbUser id(Integer id) {
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * User&#x27;s ID
-   * @return id
-  **/
-  @Schema(description = "User's ID")
-  public Integer getId() {
-    return id;
-  }
-
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  public RdbUser username(String username) {
-    this.username = username;
-    return this;
-  }
-
-   /**
-   * User&#x27;s Username
-   * @return username
-  **/
-  @Schema(description = "User's Username")
-  public String getUsername() {
-    return username;
-  }
-
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public RdbUser email(String email) {
-    this.email = email;
-    return this;
-  }
-
-   /**
-   * User&#x27;s Email
-   * @return email
-  **/
-  @Schema(description = "User's Email")
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public RdbUser points(Integer points) {
-    this.points = points;
-    return this;
-  }
-
-   /**
-   * User&#x27;s Fidelity Points
-   * @return points
-  **/
-  @Schema(description = "User's Fidelity Points")
-  public Integer getPoints() {
-    return points;
-  }
-
-  public void setPoints(Integer points) {
-    this.points = points;
-  }
-
-  public RdbUser locale(String locale) {
-    this.locale = locale;
-    return this;
-  }
-
-   /**
-   * User&#x27;s Language
-   * @return locale
-  **/
-  @Schema(description = "User's Language")
-  public String getLocale() {
-    return locale;
-  }
-
-  public void setLocale(String locale) {
-    this.locale = locale;
-  }
-
-  public RdbUser avatar(String avatar) {
-    this.avatar = avatar;
-    return this;
-  }
-
-   /**
-   * User&#x27;s Avatar Image URL
-   * @return avatar
-  **/
-  @Schema(description = "User's Avatar Image URL")
-  public String getAvatar() {
-    return avatar;
-  }
-
-  public void setAvatar(String avatar) {
-    this.avatar = avatar;
-  }
-
-  public RdbUser type(TypeEnum type) {
-    this.type = type;
-    return this;
-  }
-
-   /**
-   * User&#x27;s Premium Status
-   * @return type
-  **/
-  @Schema(description = "User's Premium Status")
-  public TypeEnum getType() {
-    return type;
-  }
-
-  public void setType(TypeEnum type) {
-    this.type = type;
-  }
-
-  public RdbUser premium(Integer premium) {
-    this.premium = premium;
-    return this;
-  }
-
-   /**
-   * User&#x27;s emaining time as a premium user in seconds
-   * @return premium
-  **/
-  @Schema(description = "User's emaining time as a premium user in seconds")
-  public Integer getPremium() {
-    return premium;
-  }
-
-  public void setPremium(Integer premium) {
-    this.premium = premium;
-  }
-
-  public RdbUser expiration(String expiration) {
-    this.expiration = expiration;
-    return this;
-  }
-
-   /**
-   * Date at which the user loses their premium status
-   * @return expiration
-  **/
-  @Schema(description = "Date at which the user loses their premium status")
-  public String getExpiration() {
-    return expiration;
-  }
-
-  public void setExpiration(String expiration) {
-    this.expiration = expiration;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    RdbUser rdbUser = (RdbUser) o;
-    return Objects.equals(this.id, rdbUser.id) &&
-        Objects.equals(this.username, rdbUser.username) &&
-        Objects.equals(this.email, rdbUser.email) &&
-        Objects.equals(this.points, rdbUser.points) &&
-        Objects.equals(this.locale, rdbUser.locale) &&
-        Objects.equals(this.avatar, rdbUser.avatar) &&
-        Objects.equals(this.type, rdbUser.type) &&
-        Objects.equals(this.premium, rdbUser.premium) &&
-        Objects.equals(this.expiration, rdbUser.expiration);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, username, email, points, locale, avatar, type, premium, expiration);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class RdbUser {\n");
-
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    username: ").append(toIndentedString(username)).append("\n");
-    sb.append("    email: ").append(toIndentedString(email)).append("\n");
-    sb.append("    points: ").append(toIndentedString(points)).append("\n");
-    sb.append("    locale: ").append(toIndentedString(locale)).append("\n");
-    sb.append("    avatar: ").append(toIndentedString(avatar)).append("\n");
-    sb.append("    type: ").append(toIndentedString(type)).append("\n");
-    sb.append("    premium: ").append(toIndentedString(premium)).append("\n");
-    sb.append("    expiration: ").append(toIndentedString(expiration)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
 
 }

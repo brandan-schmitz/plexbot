@@ -12,6 +12,7 @@
 
 package net.celestialdata.plexbot.client.auth;
 
+@SuppressWarnings("unused")
 public enum OAuthFlow {
     accessCode, implicit, password, application
 }

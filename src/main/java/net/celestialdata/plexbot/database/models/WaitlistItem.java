@@ -7,6 +7,7 @@ import org.javacord.api.util.logging.ExceptionLogger;
 
 import javax.persistence.*;
 
+@SuppressWarnings("unused")
 @Entity
 @Table(name = "Waitinglist")
 @Proxy(lazy = false)

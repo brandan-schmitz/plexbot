@@ -2,8 +2,8 @@ package net.celestialdata.plexbot.managers.resolution;
 
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
-import net.celestialdata.plexbot.apis.omdb.Omdb;
-import net.celestialdata.plexbot.apis.omdb.objects.movie.OmdbMovie;
+import net.celestialdata.plexbot.client.ApiException;
+import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.models.Movie;
@@ -44,33 +44,32 @@ public class ResolutionChecker implements CustomRunnable {
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
 
         // Create the list of movie objects that will contain a list of all movies on the server
-        ArrayList<ResolutionUtilities.Movie> movies = new ArrayList<>();
+        ArrayList<ResolutionUtilities.ResolutionMovie> resolutionMovies = new ArrayList<>();
 
         // Create a list of movies in the database
         for (Movie m : DbOperations.movieOps.getAllMovies()) {
-            movies.add(new ResolutionUtilities.Movie(m.getId(), m.getResolution()));
+            resolutionMovies.add(new ResolutionUtilities.ResolutionMovie(m.getId(), m.getResolution()));
         }
 
         // Cycle through all the movies in the database to find any that can be upgraded
         int progress = 0;
-        for (ResolutionUtilities.Movie m : movies) {
+        for (ResolutionUtilities.ResolutionMovie m : resolutionMovies) {
             TorrentHandler torrentHandler;
             torrentHandler = new TorrentHandler(m.id);
 
             progress++;
-            BotStatusManager.getInstance().setResolutionManagerStatus(progress, movies.size());
+            BotStatusManager.getInstance().setResolutionManagerStatus(progress, resolutionMovies.size());
 
             // Search YTS for the movie
             try {
                 torrentHandler.searchYts();
             } catch (Exception e) {
+                e.printStackTrace();
                 continue;
             }
 
             // Skip to the next movie if the search failed or returned no results
-            if (torrentHandler.didSearchFail()) {
-                continue;
-            } else if (torrentHandler.didSearchReturnNoResults()) {
+            if (torrentHandler.didSearchReturnNoResults()) {
                 continue;
             }
 
@@ -96,7 +95,15 @@ public class ResolutionChecker implements CustomRunnable {
             // Add the movie to the list of upgradable movies if the torrent has a higher resolution available
             if (m.oldResolution != 0 && torrentHandler.getTorrentQuality() > m.oldResolution) {
                 m.newResolution = torrentHandler.getTorrentQuality();
-                ResolutionUtilities.addUpgradableMovie(Omdb.getMovieInfo(m.id), m.oldResolution, m.newResolution, torrentHandler.getTorrentSize());
+                try {
+                    ResolutionUtilities.addUpgradableMovie(
+                            BotClient.getInstance().omdbApi.getById(m.id),
+                            m.oldResolution,
+                            m.newResolution,
+                            torrentHandler.getTorrentSize()
+                    );
+                } catch (ApiException ignored) {
+                }
             }
         }
 
@@ -104,11 +111,18 @@ public class ResolutionChecker implements CustomRunnable {
         // thumbsup reaction on the message for the upgrade availability.
         for (UpgradeItem item : DbOperations.upgradeItemOps.getAllItems()) {
             Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId())
-                    .flatMap(textChannel -> textChannel.getMessageById(item.getMessageId()).join()
-                            .getReactionByEmoji(BotEmojis.THUMBS_UP)).ifPresent(reaction -> {
-                OmdbMovie test = Omdb.getMovieInfo(item.getMovie().getId());
-                BotWorkPool.getInstance().submitProcess(new ResolutionUpgrader(test));
-            });
+                    .flatMap(textChannel -> textChannel.getMessageById(item.getMessageId())
+                            .join()
+                            .getReactionByEmoji(BotEmojis.THUMBS_UP)
+                    ).ifPresent(reaction -> {
+                        try {
+                            BotWorkPool.getInstance().submitProcess(new ResolutionUpgrader(
+                                    BotClient.getInstance().omdbApi.getById(item.getMovie().getId()))
+                            );
+                        } catch (ApiException ignored) {
+                        }
+                    }
+            );
         }
 
         // Update the upgradable-movies channel to show when this check last finished running

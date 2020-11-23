@@ -23,145 +23,163 @@ import java.util.Objects;
 /**
  * Data resulting from a search for a movie on YTS using the query_term parameter
  */
+@SuppressWarnings("unused")
 @Schema(description = "Data resulting from a search for a movie on YTS using the query_term parameter")
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
-public class YtsSearchResult implements OneOfYtsBaseResponseData {
-  @SerializedName("movie_count")
-  private Integer movieCount = null;
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
+public class YtsSearchResult {
+    @SerializedName("movie_count")
+    private Integer movieCount = null;
 
-  @SerializedName("limit")
-  private Integer limit = null;
+    @SerializedName("limit")
+    private Integer limit = null;
 
-  @SerializedName("page_number")
-  private Integer pageNumber = null;
+    @SerializedName("page_number")
+    private Integer pageNumber = null;
 
-  @SerializedName("movies")
-  private List<YtsMovieInfo> movies = null;
+    @SerializedName("movies")
+    private List<YtsMovieInfo> movies = null;
 
-  public YtsSearchResult movieCount(Integer movieCount) {
-    this.movieCount = movieCount;
-    return this;
-  }
-
-   /**
-   * Number of movies returned in this search
-   * @return movieCount
-  **/
-  @Schema(description = "Number of movies returned in this search")
-  public Integer getMovieCount() {
-    return movieCount;
-  }
-
-  public void setMovieCount(Integer movieCount) {
-    this.movieCount = movieCount;
-  }
-
-  public YtsSearchResult limit(Integer limit) {
-    this.limit = limit;
-    return this;
-  }
-
-   /**
-   * Maximum number of results displayed on a \&quot;page\&quot;
-   * @return limit
-  **/
-  @Schema(description = "Maximum number of results displayed on a \"page\"")
-  public Integer getLimit() {
-    return limit;
-  }
-
-  public void setLimit(Integer limit) {
-    this.limit = limit;
-  }
-
-  public YtsSearchResult pageNumber(Integer pageNumber) {
-    this.pageNumber = pageNumber;
-    return this;
-  }
-
-   /**
-   * Current \&quot;page\&quot; of results
-   * @return pageNumber
-  **/
-  @Schema(description = "Current \"page\" of results")
-  public Integer getPageNumber() {
-    return pageNumber;
-  }
-
-  public void setPageNumber(Integer pageNumber) {
-    this.pageNumber = pageNumber;
-  }
-
-  public YtsSearchResult movies(List<YtsMovieInfo> movies) {
-    this.movies = movies;
-    return this;
-  }
-
-  public YtsSearchResult addMoviesItem(YtsMovieInfo moviesItem) {
-    if (this.movies == null) {
-      this.movies = new ArrayList<YtsMovieInfo>();
+    @SuppressWarnings("unused")
+    public YtsSearchResult movieCount(Integer movieCount) {
+        this.movieCount = movieCount;
+        return this;
     }
-    this.movies.add(moviesItem);
-    return this;
-  }
 
-   /**
-   * List of movies
-   * @return movies
-  **/
-  @Schema(description = "List of movies")
-  public List<YtsMovieInfo> getMovies() {
-    return movies;
-  }
-
-  public void setMovies(List<YtsMovieInfo> movies) {
-    this.movies = movies;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    /**
+     * Number of movies returned in this search
+     *
+     * @return movieCount
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Number of movies returned in this search")
+    public Integer getMovieCount() {
+        return movieCount;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    @SuppressWarnings("unused")
+    public void setMovieCount(Integer movieCount) {
+        this.movieCount = movieCount;
     }
-    YtsSearchResult ytsSearchResult = (YtsSearchResult) o;
-    return Objects.equals(this.movieCount, ytsSearchResult.movieCount) &&
-        Objects.equals(this.limit, ytsSearchResult.limit) &&
-        Objects.equals(this.pageNumber, ytsSearchResult.pageNumber) &&
-        Objects.equals(this.movies, ytsSearchResult.movies);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(movieCount, limit, pageNumber, movies);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class YtsSearchResult {\n");
-
-    sb.append("    movieCount: ").append(toIndentedString(movieCount)).append("\n");
-    sb.append("    limit: ").append(toIndentedString(limit)).append("\n");
-    sb.append("    pageNumber: ").append(toIndentedString(pageNumber)).append("\n");
-    sb.append("    movies: ").append(toIndentedString(movies)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
+    @SuppressWarnings("unused")
+    public YtsSearchResult limit(Integer limit) {
+        this.limit = limit;
+        return this;
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+    /**
+     * Maximum number of results displayed on a \&quot;page\&quot;
+     *
+     * @return limit
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Maximum number of results displayed on a \"page\"")
+    public Integer getLimit() {
+        return limit;
+    }
+
+    @SuppressWarnings("unused")
+    public void setLimit(Integer limit) {
+        this.limit = limit;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsSearchResult pageNumber(Integer pageNumber) {
+        this.pageNumber = pageNumber;
+        return this;
+    }
+
+    /**
+     * Current \&quot;page\&quot; of results
+     *
+     * @return pageNumber
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Current \"page\" of results")
+    public Integer getPageNumber() {
+        return pageNumber;
+    }
+
+    @SuppressWarnings("unused")
+    public void setPageNumber(Integer pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsSearchResult movies(List<YtsMovieInfo> movies) {
+        this.movies = movies;
+        return this;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsSearchResult addMoviesItem(YtsMovieInfo moviesItem) {
+        if (this.movies == null) {
+            this.movies = new ArrayList<YtsMovieInfo>();
+        }
+        this.movies.add(moviesItem);
+        return this;
+    }
+
+    /**
+     * List of movies
+     *
+     * @return movies
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "List of movies")
+    public List<YtsMovieInfo> getMovies() {
+        return movies;
+    }
+
+    @SuppressWarnings("unused")
+    public void setMovies(List<YtsMovieInfo> movies) {
+        this.movies = movies;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        YtsSearchResult ytsSearchResult = (YtsSearchResult) o;
+        return Objects.equals(this.movieCount, ytsSearchResult.movieCount) &&
+                Objects.equals(this.limit, ytsSearchResult.limit) &&
+                Objects.equals(this.pageNumber, ytsSearchResult.pageNumber) &&
+                Objects.equals(this.movies, ytsSearchResult.movies);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(movieCount, limit, pageNumber, movies);
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class YtsSearchResult {\n");
+
+        sb.append("    movieCount: ").append(toIndentedString(movieCount)).append("\n");
+        sb.append("    limit: ").append(toIndentedString(limit)).append("\n");
+        sb.append("    pageNumber: ").append(toIndentedString(pageNumber)).append("\n");
+        sb.append("    movies: ").append(toIndentedString(movies)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
 
 }

@@ -12,6 +12,8 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.util.logging.ExceptionLogger;
 
+import java.util.ArrayList;
+
 public class RequestMovieCommand implements CommandExecutor {
     private volatile String year = "";
     private volatile String id = "";
@@ -38,25 +40,30 @@ public class RequestMovieCommand implements CommandExecutor {
             // Send the message
             message.getChannel().sendMessage(embed);
         } else {
-            StringBuilder movieTitle = new StringBuilder();
+            ArrayList<String> titleParts = new ArrayList<>();
 
             // Combine the arguments into a movie name
-            int numArgs = args.length;
-            int i = 1;
             for (String a : args) {
                 if (a.startsWith("--year=")) {
                     year = a.replace("--year=", "");
                 } else if (a.startsWith("--id=")) {
                     id = a.replace("--id=", "");
                 } else {
-                    movieTitle.append(a);
-                    if (numArgs - i > 0) {
-                        movieTitle.append(" ");
-                        i++;
-                    }
+                    titleParts.add(a);
                 }
             }
 
+            // Assemble movie title
+            StringBuilder movieTitle = new StringBuilder();
+            int i = 0;
+            for (String s : titleParts) {
+                if (i == 0) {
+                    movieTitle.append(s);
+                } else movieTitle.append(" ").append(s);
+                i++;
+            }
+
+            // Configure the process name
             String processName = "Movie Request: " + message.getIdAsString();
 
             // Start the worker for handling the movie request.

@@ -18,21 +18,23 @@ import javax.annotation.processing.Generated;
 import java.util.List;
 import java.util.Map;
 
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")public class OAuth implements Authentication {
-  private String accessToken;
+@SuppressWarnings("unused")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
+public class OAuth implements Authentication {
+    private String accessToken;
 
-  public String getAccessToken() {
-    return accessToken;
-  }
-
-  public void setAccessToken(String accessToken) {
-    this.accessToken = accessToken;
-  }
-
-  @Override
-  public void applyToParams(List<Pair> queryParams, Map<String, String> headerParams) {
-    if (accessToken != null) {
-      headerParams.put("Authorization", "Bearer " + accessToken);
+    public String getAccessToken() {
+        return accessToken;
     }
-  }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    @Override
+    public void applyToParams(List<Pair> queryParams, Map<String, String> headerParams) {
+        if (accessToken != null) {
+            headerParams.put("Authorization", "Bearer " + accessToken);
+        }
+    }
 }

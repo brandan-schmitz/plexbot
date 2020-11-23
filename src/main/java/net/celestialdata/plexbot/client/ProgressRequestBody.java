@@ -20,12 +20,7 @@ import java.io.IOException;
 
 public class ProgressRequestBody extends RequestBody {
 
-    public interface ProgressRequestListener {
-        void onRequestProgress(long bytesWritten, long contentLength, boolean done);
-    }
-
     private final RequestBody requestBody;
-
     private final ProgressRequestListener progressListener;
 
     public ProgressRequestBody(RequestBody requestBody, ProgressRequestListener progressListener) {
@@ -51,6 +46,7 @@ public class ProgressRequestBody extends RequestBody {
     }
 
     private Sink sink(Sink sink) {
+        //noinspection NullableProblems
         return new ForwardingSink(sink) {
 
             long bytesWritten = 0L;
@@ -67,5 +63,9 @@ public class ProgressRequestBody extends RequestBody {
                 progressListener.onRequestProgress(bytesWritten, contentLength, bytesWritten == contentLength);
             }
         };
+    }
+
+    public interface ProgressRequestListener {
+        void onRequestProgress(long bytesWritten, long contentLength, boolean done);
     }
 }

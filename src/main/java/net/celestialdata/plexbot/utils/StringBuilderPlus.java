@@ -5,10 +5,11 @@ package net.celestialdata.plexbot.utils;
  *
  * @author Celestialdeath99
  */
+@SuppressWarnings("unused")
 public class StringBuilderPlus {
 
     // Create a private StingBuilder object
-    private StringBuilder sb;
+    private final StringBuilder sb;
 
     /**
      * The StringBuilderPlus method

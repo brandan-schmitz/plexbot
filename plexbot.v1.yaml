@@ -8,8 +8,22 @@ info:
     email: brandan.schmitz@celestialdata.net
 servers:
   - url: 'https://api.real-debrid.com/rest/1.0'
+    description: rdb
   - url: 'http://www.omdbapi.com'
+    description: omdb
   - url: 'https://yts.mx/api/v2'
+    description: yts
+  - url: 'https://plex.tv'
+    description: plex
+  - url: 'http://{ipAddress}:{port}'
+    description: plexServer
+    variables:
+      ipAddress:
+        default: 0.0.0.0
+        description: IP Address of the Plex Media Server
+      port:
+        default: '32400'
+        description: Port of the Plex Media Server
 components:
   schemas:
     RdbUser:
@@ -281,9 +295,8 @@ components:
           minLength: 1
           description: Request status message
         data:
-          oneOf:
-            - $ref: '#/components/schemas/YtsSearchResult'
-          description: Data for the request
+          $ref: '#/components/schemas/YtsSearchResult'
+      x-examples: {}
     YtsSearchResult:
       description: Data resulting from a search for a movie on YTS using the query_term parameter
       type: object
@@ -452,19 +465,23 @@ components:
     OmdbSearchResult:
       description: Result of searching for a movie on OMDb
       type: object
+      title: ''
       properties:
         Search:
           type: array
           uniqueItems: true
           minItems: 1
           items:
-            $ref: '#/components/schemas/OmdbSearchResult'
+            $ref: '#/components/schemas/OmdbMovieInfo'
         totalResults:
           type: string
           minLength: 1
         Response:
           type: string
           minLength: 1
+          enum:
+            - 'True'
+            - 'False'
         Error:
           type: string
           minLength: 1
@@ -473,7 +490,6 @@ components:
         - totalResults
         - Response
         - Error
-      title: ''
     OmdbMovieInfo:
       description: Information about a movie from OMDb
       type: object
@@ -630,6 +646,86 @@ components:
           minLength: 1
           description: Rating Value
       title: ''
+    PlexUser:
+      description: Represent a user in Plex
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: User ID
+            uuid:
+              type: string
+              minLength: 1
+              description: User UUID
+            email:
+              type: string
+              minLength: 1
+              description: User email
+              format: email
+            joined_at:
+              type: string
+              minLength: 1
+              description: Date user joined
+            username:
+              type: string
+              minLength: 1
+              description: User username
+            title:
+              type: string
+              minLength: 1
+              description: User display name
+            thumb:
+              type: string
+              minLength: 1
+              description: User thumbnail link
+              format: uri
+            authToken:
+              type: string
+              minLength: 1
+              description: User auth token
+            authentication_token:
+              type: string
+              minLength: 1
+              description: User auth token
+            subscription:
+              type: object
+              description: User subscription information
+              properties:
+                active:
+                  type: boolean
+                  description: Subscription active status
+                status:
+                  type: string
+                  minLength: 1
+                  description: Subscription status
+                plan:
+                  type: string
+                  minLength: 1
+                  description: Subscription plan
+                features:
+                  type: array
+                  description: Subscription features
+                  items:
+                    type: string
+            roles:
+              type: object
+              description: User roles
+              properties:
+                roles:
+                  type: array
+                  description: List of user roles
+                  items:
+                    type: string
+            confirmedAt:
+              type: string
+              minLength: 1
+              description: User confirmation date
+            rememberMe:
+              type: boolean
+              description: User remember login
   securitySchemes:
     omdbApiKey:
       name: apikey
@@ -640,6 +736,19 @@ components:
       type: http
       scheme: bearer
       description: Real Debrid API key
+    plexAuth:
+      type: http
+      scheme: basic
+      description: Plex authentication by username/password
+    plexAuthToken:
+      name: X-Plex-Token
+      type: apiKey
+      in: header
+      description: Plex authentication by token
+    plexClientIdentifier:
+      name: X-Plex-Client-Identifier
+      type: apiKey
+      in: header
 paths:
   /user:
     get:
@@ -924,7 +1033,7 @@ paths:
           name: query_term
           required: true
           description: 'Search by Movie Title/IMDb Code, Actor Name/IMDb Code, Director Name/IMDb Code '
-  /:
+  '/?s={search}&type=movie':
     get:
       servers:
         - url: 'http://www.omdbapi.com'
@@ -937,9 +1046,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/OmdbSearchResult'
-                  - $ref: '#/components/schemas/OmdbMovieInfo'
+                $ref: '#/components/schemas/OmdbSearchResult'
       operationId: search
       security:
         - omdbApiKey: []
@@ -948,20 +1055,95 @@ paths:
             type: string
           in: query
           name: 'y'
-          description: Movie Year
-        - schema:
-            type: string
-          in: query
-          name: i
-          description: IMDB ID
-        - schema:
-            type: string
-          in: query
-          name: s
-          description: Search Term
+          description: Filter search by year
       description: Search for a movie on OMDb
-    parameters: []
+    parameters:
+      - schema:
+          type: string
+        name: search
+        in: path
+        required: true
+  '/?i={imdbCode}':
+    parameters:
+      - schema:
+          type: string
+        name: imdbCode
+        in: path
+        required: true
+    get:
+      servers:
+        - url: 'http://www.omdbapi.com'
+      summary: OMDb - Get information about a movie
+      tags:
+        - OMDb
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OmdbMovieInfo'
+      operationId: getById
+      security:
+        - omdbApiKey: []
+      description: Get information about a movie from OMDb
+  /users/sign_in.json:
+    get:
+      servers:
+        - url: 'https://plex.tv'
+      summary: Plex - Sign In
+      tags:
+        - Plex
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlexUser'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+      operationId: signIn
+      description: Sign into a plex account and get a User object
+      security:
+        - plexAuth: []
+        - plexClientIdentifier: []
+      parameters: []
+  /library/sections/all/refresh:
+    get:
+      servers:
+        - url: 'http://{ipAddress}:{port}'
+          description: plexServer
+          variables:
+            ipAddress:
+              default: 0.0.0.0
+              description: IP Address of the Plex Media Server
+            port:
+              default: '32400'
+              description: Port of the Plex Media Server
+      summary: Plex - Refresh Libraries
+      tags:
+        - Plex
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+      operationId: refreshLibraries
+      description: Scan all media libraries on the Plex server to index new media.
+      security:
+        - plexAuthToken: []
+        - plexClientIdentifier: []
 tags:
   - name: RDB
   - name: YTS
   - name: OMDb
+  - name: Plex

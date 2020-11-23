@@ -29,410 +29,465 @@ import java.util.Objects;
  * An unrestricted link on Real-Debrid
  */
 @Schema(description = "An unrestricted link on Real-Debrid")
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RdbUnrestrictedLink {
-  @SerializedName("id")
-  private String id = null;
+    @SerializedName("id")
+    private String id = null;
 
-  @SerializedName("filename")
-  private String filename = null;
+    @SerializedName("filename")
+    private String filename = null;
 
-  @SerializedName("filesize")
-  private Integer filesize = null;
+    @SerializedName("filesize")
+    private Integer filesize = null;
 
-  @SerializedName("link")
-  private String link = null;
+    @SerializedName("link")
+    private String link = null;
 
-  @SerializedName("host")
-  private String host = null;
+    @SerializedName("host")
+    private String host = null;
 
-  @SerializedName("chunks")
-  private Integer chunks = null;
+    @SerializedName("chunks")
+    private Integer chunks = null;
+    @SerializedName("crc")
+    private CrcEnum crc = null;
+    @SerializedName("download")
+    private String download = null;
+    @SerializedName("streamable")
+    private StreamableEnum streamable = null;
+    @SerializedName("mimeType")
+    private String mimeType = null;
+    @SerializedName("alternative")
+    private List<RbdUnrestrictedAlternativeLink> alternative = null;
+    @SerializedName("type")
+    private String type = null;
 
-  /**
-   * Disable or enable CRC checking
-   */
-  @JsonAdapter(CrcEnum.Adapter.class)
-  public enum CrcEnum {
-    NUMBER_0(0),
-    NUMBER_1(1);
-
-    private Integer value;
-
-    CrcEnum(Integer value) {
-      this.value = value;
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink id(String id) {
+        this.id = id;
+        return this;
     }
-    public Integer getValue() {
-      return value;
+
+    /**
+     * Unrestricted link ID
+     *
+     * @return id
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Unrestricted link ID")
+    public String getId() {
+        return id;
+    }
+
+    @SuppressWarnings("unused")
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink filename(String filename) {
+        this.filename = filename;
+        return this;
+    }
+
+    /**
+     * Name of the file
+     *
+     * @return filename
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Name of the file")
+    public String getFilename() {
+        return filename;
+    }
+
+    @SuppressWarnings("unused")
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink filesize(Integer filesize) {
+        this.filesize = filesize;
+        return this;
+    }
+
+    /**
+     * Size of the file in bytes (0 if unknown)
+     *
+     * @return filesize
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Size of the file in bytes (0 if unknown)")
+    public Integer getFilesize() {
+        return filesize;
+    }
+
+    @SuppressWarnings("unused")
+    public void setFilesize(Integer filesize) {
+        this.filesize = filesize;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink link(String link) {
+        this.link = link;
+        return this;
+    }
+
+    /**
+     * Original link
+     *
+     * @return link
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Original link")
+    public String getLink() {
+        return link;
+    }
+
+    @SuppressWarnings("unused")
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink host(String host) {
+        this.host = host;
+        return this;
+    }
+
+    /**
+     * Hostname of the original server
+     *
+     * @return host
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Hostname of the original server")
+    public String getHost() {
+        return host;
+    }
+
+    @SuppressWarnings("unused")
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink chunks(Integer chunks) {
+        this.chunks = chunks;
+        return this;
+    }
+
+    /**
+     * Maximum number of chunks allowed
+     *
+     * @return chunks
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Maximum number of chunks allowed")
+    public Integer getChunks() {
+        return chunks;
+    }
+
+    @SuppressWarnings("unused")
+    public void setChunks(Integer chunks) {
+        this.chunks = chunks;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink crc(CrcEnum crc) {
+        this.crc = crc;
+        return this;
+    }
+
+    /**
+     * Disable or enable CRC checking
+     *
+     * @return crc
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Disable or enable CRC checking")
+    public CrcEnum getCrc() {
+        return crc;
+    }
+
+    @SuppressWarnings("unused")
+    public void setCrc(CrcEnum crc) {
+        this.crc = crc;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink download(String download) {
+        this.download = download;
+        return this;
+    }
+
+    /**
+     * Generated download link
+     *
+     * @return download
+     **/
+    @Schema(description = "Generated download link")
+    public String getDownload() {
+        return download;
+    }
+
+    @SuppressWarnings("unused")
+    public void setDownload(String download) {
+        this.download = download;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink streamable(StreamableEnum streamable) {
+        this.streamable = streamable;
+        return this;
+    }
+
+    /**
+     * Is the file streamable
+     *
+     * @return streamable
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Is the file streamable")
+    public StreamableEnum getStreamable() {
+        return streamable;
+    }
+
+    @SuppressWarnings("unused")
+    public void setStreamable(StreamableEnum streamable) {
+        this.streamable = streamable;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink mimeType(String mimeType) {
+        this.mimeType = mimeType;
+        return this;
+    }
+
+    /**
+     * Type of the file based off its extension
+     *
+     * @return mimeType
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Type of the file based off its extension")
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    @SuppressWarnings("unused")
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink alternative(List<RbdUnrestrictedAlternativeLink> alternative) {
+        this.alternative = alternative;
+        return this;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink addAlternativeItem(RbdUnrestrictedAlternativeLink alternativeItem) {
+        if (this.alternative == null) {
+            this.alternative = new ArrayList<RbdUnrestrictedAlternativeLink>();
+        }
+        this.alternative.add(alternativeItem);
+        return this;
+    }
+
+    /**
+     * Get alternative
+     *
+     * @return alternative
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "")
+    public List<RbdUnrestrictedAlternativeLink> getAlternative() {
+        return alternative;
+    }
+
+    @SuppressWarnings("unused")
+    public void setAlternative(List<RbdUnrestrictedAlternativeLink> alternative) {
+        this.alternative = alternative;
+    }
+
+    @SuppressWarnings("unused")
+    public RdbUnrestrictedLink type(String type) {
+        this.type = type;
+        return this;
+    }
+
+    /**
+     * Type of the file, generally its quality
+     *
+     * @return type
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Type of the file, generally its quality")
+    public String getType() {
+        return type;
+    }
+
+    @SuppressWarnings("unused")
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RdbUnrestrictedLink rdbUnrestrictedLink = (RdbUnrestrictedLink) o;
+        return Objects.equals(this.id, rdbUnrestrictedLink.id) &&
+                Objects.equals(this.filename, rdbUnrestrictedLink.filename) &&
+                Objects.equals(this.filesize, rdbUnrestrictedLink.filesize) &&
+                Objects.equals(this.link, rdbUnrestrictedLink.link) &&
+                Objects.equals(this.host, rdbUnrestrictedLink.host) &&
+                Objects.equals(this.chunks, rdbUnrestrictedLink.chunks) &&
+                Objects.equals(this.crc, rdbUnrestrictedLink.crc) &&
+                Objects.equals(this.download, rdbUnrestrictedLink.download) &&
+                Objects.equals(this.streamable, rdbUnrestrictedLink.streamable) &&
+                Objects.equals(this.mimeType, rdbUnrestrictedLink.mimeType) &&
+                Objects.equals(this.alternative, rdbUnrestrictedLink.alternative) &&
+                Objects.equals(this.type, rdbUnrestrictedLink.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, filename, filesize, link, host, chunks, crc, download, streamable, mimeType, alternative, type);
     }
 
     @Override
     public String toString() {
-      return String.valueOf(value);
+        StringBuilder sb = new StringBuilder();
+        sb.append("class RdbUnrestrictedLink {\n");
+
+        sb.append("    id: ").append(toIndentedString(id)).append("\n");
+        sb.append("    filename: ").append(toIndentedString(filename)).append("\n");
+        sb.append("    filesize: ").append(toIndentedString(filesize)).append("\n");
+        sb.append("    link: ").append(toIndentedString(link)).append("\n");
+        sb.append("    host: ").append(toIndentedString(host)).append("\n");
+        sb.append("    chunks: ").append(toIndentedString(chunks)).append("\n");
+        sb.append("    crc: ").append(toIndentedString(crc)).append("\n");
+        sb.append("    download: ").append(toIndentedString(download)).append("\n");
+        sb.append("    streamable: ").append(toIndentedString(streamable)).append("\n");
+        sb.append("    mimeType: ").append(toIndentedString(mimeType)).append("\n");
+        sb.append("    alternative: ").append(toIndentedString(alternative)).append("\n");
+        sb.append("    type: ").append(toIndentedString(type)).append("\n");
+        sb.append("}");
+        return sb.toString();
     }
-    public static CrcEnum fromValue(String text) {
-      for (CrcEnum b : CrcEnum.values()) {
-        if (String.valueOf(b.value).equals(text)) {
-          return b;
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
         }
-      }
-      return null;
-    }
-    public static class Adapter extends TypeAdapter<CrcEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final CrcEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
-
-      @Override
-      public CrcEnum read(final JsonReader jsonReader) throws IOException {
-        Integer value = jsonReader.nextInt();
-        return CrcEnum.fromValue(String.valueOf(value));
-      }
-    }
-  }  @SerializedName("crc")
-  private CrcEnum crc = null;
-
-  @SerializedName("download")
-  private String download = null;
-
-  /**
-   * Is the file streamable
-   */
-  @JsonAdapter(StreamableEnum.Adapter.class)
-  public enum StreamableEnum {
-    NUMBER_0(0),
-    NUMBER_1(1);
-
-    private Integer value;
-
-    StreamableEnum(Integer value) {
-      this.value = value;
-    }
-    public Integer getValue() {
-      return value;
+        return o.toString().replace("\n", "\n    ");
     }
 
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-    public static StreamableEnum fromValue(String text) {
-      for (StreamableEnum b : StreamableEnum.values()) {
-        if (String.valueOf(b.value).equals(text)) {
-          return b;
+
+    /**
+     * Disable or enable CRC checking
+     */
+    @JsonAdapter(CrcEnum.Adapter.class)
+    public enum CrcEnum {
+        NUMBER_0(0),
+        NUMBER_1(1);
+
+        private final Integer value;
+
+        @SuppressWarnings("unused")
+        CrcEnum(Integer value) {
+            this.value = value;
         }
-      }
-      return null;
+
+        public static CrcEnum fromValue(String text) {
+            for (CrcEnum b : CrcEnum.values()) {
+                if (String.valueOf(b.value).equals(text)) {
+                    return b;
+                }
+            }
+            return null;
+        }
+
+        public Integer getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @SuppressWarnings("unused")
+        public static class Adapter extends TypeAdapter<CrcEnum> {
+            @Override
+            public void write(final JsonWriter jsonWriter, final CrcEnum enumeration) throws IOException {
+                jsonWriter.value(enumeration.getValue());
+            }
+
+            @Override
+            public CrcEnum read(final JsonReader jsonReader) throws IOException {
+                Integer value = jsonReader.nextInt();
+                return CrcEnum.fromValue(String.valueOf(value));
+            }
+        }
     }
-    public static class Adapter extends TypeAdapter<StreamableEnum> {
-      @Override
-      public void write(final JsonWriter jsonWriter, final StreamableEnum enumeration) throws IOException {
-        jsonWriter.value(enumeration.getValue());
-      }
 
-      @Override
-      public StreamableEnum read(final JsonReader jsonReader) throws IOException {
-        Integer value = jsonReader.nextInt();
-        return StreamableEnum.fromValue(String.valueOf(value));
-      }
+    /**
+     * Is the file streamable
+     */
+    @JsonAdapter(StreamableEnum.Adapter.class)
+    public enum StreamableEnum {
+        NUMBER_0(0),
+        NUMBER_1(1);
+
+        private final Integer value;
+
+        @SuppressWarnings("unused")
+        StreamableEnum(Integer value) {
+            this.value = value;
+        }
+
+        public static StreamableEnum fromValue(String text) {
+            for (StreamableEnum b : StreamableEnum.values()) {
+                if (String.valueOf(b.value).equals(text)) {
+                    return b;
+                }
+            }
+            return null;
+        }
+
+        public Integer getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @SuppressWarnings("unused")
+        public static class Adapter extends TypeAdapter<StreamableEnum> {
+            @Override
+            public void write(final JsonWriter jsonWriter, final StreamableEnum enumeration) throws IOException {
+                jsonWriter.value(enumeration.getValue());
+            }
+
+            @Override
+            public StreamableEnum read(final JsonReader jsonReader) throws IOException {
+                Integer value = jsonReader.nextInt();
+                return StreamableEnum.fromValue(String.valueOf(value));
+            }
+        }
     }
-  }  @SerializedName("streamable")
-  private StreamableEnum streamable = null;
-
-  @SerializedName("mimeType")
-  private String mimeType = null;
-
-  @SerializedName("alternative")
-  private List<RbdUnrestrictedAlternativeLink> alternative = null;
-
-  @SerializedName("type")
-  private String type = null;
-
-  public RdbUnrestrictedLink id(String id) {
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * Unrestricted link ID
-   * @return id
-  **/
-  @Schema(description = "Unrestricted link ID")
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public RdbUnrestrictedLink filename(String filename) {
-    this.filename = filename;
-    return this;
-  }
-
-   /**
-   * Name of the file
-   * @return filename
-  **/
-  @Schema(description = "Name of the file")
-  public String getFilename() {
-    return filename;
-  }
-
-  public void setFilename(String filename) {
-    this.filename = filename;
-  }
-
-  public RdbUnrestrictedLink filesize(Integer filesize) {
-    this.filesize = filesize;
-    return this;
-  }
-
-   /**
-   * Size of the file in bytes (0 if unknown)
-   * @return filesize
-  **/
-  @Schema(description = "Size of the file in bytes (0 if unknown)")
-  public Integer getFilesize() {
-    return filesize;
-  }
-
-  public void setFilesize(Integer filesize) {
-    this.filesize = filesize;
-  }
-
-  public RdbUnrestrictedLink link(String link) {
-    this.link = link;
-    return this;
-  }
-
-   /**
-   * Original link
-   * @return link
-  **/
-  @Schema(description = "Original link")
-  public String getLink() {
-    return link;
-  }
-
-  public void setLink(String link) {
-    this.link = link;
-  }
-
-  public RdbUnrestrictedLink host(String host) {
-    this.host = host;
-    return this;
-  }
-
-   /**
-   * Hostname of the original server
-   * @return host
-  **/
-  @Schema(description = "Hostname of the original server")
-  public String getHost() {
-    return host;
-  }
-
-  public void setHost(String host) {
-    this.host = host;
-  }
-
-  public RdbUnrestrictedLink chunks(Integer chunks) {
-    this.chunks = chunks;
-    return this;
-  }
-
-   /**
-   * Maximum number of chunks allowed
-   * @return chunks
-  **/
-  @Schema(description = "Maximum number of chunks allowed")
-  public Integer getChunks() {
-    return chunks;
-  }
-
-  public void setChunks(Integer chunks) {
-    this.chunks = chunks;
-  }
-
-  public RdbUnrestrictedLink crc(CrcEnum crc) {
-    this.crc = crc;
-    return this;
-  }
-
-   /**
-   * Disable or enable CRC checking
-   * @return crc
-  **/
-  @Schema(description = "Disable or enable CRC checking")
-  public CrcEnum getCrc() {
-    return crc;
-  }
-
-  public void setCrc(CrcEnum crc) {
-    this.crc = crc;
-  }
-
-  public RdbUnrestrictedLink download(String download) {
-    this.download = download;
-    return this;
-  }
-
-   /**
-   * Generated download link
-   * @return download
-  **/
-  @Schema(description = "Generated download link")
-  public String getDownload() {
-    return download;
-  }
-
-  public void setDownload(String download) {
-    this.download = download;
-  }
-
-  public RdbUnrestrictedLink streamable(StreamableEnum streamable) {
-    this.streamable = streamable;
-    return this;
-  }
-
-   /**
-   * Is the file streamable
-   * @return streamable
-  **/
-  @Schema(description = "Is the file streamable")
-  public StreamableEnum getStreamable() {
-    return streamable;
-  }
-
-  public void setStreamable(StreamableEnum streamable) {
-    this.streamable = streamable;
-  }
-
-  public RdbUnrestrictedLink mimeType(String mimeType) {
-    this.mimeType = mimeType;
-    return this;
-  }
-
-   /**
-   * Type of the file based off its extension
-   * @return mimeType
-  **/
-  @Schema(description = "Type of the file based off its extension")
-  public String getMimeType() {
-    return mimeType;
-  }
-
-  public void setMimeType(String mimeType) {
-    this.mimeType = mimeType;
-  }
-
-  public RdbUnrestrictedLink alternative(List<RbdUnrestrictedAlternativeLink> alternative) {
-    this.alternative = alternative;
-    return this;
-  }
-
-  public RdbUnrestrictedLink addAlternativeItem(RbdUnrestrictedAlternativeLink alternativeItem) {
-    if (this.alternative == null) {
-      this.alternative = new ArrayList<RbdUnrestrictedAlternativeLink>();
-    }
-    this.alternative.add(alternativeItem);
-    return this;
-  }
-
-   /**
-   * Get alternative
-   * @return alternative
-  **/
-  @Schema(description = "")
-  public List<RbdUnrestrictedAlternativeLink> getAlternative() {
-    return alternative;
-  }
-
-  public void setAlternative(List<RbdUnrestrictedAlternativeLink> alternative) {
-    this.alternative = alternative;
-  }
-
-  public RdbUnrestrictedLink type(String type) {
-    this.type = type;
-    return this;
-  }
-
-   /**
-   * Type of the file, generally its quality
-   * @return type
-  **/
-  @Schema(description = "Type of the file, generally its quality")
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    RdbUnrestrictedLink rdbUnrestrictedLink = (RdbUnrestrictedLink) o;
-    return Objects.equals(this.id, rdbUnrestrictedLink.id) &&
-        Objects.equals(this.filename, rdbUnrestrictedLink.filename) &&
-        Objects.equals(this.filesize, rdbUnrestrictedLink.filesize) &&
-        Objects.equals(this.link, rdbUnrestrictedLink.link) &&
-        Objects.equals(this.host, rdbUnrestrictedLink.host) &&
-        Objects.equals(this.chunks, rdbUnrestrictedLink.chunks) &&
-        Objects.equals(this.crc, rdbUnrestrictedLink.crc) &&
-        Objects.equals(this.download, rdbUnrestrictedLink.download) &&
-        Objects.equals(this.streamable, rdbUnrestrictedLink.streamable) &&
-        Objects.equals(this.mimeType, rdbUnrestrictedLink.mimeType) &&
-        Objects.equals(this.alternative, rdbUnrestrictedLink.alternative) &&
-        Objects.equals(this.type, rdbUnrestrictedLink.type);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, filename, filesize, link, host, chunks, crc, download, streamable, mimeType, alternative, type);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class RdbUnrestrictedLink {\n");
-
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
-    sb.append("    filename: ").append(toIndentedString(filename)).append("\n");
-    sb.append("    filesize: ").append(toIndentedString(filesize)).append("\n");
-    sb.append("    link: ").append(toIndentedString(link)).append("\n");
-    sb.append("    host: ").append(toIndentedString(host)).append("\n");
-    sb.append("    chunks: ").append(toIndentedString(chunks)).append("\n");
-    sb.append("    crc: ").append(toIndentedString(crc)).append("\n");
-    sb.append("    download: ").append(toIndentedString(download)).append("\n");
-    sb.append("    streamable: ").append(toIndentedString(streamable)).append("\n");
-    sb.append("    mimeType: ").append(toIndentedString(mimeType)).append("\n");
-    sb.append("    alternative: ").append(toIndentedString(alternative)).append("\n");
-    sb.append("    type: ").append(toIndentedString(type)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
 
 }

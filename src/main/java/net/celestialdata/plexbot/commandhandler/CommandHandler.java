@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 /**
  * The basic command handler.
  */
+@SuppressWarnings("unused")
 public abstract class CommandHandler {
 
     // From Javacord's DiscordRegexPattern

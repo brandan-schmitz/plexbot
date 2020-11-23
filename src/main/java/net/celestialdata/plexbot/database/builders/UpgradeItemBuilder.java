@@ -4,6 +4,7 @@ import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.models.Movie;
 import net.celestialdata.plexbot.database.models.UpgradeItem;
 
+@SuppressWarnings("unused")
 public class UpgradeItemBuilder {
     private Movie movie;
     private int newResolution;

@@ -12,10 +12,15 @@
 
 package net.celestialdata.plexbot.client.model;
 
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,141 +29,200 @@ import java.util.Objects;
  * Result of searching for a movie on OMDb
  */
 @Schema(description = "Result of searching for a movie on OMDb")
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
-public class OmdbSearchResult implements OneOfinlineResponse200 {
-  @SerializedName("Search")
-  private List<OmdbSearchResult> search = new ArrayList<OmdbSearchResult>();
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
+public class OmdbSearchResult {
+    @SerializedName("Search")
+    private List<OmdbMovieInfo> search = new ArrayList<OmdbMovieInfo>();
 
-  @SerializedName("totalResults")
-  private String totalResults = null;
+    @SerializedName("totalResults")
+    private String totalResults = null;
+    @SerializedName("Response")
+    private ResponseEnum response = null;
+    @SerializedName("Error")
+    private String error = null;
 
-  @SerializedName("Response")
-  private String response = null;
-
-  @SerializedName("Error")
-  private String error = null;
-
-  public OmdbSearchResult search(List<OmdbSearchResult> search) {
-    this.search = search;
-    return this;
-  }
-
-  public OmdbSearchResult addSearchItem(OmdbSearchResult searchItem) {
-    this.search.add(searchItem);
-    return this;
-  }
-
-   /**
-   * Get search
-   * @return search
-  **/
-  @Schema(required = true, description = "")
-  public List<OmdbSearchResult> getSearch() {
-    return search;
-  }
-
-  public void setSearch(List<OmdbSearchResult> search) {
-    this.search = search;
-  }
-
-  public OmdbSearchResult totalResults(String totalResults) {
-    this.totalResults = totalResults;
-    return this;
-  }
-
-   /**
-   * Get totalResults
-   * @return totalResults
-  **/
-  @Schema(required = true, description = "")
-  public String getTotalResults() {
-    return totalResults;
-  }
-
-  public void setTotalResults(String totalResults) {
-    this.totalResults = totalResults;
-  }
-
-  public OmdbSearchResult response(String response) {
-    this.response = response;
-    return this;
-  }
-
-   /**
-   * Get response
-   * @return response
-  **/
-  @Schema(required = true, description = "")
-  public String getResponse() {
-    return response;
-  }
-
-  public void setResponse(String response) {
-    this.response = response;
-  }
-
-  public OmdbSearchResult error(String error) {
-    this.error = error;
-    return this;
-  }
-
-   /**
-   * Get error
-   * @return error
-  **/
-  @Schema(required = true, description = "")
-  public String getError() {
-    return error;
-  }
-
-  public void setError(String error) {
-    this.error = error;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    @SuppressWarnings("unused")
+    public OmdbSearchResult search(List<OmdbMovieInfo> search) {
+        this.search = search;
+        return this;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    @SuppressWarnings("unused")
+    public OmdbSearchResult addSearchItem(OmdbMovieInfo searchItem) {
+        this.search.add(searchItem);
+        return this;
     }
-    OmdbSearchResult omdbSearchResult = (OmdbSearchResult) o;
-    return Objects.equals(this.search, omdbSearchResult.search) &&
-        Objects.equals(this.totalResults, omdbSearchResult.totalResults) &&
-        Objects.equals(this.response, omdbSearchResult.response) &&
-        Objects.equals(this.error, omdbSearchResult.error);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(search, totalResults, response, error);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class OmdbSearchResult {\n");
-
-    sb.append("    search: ").append(toIndentedString(search)).append("\n");
-    sb.append("    totalResults: ").append(toIndentedString(totalResults)).append("\n");
-    sb.append("    response: ").append(toIndentedString(response)).append("\n");
-    sb.append("    error: ").append(toIndentedString(error)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
+    /**
+     * Get search
+     *
+     * @return search
+     **/
+    @Schema(required = true, description = "")
+    public List<OmdbMovieInfo> getSearch() {
+        return search;
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+    @SuppressWarnings("unused")
+    public void setSearch(List<OmdbMovieInfo> search) {
+        this.search = search;
+    }
+
+    @SuppressWarnings("unused")
+    public OmdbSearchResult totalResults(String totalResults) {
+        this.totalResults = totalResults;
+        return this;
+    }
+
+    /**
+     * Get totalResults
+     *
+     * @return totalResults
+     **/
+    @SuppressWarnings("unused")
+    @Schema(required = true, description = "")
+    public String getTotalResults() {
+        return totalResults;
+    }
+
+    @SuppressWarnings("unused")
+    public void setTotalResults(String totalResults) {
+        this.totalResults = totalResults;
+    }
+
+    @SuppressWarnings("unused")
+    public OmdbSearchResult response(ResponseEnum response) {
+        this.response = response;
+        return this;
+    }
+
+    /**
+     * Get response
+     *
+     * @return response
+     **/
+    @Schema(required = true, description = "")
+    public ResponseEnum getResponse() {
+        return response;
+    }
+
+    @SuppressWarnings("unused")
+    public void setResponse(ResponseEnum response) {
+        this.response = response;
+    }
+
+    @SuppressWarnings("unused")
+    public OmdbSearchResult error(String error) {
+        this.error = error;
+        return this;
+    }
+
+    /**
+     * Get error
+     *
+     * @return error
+     **/
+    @SuppressWarnings("unused")
+    @Schema(required = true, description = "")
+    public String getError() {
+        return error;
+    }
+
+    @SuppressWarnings("unused")
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        OmdbSearchResult omdbSearchResult = (OmdbSearchResult) o;
+        return Objects.equals(this.search, omdbSearchResult.search) &&
+                Objects.equals(this.totalResults, omdbSearchResult.totalResults) &&
+                Objects.equals(this.response, omdbSearchResult.response) &&
+                Objects.equals(this.error, omdbSearchResult.error);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(search, totalResults, response, error);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class OmdbSearchResult {\n");
+
+        sb.append("    search: ").append(toIndentedString(search)).append("\n");
+        sb.append("    totalResults: ").append(toIndentedString(totalResults)).append("\n");
+        sb.append("    response: ").append(toIndentedString(response)).append("\n");
+        sb.append("    error: ").append(toIndentedString(error)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
+
+    /**
+     * Gets or Sets response
+     */
+    @JsonAdapter(ResponseEnum.Adapter.class)
+    public enum ResponseEnum {
+        TRUE("True"),
+        FALSE("False");
+
+        private final String value;
+
+        @SuppressWarnings("unused")
+        ResponseEnum(String value) {
+            this.value = value;
+        }
+
+        public static ResponseEnum fromValue(String text) {
+            for (ResponseEnum b : ResponseEnum.values()) {
+                if (String.valueOf(b.value).equals(text)) {
+                    return b;
+                }
+            }
+            return null;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @SuppressWarnings("unused")
+        public static class Adapter extends TypeAdapter<ResponseEnum> {
+            @Override
+            public void write(final JsonWriter jsonWriter, final ResponseEnum enumeration) throws IOException {
+                jsonWriter.value(enumeration.getValue());
+            }
+
+            @Override
+            public ResponseEnum read(final JsonReader jsonReader) throws IOException {
+                String value = jsonReader.nextString();
+                return ResponseEnum.fromValue(String.valueOf(value));
+            }
+        }
+    }
 
 }

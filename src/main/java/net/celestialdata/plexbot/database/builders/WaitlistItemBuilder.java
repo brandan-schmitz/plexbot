@@ -4,6 +4,7 @@ import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.models.User;
 import net.celestialdata.plexbot.database.models.WaitlistItem;
 
+@SuppressWarnings("unused")
 public class WaitlistItemBuilder {
     private String id;
     private String title;

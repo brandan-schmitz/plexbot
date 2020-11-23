@@ -7,6 +7,7 @@ import com.vdurmont.emoji.EmojiParser;
  *
  * @author Celestialdeath99
  */
+@SuppressWarnings("unused")
 public interface BotEmojis {
     /**
      * Returns the tools emote

@@ -14,8 +14,13 @@ package net.celestialdata.plexbot.client.api;
 
 import com.google.gson.reflect.TypeToken;
 import net.celestialdata.plexbot.client.*;
+import net.celestialdata.plexbot.client.auth.CloudflareAuthorizer;
 import net.celestialdata.plexbot.client.model.YtsBaseResponse;
+import net.celestialdata.plexbot.config.ConfigProvider;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.HttpClients;
 
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -23,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class YtsApi {
     private ApiClient apiClient;
 
@@ -32,6 +38,21 @@ public class YtsApi {
 
     public YtsApi(ApiClient apiClient) {
         this.apiClient = apiClient;
+    }
+
+    private static String getCloudflareClearanceCode() {
+        String clearanceCode = "";
+
+        CloudflareAuthorizer cloudflareAuthorizer = new CloudflareAuthorizer(HttpClients.createDefault(), HttpClientContext.create());
+        try {
+            if (cloudflareAuthorizer.tryAuthorization(ConfigProvider.BOT_SETTINGS.currentYtsDomain())) {
+                clearanceCode = cloudflareAuthorizer.getClearanceCookie();
+            }
+        } catch (IOException | ScriptException e) {
+            e.printStackTrace();
+        }
+
+        return clearanceCode;
     }
 
     public ApiClient getApiClient() {
@@ -44,74 +65,71 @@ public class YtsApi {
 
     /**
      * Build call for searchYts
-     * @param queryTerm Search by Movie Title/IMDb Code, Actor Name/IMDb Code, Director Name/IMDb Code  (required)
-     * @param progressListener Progress listener
+     *
+     * @param queryTerm               Search by Movie Title/IMDb Code, Actor Name/IMDb Code, Director Name/IMDb Code  (required)
+     * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
+    @SuppressWarnings("DuplicatedCode")
     public com.squareup.okhttp.Call searchYtsCall(String queryTerm, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/list_movies.json";
 
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarQueryParams = new ArrayList<>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<>();
         if (queryTerm != null)
-        localVarQueryParams.addAll(apiClient.parameterToPair("query_term", queryTerm));
+            localVarQueryParams.addAll(apiClient.parameterToPair("query_term", queryTerm));
 
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarHeaderParams = new HashMap<>();
 
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        Map<String, Object> localVarFormParams = new HashMap<>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            
+
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
+        localVarHeaderParams.put("cf_authorization", getCloudflareClearanceCode());
 
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
+        if (progressListener != null) {
+            apiClient.getHttpClient().networkInterceptors().add(chain -> {
+                com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
+                return originalResponse.newBuilder()
+                        .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                        .build();
             });
         }
 
-        String[] localVarAuthNames = new String[] {  };
+        String[] localVarAuthNames = new String[]{};
+        //noinspection ConstantConditions
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
-    @SuppressWarnings("rawtypes")
+
     private com.squareup.okhttp.Call searchYtsValidateBeforeCall(String queryTerm, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         // verify the required parameter 'queryTerm' is set
         if (queryTerm == null) {
             throw new ApiException("Missing the required parameter 'queryTerm' when calling searchYts(Async)");
         }
-        
-        com.squareup.okhttp.Call call = searchYtsCall(queryTerm, progressListener, progressRequestListener);
-        return call;
 
-        
-        
-        
-        
+        return searchYtsCall(queryTerm, progressListener, progressRequestListener);
+
+
     }
 
     /**
      * YTS - Search for a movie
      * Get the information for a movie from YTS if it is available.
+     *
      * @param queryTerm Search by Movie Title/IMDb Code, Actor Name/IMDb Code, Director Name/IMDb Code  (required)
      * @return YtsBaseResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -124,21 +142,24 @@ public class YtsApi {
     /**
      * YTS - Search for a movie
      * Get the information for a movie from YTS if it is available.
+     *
      * @param queryTerm Search by Movie Title/IMDb Code, Actor Name/IMDb Code, Director Name/IMDb Code  (required)
      * @return ApiResponse&lt;YtsBaseResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
     public ApiResponse<YtsBaseResponse> searchYtsWithHttpInfo(String queryTerm) throws ApiException {
         com.squareup.okhttp.Call call = searchYtsValidateBeforeCall(queryTerm, null, null);
-        Type localVarReturnType = new TypeToken<YtsBaseResponse>(){}.getType();
+        Type localVarReturnType = new TypeToken<YtsBaseResponse>() {
+        }.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
     /**
      * YTS - Search for a movie (asynchronously)
      * Get the information for a movie from YTS if it is available.
+     *
      * @param queryTerm Search by Movie Title/IMDb Code, Actor Name/IMDb Code, Director Name/IMDb Code  (required)
-     * @param callback The callback to be executed when the API call finishes
+     * @param callback  The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
@@ -148,23 +169,14 @@ public class YtsApi {
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
 
         if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
+            progressListener = callback::onDownloadProgress;
 
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
+            progressRequestListener = callback::onUploadProgress;
         }
 
         com.squareup.okhttp.Call call = searchYtsValidateBeforeCall(queryTerm, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<YtsBaseResponse>(){}.getType();
+        Type localVarReturnType = new TypeToken<YtsBaseResponse>() {
+        }.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }

@@ -19,35 +19,33 @@ import javax.annotation.processing.Generated;
 import java.util.Objects;
 
 /**
- * Body1
+ * Represent a user in Plex
  */
-
-@SuppressWarnings("unused")
+@Schema(description = "Represent a user in Plex")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
-public class Body1 {
-    @SerializedName("magnet")
-    private String magnet = null;
+public class PlexUser {
+    @SerializedName("user")
+    private PlexUserUser user = null;
 
     @SuppressWarnings("unused")
-    public Body1 magnet(String magnet) {
-        this.magnet = magnet;
+    public PlexUser user(PlexUserUser user) {
+        this.user = user;
         return this;
     }
 
     /**
-     * Magnet link
+     * Get user
      *
-     * @return magnet
+     * @return user
      **/
-    @SuppressWarnings("unused")
-    @Schema(required = true, description = "Magnet link")
-    public String getMagnet() {
-        return magnet;
+    @Schema(description = "")
+    public PlexUserUser getUser() {
+        return user;
     }
 
     @SuppressWarnings("unused")
-    public void setMagnet(String magnet) {
-        this.magnet = magnet;
+    public void setUser(PlexUserUser user) {
+        this.user = user;
     }
 
 
@@ -59,22 +57,22 @@ public class Body1 {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Body1 body1 = (Body1) o;
-        return Objects.equals(this.magnet, body1.magnet);
+        PlexUser plexUser = (PlexUser) o;
+        return Objects.equals(this.user, plexUser.user);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(magnet);
+        return Objects.hash(user);
     }
 
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class Body1 {\n");
+        sb.append("class PlexUser {\n");
 
-        sb.append("    magnet: ").append(toIndentedString(magnet)).append("\n");
+        sb.append("    user: ").append(toIndentedString(user)).append("\n");
         sb.append("}");
         return sb.toString();
     }

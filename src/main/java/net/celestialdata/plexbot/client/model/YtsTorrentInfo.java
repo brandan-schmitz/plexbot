@@ -22,274 +22,310 @@ import java.util.Objects;
  * YtsTorrentInfo
  */
 
-@Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-18T04:51:41.119Z[GMT]")
+@Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class YtsTorrentInfo {
-  @SerializedName("url")
-  private String url = null;
+    @SerializedName("url")
+    private String url = null;
 
-  @SerializedName("hash")
-  private String hash = null;
+    @SerializedName("hash")
+    private String hash = null;
 
-  @SerializedName("quality")
-  private String quality = null;
+    @SerializedName("quality")
+    private String quality = null;
 
-  @SerializedName("type")
-  private String type = null;
+    @SerializedName("type")
+    private String type = null;
 
-  @SerializedName("seeds")
-  private Integer seeds = null;
+    @SerializedName("seeds")
+    private Integer seeds = null;
 
-  @SerializedName("peers")
-  private Integer peers = null;
+    @SerializedName("peers")
+    private Integer peers = null;
 
-  @SerializedName("size")
-  private String size = null;
+    @SerializedName("size")
+    private String size = null;
 
-  @SerializedName("size_bytes")
-  private Integer sizeBytes = null;
+    @SerializedName("size_bytes")
+    private Long sizeBytes = null;
 
-  @SerializedName("date_uploaded")
-  private String dateUploaded = null;
+    @SerializedName("date_uploaded")
+    private String dateUploaded = null;
 
-  @SerializedName("date_uploaded_unix")
-  private Integer dateUploadedUnix = null;
+    @SerializedName("date_uploaded_unix")
+    private Integer dateUploadedUnix = null;
 
-  public YtsTorrentInfo url(String url) {
-    this.url = url;
-    return this;
-  }
-
-   /**
-   * Torrent file download link
-   * @return url
-  **/
-  @Schema(description = "Torrent file download link")
-  public String getUrl() {
-    return url;
-  }
-
-  public void setUrl(String url) {
-    this.url = url;
-  }
-
-  public YtsTorrentInfo hash(String hash) {
-    this.hash = hash;
-    return this;
-  }
-
-   /**
-   * Torrent hash
-   * @return hash
-  **/
-  @Schema(description = "Torrent hash")
-  public String getHash() {
-    return hash;
-  }
-
-  public void setHash(String hash) {
-    this.hash = hash;
-  }
-
-  public YtsTorrentInfo quality(String quality) {
-    this.quality = quality;
-    return this;
-  }
-
-   /**
-   * Torrent quality
-   * @return quality
-  **/
-  @Schema(description = "Torrent quality")
-  public String getQuality() {
-    return quality;
-  }
-
-  public void setQuality(String quality) {
-    this.quality = quality;
-  }
-
-  public YtsTorrentInfo type(String type) {
-    this.type = type;
-    return this;
-  }
-
-   /**
-   * Torrent recording type
-   * @return type
-  **/
-  @Schema(description = "Torrent recording type")
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public YtsTorrentInfo seeds(Integer seeds) {
-    this.seeds = seeds;
-    return this;
-  }
-
-   /**
-   * Number of seeders
-   * @return seeds
-  **/
-  @Schema(description = "Number of seeders")
-  public Integer getSeeds() {
-    return seeds;
-  }
-
-  public void setSeeds(Integer seeds) {
-    this.seeds = seeds;
-  }
-
-  public YtsTorrentInfo peers(Integer peers) {
-    this.peers = peers;
-    return this;
-  }
-
-   /**
-   * Number of peers
-   * @return peers
-  **/
-  @Schema(description = "Number of peers")
-  public Integer getPeers() {
-    return peers;
-  }
-
-  public void setPeers(Integer peers) {
-    this.peers = peers;
-  }
-
-  public YtsTorrentInfo size(String size) {
-    this.size = size;
-    return this;
-  }
-
-   /**
-   * Torrent size
-   * @return size
-  **/
-  @Schema(description = "Torrent size")
-  public String getSize() {
-    return size;
-  }
-
-  public void setSize(String size) {
-    this.size = size;
-  }
-
-  public YtsTorrentInfo sizeBytes(Integer sizeBytes) {
-    this.sizeBytes = sizeBytes;
-    return this;
-  }
-
-   /**
-   * Torrent size (bytes)
-   * @return sizeBytes
-  **/
-  @Schema(description = "Torrent size (bytes)")
-  public Integer getSizeBytes() {
-    return sizeBytes;
-  }
-
-  public void setSizeBytes(Integer sizeBytes) {
-    this.sizeBytes = sizeBytes;
-  }
-
-  public YtsTorrentInfo dateUploaded(String dateUploaded) {
-    this.dateUploaded = dateUploaded;
-    return this;
-  }
-
-   /**
-   * Date uploaded
-   * @return dateUploaded
-  **/
-  @Schema(description = "Date uploaded")
-  public String getDateUploaded() {
-    return dateUploaded;
-  }
-
-  public void setDateUploaded(String dateUploaded) {
-    this.dateUploaded = dateUploaded;
-  }
-
-  public YtsTorrentInfo dateUploadedUnix(Integer dateUploadedUnix) {
-    this.dateUploadedUnix = dateUploadedUnix;
-    return this;
-  }
-
-   /**
-   * Date uploaded (unix format)
-   * @return dateUploadedUnix
-  **/
-  @Schema(description = "Date uploaded (unix format)")
-  public Integer getDateUploadedUnix() {
-    return dateUploadedUnix;
-  }
-
-  public void setDateUploadedUnix(Integer dateUploadedUnix) {
-    this.dateUploadedUnix = dateUploadedUnix;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    @SuppressWarnings("unused")
+    public YtsTorrentInfo url(String url) {
+        this.url = url;
+        return this;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    /**
+     * Torrent file download link
+     *
+     * @return url
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Torrent file download link")
+    public String getUrl() {
+        return url;
     }
-    YtsTorrentInfo ytsTorrentInfo = (YtsTorrentInfo) o;
-    return Objects.equals(this.url, ytsTorrentInfo.url) &&
-        Objects.equals(this.hash, ytsTorrentInfo.hash) &&
-        Objects.equals(this.quality, ytsTorrentInfo.quality) &&
-        Objects.equals(this.type, ytsTorrentInfo.type) &&
-        Objects.equals(this.seeds, ytsTorrentInfo.seeds) &&
-        Objects.equals(this.peers, ytsTorrentInfo.peers) &&
-        Objects.equals(this.size, ytsTorrentInfo.size) &&
-        Objects.equals(this.sizeBytes, ytsTorrentInfo.sizeBytes) &&
-        Objects.equals(this.dateUploaded, ytsTorrentInfo.dateUploaded) &&
-        Objects.equals(this.dateUploadedUnix, ytsTorrentInfo.dateUploadedUnix);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(url, hash, quality, type, seeds, peers, size, sizeBytes, dateUploaded, dateUploadedUnix);
-  }
-
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class YtsTorrentInfo {\n");
-
-    sb.append("    url: ").append(toIndentedString(url)).append("\n");
-    sb.append("    hash: ").append(toIndentedString(hash)).append("\n");
-    sb.append("    quality: ").append(toIndentedString(quality)).append("\n");
-    sb.append("    type: ").append(toIndentedString(type)).append("\n");
-    sb.append("    seeds: ").append(toIndentedString(seeds)).append("\n");
-    sb.append("    peers: ").append(toIndentedString(peers)).append("\n");
-    sb.append("    size: ").append(toIndentedString(size)).append("\n");
-    sb.append("    sizeBytes: ").append(toIndentedString(sizeBytes)).append("\n");
-    sb.append("    dateUploaded: ").append(toIndentedString(dateUploaded)).append("\n");
-    sb.append("    dateUploadedUnix: ").append(toIndentedString(dateUploadedUnix)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
+    @SuppressWarnings("unused")
+    public void setUrl(String url) {
+        this.url = url;
     }
-    return o.toString().replace("\n", "\n    ");
-  }
+
+    @SuppressWarnings("unused")
+    public YtsTorrentInfo hash(String hash) {
+        this.hash = hash;
+        return this;
+    }
+
+    /**
+     * Torrent hash
+     *
+     * @return hash
+     **/
+    @Schema(description = "Torrent hash")
+    public String getHash() {
+        return hash;
+    }
+
+    @SuppressWarnings("unused")
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsTorrentInfo quality(String quality) {
+        this.quality = quality;
+        return this;
+    }
+
+    /**
+     * Torrent quality
+     *
+     * @return quality
+     **/
+    @Schema(description = "Torrent quality")
+    public String getQuality() {
+        return quality;
+    }
+
+    @SuppressWarnings("unused")
+    public void setQuality(String quality) {
+        this.quality = quality;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsTorrentInfo type(String type) {
+        this.type = type;
+        return this;
+    }
+
+    /**
+     * Torrent recording type
+     *
+     * @return type
+     **/
+    @Schema(description = "Torrent recording type")
+    public String getType() {
+        return type;
+    }
+
+    @SuppressWarnings("unused")
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsTorrentInfo seeds(Integer seeds) {
+        this.seeds = seeds;
+        return this;
+    }
+
+    /**
+     * Number of seeders
+     *
+     * @return seeds
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Number of seeders")
+    public Integer getSeeds() {
+        return seeds;
+    }
+
+    @SuppressWarnings("unused")
+    public void setSeeds(Integer seeds) {
+        this.seeds = seeds;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsTorrentInfo peers(Integer peers) {
+        this.peers = peers;
+        return this;
+    }
+
+    /**
+     * Number of peers
+     *
+     * @return peers
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Number of peers")
+    public Integer getPeers() {
+        return peers;
+    }
+
+    @SuppressWarnings("unused")
+    public void setPeers(Integer peers) {
+        this.peers = peers;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsTorrentInfo size(String size) {
+        this.size = size;
+        return this;
+    }
+
+    /**
+     * Torrent size
+     *
+     * @return size
+     **/
+    @Schema(description = "Torrent size")
+    public String getSize() {
+        return size;
+    }
+
+    @SuppressWarnings("unused")
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsTorrentInfo sizeBytes(Long sizeBytes) {
+        this.sizeBytes = sizeBytes;
+        return this;
+    }
+
+    /**
+     * Torrent size (bytes)
+     *
+     * @return sizeBytes
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Torrent size (bytes)")
+    public Long getSizeBytes() {
+        return sizeBytes;
+    }
+
+    @SuppressWarnings("unused")
+    public void setSizeBytes(Long sizeBytes) {
+        this.sizeBytes = sizeBytes;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsTorrentInfo dateUploaded(String dateUploaded) {
+        this.dateUploaded = dateUploaded;
+        return this;
+    }
+
+    /**
+     * Date uploaded
+     *
+     * @return dateUploaded
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Date uploaded")
+    public String getDateUploaded() {
+        return dateUploaded;
+    }
+
+    @SuppressWarnings("unused")
+    public void setDateUploaded(String dateUploaded) {
+        this.dateUploaded = dateUploaded;
+    }
+
+    @SuppressWarnings("unused")
+    public YtsTorrentInfo dateUploadedUnix(Integer dateUploadedUnix) {
+        this.dateUploadedUnix = dateUploadedUnix;
+        return this;
+    }
+
+    /**
+     * Date uploaded (unix format)
+     *
+     * @return dateUploadedUnix
+     **/
+    @SuppressWarnings("unused")
+    @Schema(description = "Date uploaded (unix format)")
+    public Integer getDateUploadedUnix() {
+        return dateUploadedUnix;
+    }
+
+    @SuppressWarnings("unused")
+    public void setDateUploadedUnix(Integer dateUploadedUnix) {
+        this.dateUploadedUnix = dateUploadedUnix;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        YtsTorrentInfo ytsTorrentInfo = (YtsTorrentInfo) o;
+        return Objects.equals(this.url, ytsTorrentInfo.url) &&
+                Objects.equals(this.hash, ytsTorrentInfo.hash) &&
+                Objects.equals(this.quality, ytsTorrentInfo.quality) &&
+                Objects.equals(this.type, ytsTorrentInfo.type) &&
+                Objects.equals(this.seeds, ytsTorrentInfo.seeds) &&
+                Objects.equals(this.peers, ytsTorrentInfo.peers) &&
+                Objects.equals(this.size, ytsTorrentInfo.size) &&
+                Objects.equals(this.sizeBytes, ytsTorrentInfo.sizeBytes) &&
+                Objects.equals(this.dateUploaded, ytsTorrentInfo.dateUploaded) &&
+                Objects.equals(this.dateUploadedUnix, ytsTorrentInfo.dateUploadedUnix);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(url, hash, quality, type, seeds, peers, size, sizeBytes, dateUploaded, dateUploadedUnix);
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class YtsTorrentInfo {\n");
+
+        sb.append("    url: ").append(toIndentedString(url)).append("\n");
+        sb.append("    hash: ").append(toIndentedString(hash)).append("\n");
+        sb.append("    quality: ").append(toIndentedString(quality)).append("\n");
+        sb.append("    type: ").append(toIndentedString(type)).append("\n");
+        sb.append("    seeds: ").append(toIndentedString(seeds)).append("\n");
+        sb.append("    peers: ").append(toIndentedString(peers)).append("\n");
+        sb.append("    size: ").append(toIndentedString(size)).append("\n");
+        sb.append("    sizeBytes: ").append(toIndentedString(sizeBytes)).append("\n");
+        sb.append("    dateUploaded: ").append(toIndentedString(dateUploaded)).append("\n");
+        sb.append("    dateUploadedUnix: ").append(toIndentedString(dateUploadedUnix)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
 
 }

@@ -14,8 +14,8 @@ package net.celestialdata.plexbot.client.api;
 
 import com.google.gson.reflect.TypeToken;
 import net.celestialdata.plexbot.client.*;
-import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
-import net.celestialdata.plexbot.client.model.OmdbSearchResult;
+import net.celestialdata.plexbot.client.model.PlexUser;
+import net.celestialdata.plexbot.config.ConfigProvider;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -23,15 +23,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("unused")
-public class OmDbApi {
+@SuppressWarnings({"unused", "UnusedReturnValue"})
+public class PlexApi {
     private ApiClient apiClient;
 
-    public OmDbApi() {
+    public PlexApi() {
         this(Configuration.getDefaultApiClient());
     }
 
-    public OmDbApi(ApiClient apiClient) {
+    public PlexApi(ApiClient apiClient) {
         this.apiClient = apiClient;
     }
 
@@ -44,21 +44,22 @@ public class OmDbApi {
     }
 
     /**
-     * Build call for getById
+     * Build call for refreshLibraries
      *
-     * @param imdbCode                (required)
      * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
     @SuppressWarnings("DuplicatedCode")
-    public com.squareup.okhttp.Call getByIdCall(String imdbCode, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call refreshLibrariesCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
+        // Set the base path to the plex server
+        this.apiClient.setBasePath("http://" + ConfigProvider.PLEX_SERVER_SETTINGS.ipAddress() + ":" + ConfigProvider.PLEX_SERVER_SETTINGS.port());
+
         // create path and map variables
-        String localVarPath = "/?i={imdbCode}"
-                .replaceAll("\\{" + "imdbCode" + "}", apiClient.escapeString(imdbCode));
+        String localVarPath = "/library/sections/all/refresh";
 
         List<Pair> localVarQueryParams = new ArrayList<>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<>();
@@ -68,7 +69,7 @@ public class OmDbApi {
         Map<String, Object> localVarFormParams = new HashMap<>();
 
         final String[] localVarAccepts = {
-                "application/json"
+
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
@@ -78,6 +79,10 @@ public class OmDbApi {
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
+        localVarHeaderParams.put("X-Plex-Product", "Plexbot for Discord");
+        localVarHeaderParams.put("X-Plex-Version", getClass().getPackage().getImplementationVersion());
+        localVarHeaderParams.put("X-Plex-Device", System.getProperty("os.name"));
+        localVarHeaderParams.put("X-Plex-Device-Name", "Plexbot");
 
         if (progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(chain -> {
@@ -88,60 +93,57 @@ public class OmDbApi {
             });
         }
 
-        String[] localVarAuthNames = new String[]{"omdbApiKey"};
+        String[] localVarAuthNames = new String[]{"plexAuthToken", "plexClientIdentifier"};
         //noinspection ConstantConditions
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
 
-    private com.squareup.okhttp.Call getByIdValidateBeforeCall(String imdbCode, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        // verify the required parameter 'imdbCode' is set
-        if (imdbCode == null) {
-            throw new ApiException("Missing the required parameter 'imdbCode' when calling getById(Async)");
+    private com.squareup.okhttp.Call refreshLibrariesValidateBeforeCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+
+        return refreshLibrariesCall(progressListener, progressRequestListener);
+
+
+    }
+
+    /**
+     * Plex - Refresh Libraries
+     * Scan all media libraries on the Plex server to index new media.
+     *
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     */
+    public void refreshLibraries() throws ApiException {
+        // If there was an auth failure, reload the auth credentials and try again
+        try {
+            refreshLibrariesWithHttpInfo();
+        } catch (ApiException e) {
+            if (e.getCode() == 401) {
+                BotClient.refreshClient();
+                refreshLibrariesWithHttpInfo();
+            }
         }
-
-        return getByIdCall(imdbCode, progressListener, progressRequestListener);
-
-
     }
 
     /**
-     * OMDb - Get information about a movie
-     * Get information about a movie from OMDb
+     * Plex - Refresh Libraries
+     * Scan all media libraries on the Plex server to index new media.
      *
-     * @param imdbCode (required)
-     * @return OmdbMovieInfo
+     * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public OmdbMovieInfo getById(String imdbCode) throws ApiException {
-        ApiResponse<OmdbMovieInfo> resp = getByIdWithHttpInfo(imdbCode);
-        return resp.getData();
+    public ApiResponse<Void> refreshLibrariesWithHttpInfo() throws ApiException {
+        com.squareup.okhttp.Call call = refreshLibrariesValidateBeforeCall(null, null);
+        return apiClient.execute(call);
     }
 
     /**
-     * OMDb - Get information about a movie
-     * Get information about a movie from OMDb
+     * Plex - Refresh Libraries (asynchronously)
+     * Scan all media libraries on the Plex server to index new media.
      *
-     * @param imdbCode (required)
-     * @return ApiResponse&lt;OmdbMovieInfo&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     */
-    public ApiResponse<OmdbMovieInfo> getByIdWithHttpInfo(String imdbCode) throws ApiException {
-        com.squareup.okhttp.Call call = getByIdValidateBeforeCall(imdbCode, null, null);
-        Type localVarReturnType = new TypeToken<OmdbMovieInfo>() {
-        }.getType();
-        return apiClient.execute(call, localVarReturnType);
-    }
-
-    /**
-     * OMDb - Get information about a movie (asynchronously)
-     * Get information about a movie from OMDb
-     *
-     * @param imdbCode (required)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call getByIdAsync(String imdbCode, final ApiCallback<OmdbMovieInfo> callback) throws ApiException {
+    public com.squareup.okhttp.Call refreshLibrariesAsync(final ApiCallback<Void> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -152,35 +154,31 @@ public class OmDbApi {
             progressRequestListener = callback::onUploadProgress;
         }
 
-        com.squareup.okhttp.Call call = getByIdValidateBeforeCall(imdbCode, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<OmdbMovieInfo>() {
-        }.getType();
-        apiClient.executeAsync(call, localVarReturnType, callback);
+        com.squareup.okhttp.Call call = refreshLibrariesValidateBeforeCall(progressListener, progressRequestListener);
+        apiClient.executeAsync(call, callback);
         return call;
     }
 
     /**
-     * Build call for search
+     * Build call for signIn
      *
-     * @param search                  (required)
-     * @param y                       Filter search by year (optional)
      * @param progressListener        Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
     @SuppressWarnings("DuplicatedCode")
-    public com.squareup.okhttp.Call searchCall(String search, String y, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call signInCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
+        // Set the base path to the plex server
+        this.apiClient.setBasePath("https://plex.tv");
+
         // create path and map variables
-        String localVarPath = "/?s={search}&type=movie"
-                .replaceAll("\\{" + "search" + "}", apiClient.escapeString(search));
+        String localVarPath = "/users/sign_in.json";
 
         List<Pair> localVarQueryParams = new ArrayList<>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<>();
-        if (y != null)
-            localVarQueryParams.addAll(apiClient.parameterToPair("y", y));
 
         Map<String, String> localVarHeaderParams = new HashMap<>();
 
@@ -197,6 +195,10 @@ public class OmDbApi {
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
+        localVarHeaderParams.put("X-Plex-Product", "Plexbot for Discord");
+        localVarHeaderParams.put("X-Plex-Version", getClass().getPackage().getImplementationVersion());
+        localVarHeaderParams.put("X-Plex-Device", System.getProperty("os.name"));
+        localVarHeaderParams.put("X-Plex-Device-Name", "Plexbot");
 
         if (progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(chain -> {
@@ -207,76 +209,53 @@ public class OmDbApi {
             });
         }
 
-        String[] localVarAuthNames = new String[]{"omdbApiKey"};
+        String[] localVarAuthNames = new String[]{"plexAuth", "plexClientIdentifier"};
         //noinspection ConstantConditions
-        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
 
-    private com.squareup.okhttp.Call searchValidateBeforeCall(String search, String y, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        // verify the required parameter 'search' is set
-        if (search == null) {
-            throw new ApiException("Missing the required parameter 'search' when calling search(Async)");
-        }
+    private com.squareup.okhttp.Call signInValidateBeforeCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
 
-        return searchCall(search, y, progressListener, progressRequestListener);
+        return signInCall(progressListener, progressRequestListener);
 
 
     }
 
     /**
-     * OMDb - Search for a movie
-     * Search for a movie on OMDb
+     * Plex - Sign In
+     * Sign into a plex account and get a User object
      *
-     * @param search (required)
-     * @return OmdbSearchResult
+     * @return PlexUser
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public OmdbSearchResult search(String search) throws ApiException {
-        ApiResponse<OmdbSearchResult> resp = searchWithHttpInfo(search, "");
+    public PlexUser signIn() throws ApiException {
+        ApiResponse<PlexUser> resp = signInWithHttpInfo();
         return resp.getData();
     }
 
     /**
-     * OMDb - Search for a movie
-     * Search for a movie on OMDb
+     * Plex - Sign In
+     * Sign into a plex account and get a User object
      *
-     * @param search (required)
-     * @param y      Filter search by year (optional)
-     * @return OmdbSearchResult
+     * @return ApiResponse&lt;PlexUser&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public OmdbSearchResult search(String search, String y) throws ApiException {
-        ApiResponse<OmdbSearchResult> resp = searchWithHttpInfo(search, y);
-        return resp.getData();
-    }
-
-    /**
-     * OMDb - Search for a movie
-     * Search for a movie on OMDb
-     *
-     * @param search (required)
-     * @param y      Filter search by year (optional)
-     * @return ApiResponse&lt;OmdbSearchResult&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     */
-    public ApiResponse<OmdbSearchResult> searchWithHttpInfo(String search, String y) throws ApiException {
-        com.squareup.okhttp.Call call = searchValidateBeforeCall(search, y, null, null);
-        Type localVarReturnType = new TypeToken<OmdbSearchResult>() {
+    public ApiResponse<PlexUser> signInWithHttpInfo() throws ApiException {
+        com.squareup.okhttp.Call call = signInValidateBeforeCall(null, null);
+        Type localVarReturnType = new TypeToken<PlexUser>() {
         }.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
     /**
-     * OMDb - Search for a movie (asynchronously)
-     * Search for a movie on OMDb
+     * Plex - Sign In (asynchronously)
+     * Sign into a plex account and get a User object
      *
-     * @param search   (required)
-     * @param y        Filter search by year (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call searchAsync(String search, String y, final ApiCallback<OmdbSearchResult> callback) throws ApiException {
+    public com.squareup.okhttp.Call signInAsync(final ApiCallback<PlexUser> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -287,8 +266,8 @@ public class OmDbApi {
             progressRequestListener = callback::onUploadProgress;
         }
 
-        com.squareup.okhttp.Call call = searchValidateBeforeCall(search, y, progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<OmdbSearchResult>() {
+        com.squareup.okhttp.Call call = signInValidateBeforeCall(progressListener, progressRequestListener);
+        Type localVarReturnType = new TypeToken<PlexUser>() {
         }.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
