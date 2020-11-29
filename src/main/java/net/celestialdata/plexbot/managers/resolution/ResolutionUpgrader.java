@@ -7,7 +7,7 @@ import net.celestialdata.plexbot.client.model.*;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
-import net.celestialdata.plexbot.database.models.WaitlistItem;
+import net.celestialdata.plexbot.database.models.UpgradeItem;
 import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.CustomRunnable;
@@ -269,7 +269,7 @@ public class ResolutionUpgrader implements CustomRunnable {
         );
 
         // Delete the movie from the list of upgradable movies
-        DbOperations.deleteItem(WaitlistItem.class, movieInfo.getImdbID());
+        DbOperations.deleteItem(UpgradeItem.class, movieInfo.getImdbID());
 
         // Remove the task info from the bot status manager
         endTask();
