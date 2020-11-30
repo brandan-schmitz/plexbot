@@ -3,6 +3,7 @@ package net.celestialdata.plexbot.managers;
 import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.CustomRunnable;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,6 +46,7 @@ public class DownloadManager implements CustomRunnable {
         filename = filename.replace("?", "");
         filename = filename.replace("*", "");
         filename = filename.replace(".", "");
+        filename = StringUtils.stripAccents(filename);
     }
 
     @Override

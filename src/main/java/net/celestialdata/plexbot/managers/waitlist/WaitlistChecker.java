@@ -1,17 +1,13 @@
 package net.celestialdata.plexbot.managers.waitlist;
 
 import net.celestialdata.plexbot.BotWorkPool;
-import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.models.WaitlistItem;
 import net.celestialdata.plexbot.managers.BotStatusManager;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
-
-import java.util.Objects;
 
 public class WaitlistChecker implements CustomRunnable {
 
@@ -52,11 +48,6 @@ public class WaitlistChecker implements CustomRunnable {
                 e.printStackTrace();
             }
             TorrentHandler torrentHandler;
-
-            // Set the default movie poster if one is not available
-            if (Objects.requireNonNull(movieInfo).getPoster().equalsIgnoreCase("N/A")) {
-                movieInfo.setPoster(ConfigProvider.BOT_SETTINGS.noPosterImageUrl());
-            }
 
             // Move to the next movie if the movie was manually added to the server/db
             // or already exists for some reason.

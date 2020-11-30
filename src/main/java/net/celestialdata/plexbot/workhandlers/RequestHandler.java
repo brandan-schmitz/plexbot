@@ -8,8 +8,8 @@ import net.celestialdata.plexbot.client.model.*;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
+import net.celestialdata.plexbot.database.builders.WaitlistItemBuilder;
 import net.celestialdata.plexbot.managers.DownloadManager;
-import net.celestialdata.plexbot.managers.waitlist.WaitlistUtilities;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.utils.CustomRunnable;
@@ -216,7 +216,11 @@ public class RequestHandler implements CustomRunnable {
             } else {
                 displayError("Unable to locate the file for " + selectedMovie.getTitle() + " at this time. It has been added to the waiting list " +
                         "and will be automatically when it becomes available.");
-                WaitlistUtilities.addWaitlistItem(selectedMovie, userId);
+                DbOperations.saveObject(new WaitlistItemBuilder()
+                        .fromOmdbInfo(selectedMovie)
+                        .withRequestedBy(userId)
+                        .build()
+                );
             }
             endTask();
             return;

@@ -1,6 +1,5 @@
 package net.celestialdata.plexbot;
 
-import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
 import net.celestialdata.plexbot.commandhandler.JavacordHandler;

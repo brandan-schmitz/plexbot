@@ -30,10 +30,6 @@ public class ResolutionUtilities {
 
         // First check to see if the movie is already listed in the upgrade list, if not add it and send the message
         if (!DbOperations.upgradeItemOps.exists(movieInfo.getImdbID())) {
-            if (movieInfo.getPoster().equalsIgnoreCase("n/a")) {
-                movieInfo.setPoster(ConfigProvider.BOT_SETTINGS.noPosterImageUrl());
-            }
-
             Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId()).ifPresent(
                     textChannel -> textChannel.sendMessage(new EmbedBuilder()
                             .setTitle(movieInfo.getTitle())

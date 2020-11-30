@@ -1,7 +1,6 @@
 package net.celestialdata.plexbot.workhandlers;
 
 import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import org.javacord.api.entity.message.Message;
@@ -18,8 +17,6 @@ import java.util.concurrent.TimeUnit;
  * use reactions to select the correct movie that they
  * are looking for if more than one are returned in the
  * search results.
- *
- * @author Celestialdeath99
  */
 class MovieSelectionHandler {
     public final Object lock = new Object();
@@ -43,12 +40,6 @@ class MovieSelectionHandler {
     MovieSelectionHandler(List<OmdbMovieInfo> movieList, Message sentMessage) {
         this.sentMessage = sentMessage;
         this.movieList = movieList;
-
-        for (OmdbMovieInfo movieInfo : movieList) {
-            if (movieInfo.getPoster().equalsIgnoreCase("N/A")) {
-                movieInfo.setPoster(ConfigProvider.BOT_SETTINGS.noPosterImageUrl());
-            }
-        }
 
         // Create the screens for displaying the movies and send the first one
         if (movieList.size() == 1) {
@@ -187,11 +178,6 @@ class MovieSelectionHandler {
      */
     private void selectCurrentMovie() {
         selectedMovie = movieList.get(currentPage);
-
-        // Set the movies poster to the image in the config if it is not available.
-        if (selectedMovie.getPoster().equalsIgnoreCase("n/a")) {
-            selectedMovie.setPoster(ConfigProvider.BOT_SETTINGS.noPosterImageUrl());
-        }
 
         // Notify the command worker thread that the movie has been selected.
         synchronized (lock) {
