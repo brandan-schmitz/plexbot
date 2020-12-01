@@ -6,7 +6,6 @@ import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
 import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.BotColors;
-import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.Proxy;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;

@@ -29,6 +29,7 @@ import java.util.Objects;
 /**
  * Information about a movie from OMDb
  */
+@SuppressWarnings("unused")
 @Schema(description = "Information about a movie from OMDb")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class OmdbMovieInfo {

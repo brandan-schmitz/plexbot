@@ -30,7 +30,7 @@ public class WaitlistDownloader implements CustomRunnable {
         return "Download " + movieInfo.getTitle() + " (" + movieInfo.getYear() + ")";
     }
 
-    @SuppressWarnings("DuplicatedCode")
+    @SuppressWarnings({"DuplicatedCode", "RedundantSuppression"})
     @Override
     public void run() {
         // Configure task to run the endTask method if there was an error
