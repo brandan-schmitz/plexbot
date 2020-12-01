@@ -5,8 +5,8 @@ import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
 import net.celestialdata.plexbot.config.ConfigProvider;
-import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.utils.BotColors;
+import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.Proxy;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -102,42 +102,25 @@ public class WaitlistItem implements BaseModel {
                 textChannel.getMessageById(this.messageId).join().delete().exceptionally(ExceptionLogger.get()));
     }
 
-    /**
-     * Handle the process of adding or updating messages in the waiting list channel about movies in the waitlist. This
-     * method is run prior to the save event, so checks if the movie already exists in teh database to determine if it
-     * needs to update a message or create a new one.
-     */
-    @Override
-    public void onSave() {
+    @PrePersist
+    protected void onCreate() {
         OmdbMovieInfo movieInfo;
         try {
             movieInfo = BotClient.getInstance().omdbApi.getById(this.id);
-
-            if (DbOperations.waitlistItemOps.exists(this.id)) {
-                Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.waitlistChannelId()).ifPresent(textChannel ->
-                        textChannel.getMessageById(DbOperations.waitlistItemOps.getItemById(this.id).getMessageId()).join().edit(new EmbedBuilder()
-                                .setTitle(this.id)
-                                .setDescription("**Year:** " + this.year + "\n" +
-                                        "**Director(s):** " + movieInfo.getDirector() + "\n" +
-                                        "**Plot:** " + movieInfo.getPlot())
-                                .setImage(movieInfo.getPoster())
-                                .setColor(BotColors.INFO)
-                                .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                                        .format(ZonedDateTime.now()) + " CST")).exceptionally(ExceptionLogger.get()));
-            } else {
-                Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.waitlistChannelId()).ifPresent(textChannel ->
-                        textChannel.sendMessage(new EmbedBuilder()
-                                .setTitle(this.title)
-                                .setDescription("**Year:** " + this.year + "\n" +
-                                        "**Director(s):** " + movieInfo.getDirector() + "\n" +
-                                        "**Plot:** " + movieInfo.getPlot())
-                                .setImage(movieInfo.getPoster())
-                                .setColor(BotColors.INFO)
-                                .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                                        .format(ZonedDateTime.now()) + " CST")).exceptionally(ExceptionLogger.get()
-                        )
-                );
-            }
+            Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.waitlistChannelId()).ifPresent(textChannel ->
+                    textChannel.sendMessage(new EmbedBuilder()
+                            .setTitle(this.title)
+                            .setDescription("**IMDB Code:** " + movieInfo.getImdbID() + "\n" +
+                                    "**Year:** " + this.year + "\n" +
+                                    "**Director(s):** " + movieInfo.getDirector() + "\n" +
+                                    "**Plot:** " + movieInfo.getPlot())
+                            .setImage(movieInfo.getPoster())
+                            .setColor(BotColors.INFO)
+                            .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                                    .format(ZonedDateTime.now()) + " CST"))
+                            .thenAccept(sentMessage -> this.messageId = sentMessage.getId())
+                            .join()
+            );
         } catch (ApiException | CompletionException ignored) {}
     }
 }

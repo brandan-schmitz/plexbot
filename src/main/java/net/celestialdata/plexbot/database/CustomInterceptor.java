@@ -29,8 +29,8 @@ public class CustomInterceptor extends EmptyInterceptor {
     }
 
     /**
-     * Override he default onSave method to make it run the onSave function of the BaseModel used
-     * to create teh database object models. This allows custom actions to be performed per-object when
+     * Override the default onSave method to make it run the onSave function of the BaseModel used
+     * to create the database object models. This allows custom actions to be performed per-object when
      * that object is deleted.
      *
      * @param entity the class of the entity to delete

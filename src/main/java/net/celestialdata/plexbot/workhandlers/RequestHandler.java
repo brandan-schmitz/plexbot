@@ -212,15 +212,21 @@ public class RequestHandler implements CustomRunnable {
         // Add movie to waitinglist if it was not located
         if (torrentHandler.didSearchReturnNoResults()) {
             if (DbOperations.waitlistItemOps.exists(selectedMovie.getImdbID())) {
-                displayError("The movie " + selectedMovie.getTitle() + " is not currently available and already exists on the waiting list.");
+                displayWarning("The movie \"" + selectedMovie.getTitle() + " (" + selectedMovie.getYear() + ")\"" +
+                        " is not currently available and already exists on the waiting list.");
             } else {
-                displayError("Unable to locate the file for " + selectedMovie.getTitle() + " at this time. It has been added to the waiting list " +
+                displayWarning("Unable to locate the file for \"" + selectedMovie.getTitle() + " (" + selectedMovie.getYear() + ")\"" +
+                        " at this time. It has been added to the waiting list " +
                         "and will be automatically when it becomes available.");
-                DbOperations.saveObject(new WaitlistItemBuilder()
+                if (!DbOperations.saveObject(new WaitlistItemBuilder()
                         .fromOmdbInfo(selectedMovie)
                         .withRequestedBy(userId)
                         .build()
-                );
+                )) {
+                    displayError("Unable to locate the file for \"" + selectedMovie.getTitle() + "(" + selectedMovie.getYear() + ")\"" +
+                            " at this time. I tried adding it to the waiting list however an unknown error occurred. Please try your request again later.",
+                            "db-save-operation");
+                }
             }
             endTask();
             return;
@@ -534,6 +540,18 @@ public class RequestHandler implements CustomRunnable {
         );
 
         endTask();
+    }
+
+    /**
+     * Changes the sentMessage to an error message if there is an error.
+     *
+     * @param warningMessage The error message to set the body of the message to.
+     */
+    private void displayWarning(String warningMessage) {
+        sentMessage.edit(new EmbedBuilder()
+                .addField("An warning has occurred:", "```" + warningMessage + "```")
+                .setColor(BotColors.WARNING)
+        );
     }
 
     /**
