@@ -17,6 +17,16 @@ public class WaitlistChecker implements CustomRunnable {
     }
 
     @Override
+    public boolean cancelOnFull() {
+        return true;
+    }
+
+    @Override
+    public boolean cancelOnDuplicate() {
+        return true;
+    }
+
+    @Override
     public void endTask() {
         BotStatusManager.getInstance().removeProcess(taskName());
         BotStatusManager.getInstance().clearWaitlistManagerStatus();

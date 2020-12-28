@@ -29,6 +29,11 @@ public class ResolutionUpgrader implements CustomRunnable {
         return "Upgrade " + movieInfo.getTitle() + " (" + movieInfo.getYear() + ")";
     }
 
+    @Override
+    public boolean cancelOnDuplicate() {
+        return true;
+    }
+
     @SuppressWarnings("DuplicatedCode")
     @Override
     public void run() {

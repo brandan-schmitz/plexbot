@@ -5,6 +5,14 @@ import net.celestialdata.plexbot.managers.BotStatusManager;
 public interface CustomRunnable extends Runnable {
     String taskName();
 
+    default boolean cancelOnFull() {
+        return false;
+    }
+
+    default boolean cancelOnDuplicate() {
+        return false;
+    }
+
     default void endTask() {
         BotStatusManager.getInstance().removeProcess(taskName());
     }

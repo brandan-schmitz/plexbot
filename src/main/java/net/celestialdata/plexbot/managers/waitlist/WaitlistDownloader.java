@@ -30,6 +30,11 @@ public class WaitlistDownloader implements CustomRunnable {
         return "Download " + movieInfo.getTitle() + " (" + movieInfo.getYear() + ")";
     }
 
+    @Override
+    public boolean cancelOnDuplicate() {
+        return true;
+    }
+
     @SuppressWarnings({"DuplicatedCode", "RedundantSuppression"})
     @Override
     public void run() {

@@ -55,6 +55,11 @@ public class DownloadManager implements CustomRunnable {
     }
 
     @Override
+    public boolean cancelOnDuplicate() {
+        return true;
+    }
+
+    @Override
     public void run() {
         // Configure task to run the endTask method if there was an error
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));

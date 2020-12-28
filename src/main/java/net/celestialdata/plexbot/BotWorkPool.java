@@ -47,6 +47,14 @@ public class BotWorkPool {
     }
 
     public void submitProcess(CustomRunnable task) {
+        if (isPoolFull() && task.cancelOnFull()) {
+            return;
+        }
+
+        if (BotStatusManager.getInstance().containsProcess(task.taskName()) && task.cancelOnDuplicate()) {
+            return;
+        }
+
         executor.execute(task);
         BotStatusManager.getInstance().addProcess(task.taskName());
     }

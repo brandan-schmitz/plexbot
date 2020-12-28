@@ -67,31 +67,44 @@ final public class BotStatusManager implements Runnable {
                 .setTitle("Bot Status")
                 .setColor(statusColor)
                 .setDescription("Below you can find the current status of the bot including all running processes. " +
-                        "Please note that only the first four tasks in the queue are actively being processed, anything " +
-                        "after that will be processed once a previous task is completed.\n\n" +
+                        "Only the tasks listed in the *Running Tasks* section are being actively executed. " +
+                        "Items in the queued section will process once there is room.\n\n" +
                         "**Waitlist Manager:**\n```" + waitlistManagerStatus + "```\n" +
                         "**Resolution Manager:**\n```" + resolutionManagerStatus + "```\n" +
-                        "**Task Queue:**\n```" + buildProcessList() + "```")
+                        "**Running Tasks:**\n```" + buildProcessList() + "```")
                 .setFooter("Plexbot v" + getClass().getPackage().getImplementationVersion() + " - " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         .format(ZonedDateTime.now()) + " CST");
     }
 
     private String buildProcessList() {
         StringBuilderPlus stringBuilderPlus = new StringBuilderPlus();
+        statusColor = BotColors.SUCCESS;
+        int processNum = 1;
 
         if (currentProcesses.isEmpty()) {
-            statusColor = BotColors.SUCCESS;
             return "Idle";
-        } else {
-            int orderNum = 1;
+        } else if (currentProcesses.size() <=4 ) {
             for (String process : currentProcesses) {
-                stringBuilderPlus.appendLine(orderNum + ") " + process);
-                orderNum++;
+                stringBuilderPlus.appendLine(processNum + ") " + process);
+                processNum++;
             }
+        } else {
+            statusColor = BotColors.WARNING;
 
-            if (orderNum > 4) {
-                statusColor = BotColors.WARNING;
-            } else statusColor = BotColors.SUCCESS;
+            for (String process : currentProcesses) {
+                if (processNum == 5) {
+                    stringBuilderPlus.appendLine("```");
+                    stringBuilderPlus.appendLine("**Queued Tasks:**");
+                    stringBuilderPlus.appendLine("```");
+                }
+
+                if (processNum >= 5) {
+                    stringBuilderPlus.appendLine(processNum-4 + ") " + process);
+                } else {
+                    stringBuilderPlus.appendLine(processNum + ") " + process);
+                }
+                processNum++;
+            }
         }
 
         return stringBuilderPlus.toString();
@@ -119,5 +132,9 @@ final public class BotStatusManager implements Runnable {
 
     public void removeProcess(String processName) {
         currentProcesses.removeIf(process -> process.contentEquals(processName));
+    }
+
+    public boolean containsProcess(String processName) {
+        return currentProcesses.contains(processName);
     }
 }
