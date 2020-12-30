@@ -174,14 +174,37 @@ public class ResolutionUpgrader implements CustomRunnable {
 
         // Get the download link and create the DownloadHandler for the movie
         String downloadLink = unrestrictedLink.getDownload();
-        downloadManager = new DownloadManager(downloadLink, movieInfo);
+        downloadManager = new DownloadManager(downloadLink, movieInfo, fileExtension);
 
         // Start the download process
         downloadManager.run();
 
-        // Wait for the download to finish downloading the movie file
+        // Wait for the download to finish downloading and processing the movie file
         synchronized (downloadManager.lock) {
+            // Download the movie file
             while (downloadManager.isDownloading()) {
+                try {
+                    downloadManager.lock.wait();
+                } catch (InterruptedException e) {
+                    endTask(e);
+                    return;
+                }
+            }
+
+            // Exit if the download failed, cleaning up the torrent on real-debrid in the process
+            if (downloadManager.didDownloadFail()) {
+                try {
+                    BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+                } catch (Exception e) {
+                    endTask(e);
+                    return;
+                }
+                endTask();
+                return;
+            }
+
+            // Process the movie file
+            while (downloadManager.isProcessing()) {
                 try {
                     downloadManager.lock.wait();
                 } catch (InterruptedException e) {
@@ -191,35 +214,36 @@ public class ResolutionUpgrader implements CustomRunnable {
             }
         }
 
-        // Exit if the download failed, cleaning up the torrent on real-debrid in the process
-        if (downloadManager.didDownloadFail()) {
-            try {
-                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-            } catch (Exception e) {
-                endTask(e);
-                return;
+        if (downloadManager.didProcessingFail()) {
+            if (!downloadManager.isFileServerMounted()) {
+                Main.getBotApi().getUserById(ConfigProvider.BOT_SETTINGS.adminUserId()).join().sendMessage(
+                        new EmbedBuilder()
+                                .setTitle("Bot Error")
+                                .setDescription("The bot attempted to download a movie, however the NFS server is not mounted. " +
+                                        "Please mount the server and manually finish processing the file and add it to the database.\n")
+                                .addField("Process Command:", "```bash\n" +
+                                        "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + downloadManager.getFilename() + ".pbdownload " +
+                                        ConfigProvider.BOT_SETTINGS.movieFolder() + downloadManager.getFilename() + fileExtension + "\n```")
+                                .addField("SQL Script:", "```sql\n" +
+                                        "INSERT INTO `Movies` (`movie_id`, `movie_filename`, `movie_resolution`, `movie_title`, `movie_year`) VALUES (" +
+                                        "'" + movieInfo.getImdbID() + "', " +
+                                        "'" + downloadManager.getFilename() + fileExtension + "', " +
+                                        "'" + torrentHandler.getTorrentQuality() + "', " +
+                                        "'" + movieInfo.getTitle() + "', " +
+                                        "'" + movieInfo.getYear() + "');\n\n" +
+                                        "DELETE FROM `Upgrades` WHERE `Upgrades`.`upgrade_movie` = '" + movieInfo.getImdbID() + "';\n```")
+                                .setColor(BotColors.ERROR)
+                                .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.")
+                );
             }
             endTask();
             return;
         }
 
         // Attempt to delete the old movie files
-        File oldVersion = new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() +
+        File oldVersion = new File(ConfigProvider.BOT_SETTINGS.movieFolder() +
                 DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename());
         if (!oldVersion.delete()) {
-            try {
-                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-            } catch (Exception e) {
-                endTask(e);
-                return;
-            }
-            endTask();
-            return;
-        }
-
-        // Rename the downloaded file to add the extension
-        // Verify the rename operation succeeded
-        if (!downloadManager.renameFile(fileExtension)) {
             try {
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
             } catch (Exception e) {

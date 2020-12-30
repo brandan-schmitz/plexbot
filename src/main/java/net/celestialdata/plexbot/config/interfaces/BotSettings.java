@@ -28,11 +28,18 @@ public interface BotSettings {
     String botPrefix();
 
     /**
-     * The folder to save the movie files into
+     * The folder the movie files are in
      *
      * @return The folder path
      */
-    String movieDownloadFolder();
+    String movieFolder();
+
+    /**
+     * The folder used for temp files such as partially downloaded media files.
+     *
+     * @return The folder path
+     */
+    String tempFolder();
 
     /**
      * The URL of the image to display if there is not an image available
@@ -83,4 +90,11 @@ public interface BotSettings {
      * @return The channel id
      */
     long waitlistChannelId();
+
+    /**
+     * The ID of the user who is the administrator for the bot
+     *
+     * @return The user id
+     */
+    long adminUserId();
 }

@@ -11,8 +11,11 @@ BotSettings:
   # The prefix the bot will use to listen for commands. Must be contained within ""
   botPrefix: "!"
 
-  # The folder that the movies will be downloaded to
-  movieDownloadFolder: /path/to/movie/folder
+  # The folder that the movies are stored in
+  movieFolder: /path/to/movie/folder
+
+  # The folder that is used for temporary file operations
+  tempFolder: /path/to/temp/folder
 
   # URL of Image displayed in place of movies that do not have a poster image
   noPosterImageUrl: https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png
@@ -35,6 +38,9 @@ BotSettings:
 
   # The ID of the channel for notifications about movies that have been added to the waiting list
   waitlistChannelId: 012345678901234567
+
+  # The ID of the user responsible for managing the bot
+  adminUserId: 012345678901234567
 
 
 #########################

@@ -26,7 +26,7 @@ public class ResolutionUtilities {
      * @param newSize       the size of the new video file
      */
     static void addUpgradableMovie(OmdbMovieInfo movieInfo, int oldResolution, int newResolution, String newSize) {
-        MediaInfo mediaInfo = MediaInfo.mediaInfo(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename());
+        MediaInfo mediaInfo = MediaInfo.mediaInfo(ConfigProvider.BOT_SETTINGS.movieFolder() + DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename());
 
         // First check to see if the movie is already listed in the upgrade list, if not add it and send the message
         if (!DbOperations.upgradeItemOps.exists(movieInfo.getImdbID())) {

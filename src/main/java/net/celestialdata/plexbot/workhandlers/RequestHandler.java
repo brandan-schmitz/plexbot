@@ -396,10 +396,10 @@ public class RequestHandler implements CustomRunnable {
                 .exceptionally(ExceptionLogger.get());
 
         // Download File
-        downloadManager = new DownloadManager(downloadLink, selectedMovie);
+        downloadManager = new DownloadManager(downloadLink, selectedMovie, fileExtension);
         BotWorkPool.getInstance().submitProcess(downloadManager);
 
-        // Wait for the file to be downloaded
+        // Wait for the file to be downloaded and processed
         synchronized (downloadManager.lock) {
             LocalDateTime lastUpdated = LocalDateTime.now();
             while (downloadManager.isDownloading()) {
@@ -424,23 +424,88 @@ public class RequestHandler implements CustomRunnable {
                         lastUpdated = LocalDateTime.now();
                     }
                 } catch (InterruptedException e) {
+                    displayError("There was an error while downloading this movie. Please try again later.", "file-download-fail");
                     endTask(e);
                     return;
                 }
             }
-        }
 
-        // Verify that the download did not fail
-        if (downloadManager.didDownloadFail()) {
-            displayError("There was an error while downloading this movie. Please try again later.", "file-download-fail");
-            try {
-                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-            } catch (Exception e) {
-                endTask(e);
+            // Verify that the download did not fail
+            if (downloadManager.didDownloadFail()) {
+                displayError("There was an error while downloading this movie. Please try again later.", "file-download-fail");
+                try {
+                    BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+                } catch (Exception e) {
+                    endTask(e);
+                    return;
+                }
+                endTask();
                 return;
             }
-            endTask();
-            return;
+
+            // Wait for the bot to finish processing the file
+            while (downloadManager.isProcessing()) {
+                try {
+                    downloadManager.lock.wait();
+
+                    // Update the download progress to show it's processing the file
+                    if (lastUpdated.plus(5, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
+                        sentMessage.edit(new EmbedBuilder()
+                                .setTitle("Addition Status")
+                                .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
+                                .addField("Progress:",
+                                        BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
+                                                BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
+                                                BotEmojis.FINISHED_STEP + "  Mask download file\n" +
+                                                BotEmojis.TODO_STEP + "  **Download movie:** processing\n" +
+                                                BotEmojis.TODO_STEP + "  Add movie to database")
+                                .setFooter("Message updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                                        .format(ZonedDateTime.now()) + " CST")
+                                .setColor(BotColors.INFO))
+                                .exceptionally(ExceptionLogger.get());
+                        lastUpdated = LocalDateTime.now();
+                    }
+                } catch (InterruptedException e) {
+                    displayError("There was an error while processing this movie. Please try again later.", "file-process-fail");
+                    endTask(e);
+                    return;
+                }
+            }
+
+            if (downloadManager.didProcessingFail()) {
+                if (!downloadManager.isFileServerMounted()) {
+                    displayError("There was an error while processing this movie. Brandan has been notified " +
+                            "of this issue and will manually correct it when he is available.", "nfs-connection-fail");
+                    new EmbedBuilder()
+                            .setTitle("Bot Error")
+                            .setDescription("The bot attempted to download a movie, however the NFS server is not mounted. " +
+                                    "Please mount the server and manually finish processing the file and add it to the database.\n")
+                            .addField("Process Command:", "```bash\n" +
+                                    "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + downloadManager.getFilename() + ".pbdownload " +
+                                    ConfigProvider.BOT_SETTINGS.movieFolder() + downloadManager.getFilename() + fileExtension + "\n```")
+                            .addField("SQL Script:", "```sql\n" +
+                                    "INSERT INTO `Movies` (`movie_id`, `movie_filename`, `movie_resolution`, `movie_title`, `movie_year`) VALUES (" +
+                                    "'" + selectedMovie.getImdbID() + "', " +
+                                    "'" + downloadManager.getFilename() + fileExtension + "', " +
+                                    "'" + torrentHandler.getTorrentQuality() + "', " +
+                                    "'" + selectedMovie.getTitle() + "', " +
+                                    "'" + selectedMovie.getYear() + "');\n```"
+                            )
+                            .setColor(BotColors.ERROR)
+                            .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.");
+                } else {
+                    displayError("There was an error while downloading this movie. Please try again later.", "file-process-fail");
+                }
+                endTask();
+                return;
+            }
+        }
+
+        // Delete the torrent from RealDebrid
+        try {
+            BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         sentMessage.edit(new EmbedBuilder()
@@ -456,28 +521,6 @@ public class RequestHandler implements CustomRunnable {
                         .format(ZonedDateTime.now()) + " CST")
                 .setColor(BotColors.INFO))
                 .exceptionally(ExceptionLogger.get());
-
-        // Rename the downloaded file to add the extension
-        // Verify the rename operation succeeded
-        if (!downloadManager.renameFile(fileExtension)) {
-            displayError("There was an error while downloading this movie. Please try again later.", "file-rename-fail");
-            //realDebridHandler.deleteTorrent();
-            try {
-                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-            } catch (Exception e) {
-                endTask(e);
-                return;
-            }
-            endTask();
-            return;
-        }
-
-        // Delete the torrent from RealDebrid
-        try {
-            BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         // Add the movie to the database
         DbOperations.saveObject(new MovieBuilder()

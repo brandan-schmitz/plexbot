@@ -27,12 +27,17 @@ public class DownloadManager implements CustomRunnable {
     private final String downloadLink;
     private boolean isDownloading = true;
     private boolean didDownloadFail = false;
+    private boolean isProcessing = false;
+    private boolean didProcessingFail = false;
+    private boolean isFileServerMounted = true;
     private long progress = 0;
     private long size = 0;
     private String filename;
+    private final String fileExtension;
 
-    public DownloadManager(String downloadLink, OmdbMovieInfo movieInfo) {
+    public DownloadManager(String downloadLink, OmdbMovieInfo movieInfo, String fileExtension) {
         this.downloadLink = downloadLink;
+        this.fileExtension = fileExtension;
 
         // Remove anything from the filename that may cause issues
         filename = movieInfo.getTitle() + " (" + movieInfo.getYear() + ")";
@@ -68,7 +73,7 @@ public class DownloadManager implements CustomRunnable {
             // Open a connection to the file being downloaded
             URLConnection connection = new URL(downloadLink).openConnection();
             ReadableByteChannel readableByteChannel = Channels.newChannel(connection.getInputStream());
-            FileChannel fileOutputStream = new FileOutputStream(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + filename).getChannel();
+            FileChannel fileOutputStream = new FileOutputStream(ConfigProvider.BOT_SETTINGS.tempFolder() + filename + ".pbdownload").getChannel();
 
             // Get the size of the file in bytes used in calculating the progress of the download
             size = connection.getContentLengthLong();
@@ -84,6 +89,7 @@ public class DownloadManager implements CustomRunnable {
             // Mark that the download has finished without errors and close the connection to the server.
             synchronized (lock) {
                 isDownloading = false;
+                isProcessing = true;
                 lock.notifyAll();
             }
             fileOutputStream.close();
@@ -92,23 +98,32 @@ public class DownloadManager implements CustomRunnable {
             synchronized (lock) {
                 didDownloadFail = true;
                 isDownloading = false;
+                isProcessing = false;
+                lock.notifyAll();
+            }
+        }
+
+        // Attempt to move the file to the movie folder. This folder should contain a file called movie.pb otherwise the
+        // rename process should be aborted.
+        isFileServerMounted = new File(ConfigProvider.BOT_SETTINGS.movieFolder() + "movie.pb").exists();
+        if (isFileServerMounted) {
+            File file = new File(ConfigProvider.BOT_SETTINGS.tempFolder() + filename + ".pbdownload");
+
+            synchronized (lock) {
+                didProcessingFail = file.renameTo(new File(ConfigProvider.BOT_SETTINGS.movieFolder() + filename + fileExtension));
+                isProcessing = false;
+                lock.notifyAll();
+            }
+        } else {
+            synchronized (lock) {
+                didProcessingFail = true;
+                isProcessing = false;
+                isFileServerMounted = false;
                 lock.notifyAll();
             }
         }
 
         endTask();
-    }
-
-    /**
-     * Rename the file to the specified file extension.
-     *
-     * @param newExtension the file extension to save the file as.
-     * @return if the rename operation was successful or not
-     */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean renameFile(String newExtension) {
-        File file = new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + filename);
-        return file.renameTo(new File(ConfigProvider.BOT_SETTINGS.movieDownloadFolder() + filename + newExtension));
     }
 
     /**
@@ -150,5 +165,33 @@ public class DownloadManager implements CustomRunnable {
      */
     public boolean didDownloadFail() {
         return didDownloadFail;
+    }
+
+
+    /**
+     * Get if the thread is currently processing the downloaded file.
+     *
+     * @return the boolean states of the processing (true=processing/false=finished).
+     */
+    public boolean isProcessing() {
+        return isProcessing;
+    }
+
+    /**
+     * Check if the processing of the file failed
+     *
+     * @return the boolean value of the processing failure status.
+     */
+    public boolean didProcessingFail() {
+        return didProcessingFail;
+    }
+
+    /**
+     * Get if the file server was mounted or not when trying to rename and move the file
+     *
+     * @return if the server was mounted or not
+     */
+    public boolean isFileServerMounted() {
+        return isFileServerMounted;
     }
 }
