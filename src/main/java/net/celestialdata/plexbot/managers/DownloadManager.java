@@ -13,6 +13,7 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.*;
 import java.text.DecimalFormat;
 
 /**
@@ -27,9 +28,9 @@ public class DownloadManager implements CustomRunnable {
     private final String downloadLink;
     private boolean isDownloading = true;
     private boolean didDownloadFail = false;
-    private boolean isProcessing = false;
+    private boolean isProcessing = true;
     private boolean didProcessingFail = false;
-    private boolean isFileServerMounted = true;
+    private boolean isFileServerMounted = false;
     private long progress = 0;
     private long size = 0;
     private String filename;
@@ -89,7 +90,6 @@ public class DownloadManager implements CustomRunnable {
             // Mark that the download has finished without errors and close the connection to the server.
             synchronized (lock) {
                 isDownloading = false;
-                isProcessing = true;
                 lock.notifyAll();
             }
             fileOutputStream.close();
@@ -105,14 +105,27 @@ public class DownloadManager implements CustomRunnable {
 
         // Attempt to move the file to the movie folder. This folder should contain a file called movie.pb otherwise the
         // rename process should be aborted.
-        isFileServerMounted = new File(ConfigProvider.BOT_SETTINGS.movieFolder() + "movie.pb").exists();
+        synchronized (lock) {
+            isFileServerMounted = new File(ConfigProvider.BOT_SETTINGS.movieFolder() + "movie.pb").exists();
+        }
         if (isFileServerMounted) {
-            File file = new File(ConfigProvider.BOT_SETTINGS.tempFolder() + filename + ".pbdownload");
+            Path tempFile = Paths.get(ConfigProvider.BOT_SETTINGS.tempFolder() + filename + ".pbdownload");
+            Path destination = Paths.get(ConfigProvider.BOT_SETTINGS.movieFolder() + filename + fileExtension);
 
-            synchronized (lock) {
-                didProcessingFail = file.renameTo(new File(ConfigProvider.BOT_SETTINGS.movieFolder() + filename + fileExtension));
-                isProcessing = false;
-                lock.notifyAll();
+            try {
+                Files.move(tempFile, destination, StandardCopyOption.REPLACE_EXISTING);
+                synchronized (lock) {
+                    isProcessing = false;
+                    didProcessingFail = false;
+                    lock.notifyAll();
+                }
+            } catch (IOException e) {
+                synchronized (lock) {
+                    isProcessing = false;
+                    didProcessingFail = true;
+                    isFileServerMounted = true;
+                    lock.notifyAll();
+                }
             }
         } else {
             synchronized (lock) {
@@ -122,7 +135,6 @@ public class DownloadManager implements CustomRunnable {
                 lock.notifyAll();
             }
         }
-
         endTask();
     }
 
@@ -191,6 +203,7 @@ public class DownloadManager implements CustomRunnable {
      *
      * @return if the server was mounted or not
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isFileServerMounted() {
         return isFileServerMounted;
     }

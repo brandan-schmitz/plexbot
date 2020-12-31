@@ -15,6 +15,8 @@ import net.celestialdata.plexbot.workhandlers.TorrentHandler;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 
+import java.util.Locale;
+
 public class WaitlistDownloader implements CustomRunnable {
     private final TorrentHandler torrentHandler;
     private final OmdbMovieInfo movieInfo;
@@ -184,22 +186,24 @@ public class WaitlistDownloader implements CustomRunnable {
                     return;
                 }
             }
+        }
 
-            // Exit if the download failed, cleaning up the torrent on real-debrid in the process
-            if (downloadManager.didDownloadFail()) {
-                try {
-                    BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-                } catch (Exception e) {
-                    WaitlistUtilities.updateMessage(movieInfo);
-                    endTask(e);
-                    return;
-                }
+        // Exit if the download failed, cleaning up the torrent on real-debrid in the process
+        if (downloadManager.didDownloadFail()) {
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (Exception e) {
                 WaitlistUtilities.updateMessage(movieInfo);
-                endTask();
+                endTask(e);
                 return;
             }
+            WaitlistUtilities.updateMessage(movieInfo);
+            endTask();
+            return;
+        }
 
-            // Process the movie file
+        // Process the movie file
+        synchronized (downloadManager.lock) {
             while (downloadManager.isProcessing()) {
                 try {
                     downloadManager.lock.wait();
@@ -219,9 +223,9 @@ public class WaitlistDownloader implements CustomRunnable {
                                 .setDescription("The bot attempted to download a movie, however the NFS server is not mounted. " +
                                         "Please mount the server and manually finish processing the file and add it to the database.\n")
                                 .addField("Process Command:", "```bash\n" +
-                                        "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + downloadManager.getFilename() + ".pbdownload " +
-                                        ConfigProvider.BOT_SETTINGS.movieFolder() + downloadManager.getFilename() + fileExtension + "\n```")
-                                .addField("SQL Script:", "```sql\n" +
+                                        "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + "'" + downloadManager.getFilename() + ".pbdownload' " +
+                                        ConfigProvider.BOT_SETTINGS.movieFolder() + "'" + downloadManager.getFilename() + fileExtension + "'\n```")
+                                .addField("SQL Scripts:", "```sql\n" +
                                         "INSERT INTO `Movies` (`movie_id`, `movie_filename`, `movie_resolution`, `movie_title`, `movie_year`) VALUES (" +
                                         "'" + movieInfo.getImdbID() + "', " +
                                         "'" + downloadManager.getFilename() + fileExtension + "', " +

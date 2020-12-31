@@ -190,20 +190,22 @@ public class ResolutionUpgrader implements CustomRunnable {
                     return;
                 }
             }
+        }
 
-            // Exit if the download failed, cleaning up the torrent on real-debrid in the process
-            if (downloadManager.didDownloadFail()) {
-                try {
-                    BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-                } catch (Exception e) {
-                    endTask(e);
-                    return;
-                }
-                endTask();
+        // Exit if the download failed, cleaning up the torrent on real-debrid in the process
+        if (downloadManager.didDownloadFail()) {
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (Exception e) {
+                endTask(e);
                 return;
             }
+            endTask();
+            return;
+        }
 
-            // Process the movie file
+        // Process the movie file
+        synchronized (downloadManager.lock) {
             while (downloadManager.isProcessing()) {
                 try {
                     downloadManager.lock.wait();
@@ -221,16 +223,16 @@ public class ResolutionUpgrader implements CustomRunnable {
                                 .setTitle("Bot Error")
                                 .setDescription("The bot attempted to download a movie, however the NFS server is not mounted. " +
                                         "Please mount the server and manually finish processing the file and add it to the database.\n")
-                                .addField("Process Command:", "```bash\n" +
-                                        "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + downloadManager.getFilename() + ".pbdownload " +
-                                        ConfigProvider.BOT_SETTINGS.movieFolder() + downloadManager.getFilename() + fileExtension + "\n```")
-                                .addField("SQL Script:", "```sql\n" +
-                                        "INSERT INTO `Movies` (`movie_id`, `movie_filename`, `movie_resolution`, `movie_title`, `movie_year`) VALUES (" +
-                                        "'" + movieInfo.getImdbID() + "', " +
-                                        "'" + downloadManager.getFilename() + fileExtension + "', " +
-                                        "'" + torrentHandler.getTorrentQuality() + "', " +
-                                        "'" + movieInfo.getTitle() + "', " +
-                                        "'" + movieInfo.getYear() + "');\n\n" +
+                                .addField("Process Commands:", "```bash\n" +
+                                        "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + "'" + downloadManager.getFilename() + ".pbdownload' " +
+                                        ConfigProvider.BOT_SETTINGS.movieFolder() + "'" + downloadManager.getFilename() + fileExtension + "'\n\n" +
+                                        "rm " + ConfigProvider.BOT_SETTINGS.movieFolder() + "'" + DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename() +"'\n```")
+                                .addField("SQL Scripts:", "```sql\n" +
+                                        "UPDATE `Movies` SET `movie_filename` = '" + downloadManager.getFilename() + fileExtension + "', " +
+                                        "`movie_resolution` = '" + movieInfo.getYear() + "', " +
+                                        "`movie_title` = '" + movieInfo.getTitle() + "', " +
+                                        "`movie_year` = '" + movieInfo.getYear() + "' " +
+                                        "WHERE `Movies`.`movie_id` = '" + movieInfo.getImdbID() + "';\n\n" +
                                         "DELETE FROM `Upgrades` WHERE `Upgrades`.`upgrade_movie` = '" + movieInfo.getImdbID() + "';\n```")
                                 .setColor(BotColors.ERROR)
                                 .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.")
