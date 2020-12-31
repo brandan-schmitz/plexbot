@@ -476,23 +476,25 @@ public class RequestHandler implements CustomRunnable {
                 if (!downloadManager.isFileServerMounted()) {
                     displayError("There was an error while processing this movie. Brandan has been notified " +
                             "of this issue and will manually correct it when he is available.", "nfs-connection-fail");
-                    new EmbedBuilder()
-                            .setTitle("Bot Error")
-                            .setDescription("The bot attempted to download a movie, however the NFS server is not mounted. " +
-                                    "Please mount the server and manually finish processing the file and add it to the database.\n")
-                            .addField("Process Command:", "```bash\n" +
-                                    "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + downloadManager.getFilename() + ".pbdownload " +
-                                    ConfigProvider.BOT_SETTINGS.movieFolder() + downloadManager.getFilename() + fileExtension + "\n```")
-                            .addField("SQL Script:", "```sql\n" +
-                                    "INSERT INTO `Movies` (`movie_id`, `movie_filename`, `movie_resolution`, `movie_title`, `movie_year`) VALUES (" +
-                                    "'" + selectedMovie.getImdbID() + "', " +
-                                    "'" + downloadManager.getFilename() + fileExtension + "', " +
-                                    "'" + torrentHandler.getTorrentQuality() + "', " +
-                                    "'" + selectedMovie.getTitle() + "', " +
-                                    "'" + selectedMovie.getYear() + "');\n```"
-                            )
-                            .setColor(BotColors.ERROR)
-                            .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.");
+                    Main.getBotApi().getUserById(ConfigProvider.BOT_SETTINGS.adminUserId()).join().sendMessage(
+                            new EmbedBuilder()
+                                    .setTitle("Bot Error")
+                                    .setDescription("The bot attempted to download a movie, however the NFS server is not mounted. " +
+                                            "Please mount the server and manually finish processing the file and add it to the database.\n")
+                                    .addField("Process Command:", "```bash\n" +
+                                            "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + downloadManager.getFilename() + ".pbdownload " +
+                                            ConfigProvider.BOT_SETTINGS.movieFolder() + downloadManager.getFilename() + fileExtension + "\n```")
+                                    .addField("SQL Script:", "```sql\n" +
+                                            "INSERT INTO `Movies` (`movie_id`, `movie_filename`, `movie_resolution`, `movie_title`, `movie_year`) VALUES (" +
+                                            "'" + selectedMovie.getImdbID() + "', " +
+                                            "'" + downloadManager.getFilename() + fileExtension + "', " +
+                                            "'" + torrentHandler.getTorrentQuality() + "', " +
+                                            "'" + selectedMovie.getTitle() + "', " +
+                                            "'" + selectedMovie.getYear() + "');\n```"
+                                    )
+                                    .setColor(BotColors.ERROR)
+                                    .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.")
+                    );
                 } else {
                     displayError("There was an error while downloading this movie. Please try again later.", "file-process-fail");
                 }
