@@ -13,10 +13,10 @@
 package net.celestialdata.plexbot.client.api;
 
 import com.google.gson.reflect.TypeToken;
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.client.*;
 import net.celestialdata.plexbot.client.auth.CloudflareAuthorizer;
 import net.celestialdata.plexbot.client.model.YtsBaseResponse;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.HttpClients;
 
@@ -45,7 +45,7 @@ public class YtsApi {
 
         CloudflareAuthorizer cloudflareAuthorizer = new CloudflareAuthorizer(HttpClients.createDefault(), HttpClientContext.create());
         try {
-            if (cloudflareAuthorizer.tryAuthorization(ConfigProvider.BOT_SETTINGS.currentYtsDomain())) {
+            if (cloudflareAuthorizer.tryAuthorization(BotConfig.getInstance().currentYtsDomain())) {
                 clearanceCode = cloudflareAuthorizer.getClearanceCookie();
             }
         } catch (IOException | ScriptException e) {

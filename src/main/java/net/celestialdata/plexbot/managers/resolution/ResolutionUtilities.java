@@ -1,8 +1,8 @@
 package net.celestialdata.plexbot.managers.resolution;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.UpgradeItemBuilder;
 import net.celestialdata.plexbot.utils.BotColors;
@@ -26,11 +26,11 @@ public class ResolutionUtilities {
      * @param newSize       the size of the new video file
      */
     static void addUpgradableMovie(OmdbMovieInfo movieInfo, int oldResolution, int newResolution, String newSize) {
-        MediaInfo mediaInfo = MediaInfo.mediaInfo(ConfigProvider.BOT_SETTINGS.movieFolder() + DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename());
+        MediaInfo mediaInfo = MediaInfo.mediaInfo(BotConfig.getInstance().movieFolder() + DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename());
 
         // First check to see if the movie is already listed in the upgrade list, if not add it and send the message
         if (!DbOperations.upgradeItemOps.exists(movieInfo.getImdbID())) {
-            Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId()).ifPresent(
+            Main.getBotApi().getTextChannelById(BotConfig.getInstance().upgradableMoviesChannelId()).ifPresent(
                     textChannel -> textChannel.sendMessage(new EmbedBuilder()
                             .setTitle(movieInfo.getTitle())
                             .setDescription(

@@ -18,7 +18,7 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import io.swagger.v3.oas.annotations.media.Schema;
-import net.celestialdata.plexbot.config.ConfigProvider;
+import net.celestialdata.plexbot.BotConfig;
 
 import javax.annotation.processing.Generated;
 import java.io.IOException;
@@ -405,7 +405,7 @@ public class OmdbMovieInfo {
     @Schema(description = "Movie Poster URL")
     public String getPoster() {
         if (poster.equalsIgnoreCase("N/A")) {
-            return ConfigProvider.BOT_SETTINGS.noPosterImageUrl();
+            return BotConfig.getInstance().noPosterImageUrl();
         } else return poster;
     }
 

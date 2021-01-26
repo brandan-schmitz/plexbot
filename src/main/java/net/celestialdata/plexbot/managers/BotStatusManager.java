@@ -1,8 +1,8 @@
 package net.celestialdata.plexbot.managers;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.StringBuilderPlus;
 import org.javacord.api.entity.message.Message;
@@ -29,12 +29,12 @@ final public class BotStatusManager implements Runnable {
         waitlistManagerStatus = "Idle";
         currentProcesses = new ArrayList<>();
 
-        Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.botStatusChannelId()).ifPresent(channel ->
+        Main.getBotApi().getTextChannelById(BotConfig.getInstance().botStatusChannelId()).ifPresent(channel ->
                 channel.getMessages(100).thenAccept(messages -> messages.deleteAll().join()));
 
         sentMessage = new MessageBuilder()
                 .setEmbed(buildMessage())
-                .send(Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.botStatusChannelId()).orElseThrow())
+                .send(Main.getBotApi().getTextChannelById(BotConfig.getInstance().botStatusChannelId()).orElseThrow())
                 .join();
 
         BotWorkPool.getInstance().executor.submit(this);

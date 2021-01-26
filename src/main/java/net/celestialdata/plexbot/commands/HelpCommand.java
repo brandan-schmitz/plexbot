@@ -1,11 +1,11 @@
 package net.celestialdata.plexbot.commands;
 
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.commandhandler.Command;
 import net.celestialdata.plexbot.commandhandler.CommandExecutor;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.utils.PagedEmbed;
@@ -29,7 +29,7 @@ public class HelpCommand implements CommandExecutor {
      */
     @Command(aliases = "help", description = "Gives information about the bots commands", async = true, category = "general", usage = "# help\n//Lists available commands\n# help [command]\n//Gives information about a command")
     public void onHelpCommand(Message message, String[] args) {
-        final String serverPrefix = ConfigProvider.BOT_SETTINGS.botPrefix();
+        final String serverPrefix = BotConfig.getInstance().botPrefix();
 
         // If it is just the regular help command
         if (args.length == 0) {
@@ -115,7 +115,7 @@ public class HelpCommand implements CommandExecutor {
 
                         // Build and send message
                         message.getChannel().sendMessage(new EmbedBuilder()
-                                .setTitle(BotEmojis.QUESTION + " " + ConfigProvider.BOT_SETTINGS.botName() + " Help: " + simpleCommand.getCommandAnnotation().aliases()[0].toUpperCase() + " " + BotEmojis.QUESTION)
+                                .setTitle(BotEmojis.QUESTION + " " + BotConfig.getInstance().botName() + " Help: " + simpleCommand.getCommandAnnotation().aliases()[0].toUpperCase() + " " + BotEmojis.QUESTION)
                                 .setDescription("\u200b")
                                 .addField(BotEmojis.KEYBOARD + " Accessible Through:", "```" + aliases.toString() + "```\u200b")
                                 .addField(BotEmojis.NOTEPAD + " Description:", "```" + simpleCommand.getCommandAnnotation().description() + "```\u200b")

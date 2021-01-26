@@ -1,9 +1,9 @@
 package net.celestialdata.plexbot.commands;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.commandhandler.Command;
 import net.celestialdata.plexbot.commandhandler.CommandExecutor;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.workhandlers.RequestHandler;
@@ -34,7 +34,7 @@ public class RequestMovieCommand implements CommandExecutor {
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle(BotEmojis.ERROR + "  Command Error:")
                     .setDescription("You must specify the movie you wish to request. For more information please use " +
-                            ConfigProvider.BOT_SETTINGS.botPrefix() + "help request")
+                            BotConfig.getInstance().botPrefix() + "help request")
                     .setColor(BotColors.ERROR);
 
             // Send the message

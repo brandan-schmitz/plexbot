@@ -7,7 +7,6 @@ import net.celestialdata.plexbot.commands.HelpCommand;
 import net.celestialdata.plexbot.commands.PingCommand;
 import net.celestialdata.plexbot.commands.PurgeCommand;
 import net.celestialdata.plexbot.commands.RequestMovieCommand;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.HibernateUtil;
 import net.celestialdata.plexbot.database.builders.UserBuilder;
@@ -45,7 +44,7 @@ public class Main {
     // Builds the bots DiscordApi and connects the bot to Discord
     private static void startBot() {
         botApi = new DiscordApiBuilder()
-                .setToken(ConfigProvider.BOT_SETTINGS.token())
+                .setToken(BotConfig.getInstance().token())
                 .setAllIntents()
                 .setWaitForUsersOnStartup(true)
                 .setWaitForServersOnStartup(true)

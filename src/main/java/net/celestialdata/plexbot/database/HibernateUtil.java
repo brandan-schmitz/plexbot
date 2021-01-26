@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.database;
 
-import net.celestialdata.plexbot.config.ConfigProvider;
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.database.models.Movie;
 import net.celestialdata.plexbot.database.models.UpgradeItem;
 import net.celestialdata.plexbot.database.models.User;
@@ -29,9 +29,9 @@ public class HibernateUtil {
 
                 Map<String, Object> settings = new HashMap<>();
                 settings.put(Environment.DRIVER, "org.mariadb.jdbc.Driver");
-                settings.put(Environment.URL, "jdbc:mariadb://" + ConfigProvider.DATABASE_SETTINGS.ipAddress() + ":" + ConfigProvider.DATABASE_SETTINGS.port() + "/" + ConfigProvider.DATABASE_SETTINGS.dbName());
-                settings.put(Environment.USER, ConfigProvider.DATABASE_SETTINGS.username());
-                settings.put(Environment.PASS, ConfigProvider.DATABASE_SETTINGS.password());
+                settings.put(Environment.URL, "jdbc:mariadb://" + BotConfig.getInstance().dbConnectionAddress() + ":" + BotConfig.getInstance().dbPort() + "/" + BotConfig.getInstance().dbName());
+                settings.put(Environment.USER, BotConfig.getInstance().dbUsername());
+                settings.put(Environment.PASS, BotConfig.getInstance().dbPassword());
                 settings.put(Environment.HBM2DDL_AUTO, "update");
                 settings.put(Environment.SHOW_SQL, false);
 

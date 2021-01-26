@@ -1,10 +1,10 @@
 package net.celestialdata.plexbot.database.models;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.BotColors;
 import org.hibernate.annotations.Proxy;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -97,7 +97,7 @@ public class WaitlistItem implements BaseModel {
 
     @Override
     public void onDelete() {
-        Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.waitlistChannelId()).ifPresent(textChannel ->
+        Main.getBotApi().getTextChannelById(BotConfig.getInstance().waitlistChannelId()).ifPresent(textChannel ->
                 textChannel.getMessageById(this.messageId).join().delete().exceptionally(ExceptionLogger.get()));
     }
 
@@ -106,7 +106,7 @@ public class WaitlistItem implements BaseModel {
         OmdbMovieInfo movieInfo;
         try {
             movieInfo = BotClient.getInstance().omdbApi.getById(this.id);
-            Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.waitlistChannelId()).ifPresent(textChannel ->
+            Main.getBotApi().getTextChannelById(BotConfig.getInstance().waitlistChannelId()).ifPresent(textChannel ->
                     textChannel.sendMessage(new EmbedBuilder()
                             .setTitle(this.title)
                             .setDescription("**IMDB Code:** " + movieInfo.getImdbID() + "\n" +

@@ -1,10 +1,10 @@
 package net.celestialdata.plexbot.managers.waitlist;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.*;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
 import net.celestialdata.plexbot.database.models.WaitlistItem;
@@ -14,8 +14,6 @@ import net.celestialdata.plexbot.utils.CustomRunnable;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
-
-import java.util.Locale;
 
 public class WaitlistDownloader implements CustomRunnable {
     private final TorrentHandler torrentHandler;
@@ -217,14 +215,14 @@ public class WaitlistDownloader implements CustomRunnable {
 
         if (downloadManager.didProcessingFail()) {
             if (!downloadManager.isFileServerMounted()) {
-                Main.getBotApi().getUserById(ConfigProvider.BOT_SETTINGS.adminUserId()).join().sendMessage(
+                Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join().sendMessage(
                         new EmbedBuilder()
                                 .setTitle("Bot Error")
                                 .setDescription("The bot attempted to download a movie, however the NFS server is not mounted. " +
                                         "Please mount the server and manually finish processing the file and add it to the database.\n")
                                 .addField("Process Command:", "```bash\n" +
-                                        "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + "'" + downloadManager.getFilename() + ".pbdownload' " +
-                                        ConfigProvider.BOT_SETTINGS.movieFolder() + "'" + downloadManager.getFilename() + fileExtension + "'\n```")
+                                        "mv " + BotConfig.getInstance().tempFolder() + "'" + downloadManager.getFilename() + ".pbdownload' " +
+                                        BotConfig.getInstance().movieFolder() + "'" + downloadManager.getFilename() + fileExtension + "'\n```")
                                 .addField("SQL Scripts:", "```sql\n" +
                                         "INSERT INTO `Movies` (`movie_id`, `movie_filename`, `movie_resolution`, `movie_title`, `movie_year`) VALUES (" +
                                         "'" + movieInfo.getImdbID() + "', " +
@@ -267,7 +265,7 @@ public class WaitlistDownloader implements CustomRunnable {
         }
 
         // Send a message to the new-movies notification channel stating the movie is now available on Plex
-        Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.newMoviesChannelId()).ifPresent(textChannel ->
+        Main.getBotApi().getTextChannelById(BotConfig.getInstance().newMoviesChannelId()).ifPresent(textChannel ->
                 textChannel.sendMessage(new EmbedBuilder()
                         .setTitle(movieInfo.getTitle())
                         .setDescription("**Year:** " + movieInfo.getYear() + "\n" +

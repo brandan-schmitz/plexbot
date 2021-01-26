@@ -1,7 +1,7 @@
 package net.celestialdata.plexbot.database.models;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Proxy;
@@ -67,7 +67,7 @@ public class UpgradeItem implements BaseModel, Serializable {
 
     @Override
     public void onDelete() {
-        Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId()).ifPresent(textChannel ->
+        Main.getBotApi().getTextChannelById(BotConfig.getInstance().upgradableMoviesChannelId()).ifPresent(textChannel ->
                 textChannel.getMessageById(this.messageId).join().delete().exceptionally(ExceptionLogger.get()));
     }
 }

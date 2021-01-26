@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.commandhandler;
 
-import net.celestialdata.plexbot.config.ConfigProvider;
+import net.celestialdata.plexbot.BotConfig;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.*;
@@ -42,7 +42,7 @@ public class JavacordHandler extends CommandHandler {
      */
     private void handleMessageCreate(DiscordApi api, final MessageCreateEvent event) {
         Message message = event.getMessage();
-        String prefix = ConfigProvider.BOT_SETTINGS.botPrefix();
+        String prefix = BotConfig.getInstance().botPrefix();
         if (message.getUserAuthor().map(User::isYourself).orElse(false)) {
             return;
         }

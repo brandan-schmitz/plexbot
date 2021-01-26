@@ -1,10 +1,10 @@
 package net.celestialdata.plexbot.managers.resolution;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.*;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
 import net.celestialdata.plexbot.database.models.UpgradeItem;
@@ -218,15 +218,15 @@ public class ResolutionUpgrader implements CustomRunnable {
 
         if (downloadManager.didProcessingFail()) {
             if (!downloadManager.isFileServerMounted()) {
-                Main.getBotApi().getUserById(ConfigProvider.BOT_SETTINGS.adminUserId()).join().sendMessage(
+                Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join().sendMessage(
                         new EmbedBuilder()
                                 .setTitle("Bot Error")
                                 .setDescription("The bot attempted to download a movie, however the NFS server is not mounted. " +
                                         "Please mount the server and manually finish processing the file and add it to the database.\n")
                                 .addField("Process Commands:", "```bash\n" +
-                                        "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + "'" + downloadManager.getFilename() + ".pbdownload' " +
-                                        ConfigProvider.BOT_SETTINGS.movieFolder() + "'" + downloadManager.getFilename() + fileExtension + "'\n\n" +
-                                        "rm " + ConfigProvider.BOT_SETTINGS.movieFolder() + "'" + DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename() +"'\n```")
+                                        "mv " + BotConfig.getInstance().tempFolder() + "'" + downloadManager.getFilename() + ".pbdownload' " +
+                                        BotConfig.getInstance().movieFolder() + "'" + downloadManager.getFilename() + fileExtension + "'\n\n" +
+                                        "rm " + BotConfig.getInstance().movieFolder() + "'" + DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename() +"'\n```")
                                 .addField("SQL Scripts:", "```sql\n" +
                                         "UPDATE `Movies` SET `movie_filename` = '" + downloadManager.getFilename() + fileExtension + "', " +
                                         "`movie_resolution` = '" + movieInfo.getYear() + "', " +
@@ -243,7 +243,7 @@ public class ResolutionUpgrader implements CustomRunnable {
         }
 
         // Attempt to delete the old movie files
-        File oldVersion = new File(ConfigProvider.BOT_SETTINGS.movieFolder() +
+        File oldVersion = new File(BotConfig.getInstance().movieFolder() +
                 DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename());
         if (!oldVersion.delete()) {
             try {
@@ -280,7 +280,7 @@ public class ResolutionUpgrader implements CustomRunnable {
         }
 
         // Send a message to the upgraded-movies notification channel
-        Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradedMoviesChannelId()).ifPresent(textChannel ->
+        Main.getBotApi().getTextChannelById(BotConfig.getInstance().upgradedMoviesChannelId()).ifPresent(textChannel ->
                 textChannel.sendMessage(new EmbedBuilder()
                         .setTitle(movieInfo.getTitle())
                         .setDescription("**Year:** " + movieInfo.getYear() + "\n" +

@@ -1,10 +1,10 @@
 package net.celestialdata.plexbot.client;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.client.api.OmDbApi;
 import net.celestialdata.plexbot.client.api.PlexApi;
 import net.celestialdata.plexbot.client.api.RdbApi;
 import net.celestialdata.plexbot.client.api.YtsApi;
-import net.celestialdata.plexbot.config.ConfigProvider;
 
 public class BotClient {
     private static BotClient single_instance = null;
@@ -26,18 +26,18 @@ public class BotClient {
         ApiClient ytsApiClient = new ApiClient();
 
         // Set the Real-Debrid access token and base path
-        rdbApiClient.setAccessToken(ConfigProvider.API_KEYS.realDebridKey());
+        rdbApiClient.setAccessToken(BotConfig.getInstance().realDebridKey());
         rdbApiClient.setBasePath("https://api.real-debrid.com/rest/1.0");
 
         // Set the OmdbAPI Key and base path
-        omdbApiClient.setOmdbApiKey(ConfigProvider.API_KEYS.omdbApiKey());
+        omdbApiClient.setOmdbApiKey(BotConfig.getInstance().omdbApiKey());
         omdbApiClient.setBasePath("http://www.omdbapi.com");
 
         // Set the plex.tv account login and base path and client identifier
-        plexApiClient.setPlexLogin(ConfigProvider.PLEX_SERVER_SETTINGS.username(),
-                ConfigProvider.PLEX_SERVER_SETTINGS.password());
+        plexApiClient.setPlexLogin(BotConfig.getInstance().plexUsername(),
+                BotConfig.getInstance().plexPassword());
         plexApiClient.setBasePath("https://plex.tv");
-        plexApiClient.setPlexClientIdentifier(ConfigProvider.PLEX_SERVER_SETTINGS.clientIdentifier());
+        plexApiClient.setPlexClientIdentifier(BotConfig.getInstance().clientIdentifier());
 
         // Set the plex AuthToken for accessing the plex server
         try {
@@ -50,7 +50,7 @@ public class BotClient {
         }
 
         // Set the yts api base path
-        ytsApiClient.setBasePath(ConfigProvider.BOT_SETTINGS.currentYtsDomain() + "/api/v2");
+        ytsApiClient.setBasePath(BotConfig.getInstance().currentYtsDomain() + "/api/v2");
 
         // Create the individual api clients
         rdbApi = new RdbApi(rdbApiClient);

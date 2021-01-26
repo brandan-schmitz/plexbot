@@ -1,10 +1,10 @@
 package net.celestialdata.plexbot.managers.resolution;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.models.Movie;
 import net.celestialdata.plexbot.database.models.UpgradeItem;
@@ -120,7 +120,7 @@ public class ResolutionChecker implements CustomRunnable {
         // Cycle through all the movies that can be upgraded, and start a task for any that have the
         // thumbsup reaction on the message for the upgrade availability.
         for (UpgradeItem item : DbOperations.upgradeItemOps.getAllItems()) {
-            Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId())
+            Main.getBotApi().getTextChannelById(BotConfig.getInstance().upgradableMoviesChannelId())
                     .flatMap(textChannel -> textChannel.getMessageById(item.getMessageId())
                             .join()
                             .getReactionByEmoji(BotEmojis.THUMBS_UP)
@@ -136,7 +136,7 @@ public class ResolutionChecker implements CustomRunnable {
         }
 
         // Update the upgradable-movies channel to show when this check last finished running
-        Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.upgradableMoviesChannelId())
+        Main.getBotApi().getTextChannelById(BotConfig.getInstance().upgradableMoviesChannelId())
                 .flatMap(Channel::asServerTextChannel).ifPresent(serverTextChannel -> serverTextChannel.updateTopic(
                 "Last checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
                         .format(ZonedDateTime.now()) + " CST"));

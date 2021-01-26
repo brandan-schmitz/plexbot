@@ -1,11 +1,11 @@
 package net.celestialdata.plexbot.workhandlers;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.*;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
 import net.celestialdata.plexbot.database.builders.WaitlistItemBuilder;
@@ -480,14 +480,14 @@ public class RequestHandler implements CustomRunnable {
             if (!downloadManager.isFileServerMounted()) {
                 displayError("There was an error while processing this movie. Brandan has been notified " +
                         "of this issue and will manually correct it when he is available.", "nfs-connection-fail");
-                Main.getBotApi().getUserById(ConfigProvider.BOT_SETTINGS.adminUserId()).join().sendMessage(
+                Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join().sendMessage(
                         new EmbedBuilder()
                                 .setTitle("Bot Error")
                                 .setDescription("The bot attempted to download a movie, however the NFS server is not mounted. " +
                                         "Please mount the server and manually finish processing the file and add it to the database.\n")
                                 .addField("Process Command:", "```bash\n" +
-                                        "mv " + ConfigProvider.BOT_SETTINGS.tempFolder() + "'" + downloadManager.getFilename() + ".pbdownload' " +
-                                        ConfigProvider.BOT_SETTINGS.movieFolder() + "'" + downloadManager.getFilename() + fileExtension + "'\n```")
+                                        "mv " + BotConfig.getInstance().tempFolder() + "'" + downloadManager.getFilename() + ".pbdownload' " +
+                                        BotConfig.getInstance().movieFolder() + "'" + downloadManager.getFilename() + fileExtension + "'\n```")
                                 .addField("SQL Script:", "```sql\n" +
                                         "INSERT INTO `Movies` (`movie_id`, `movie_filename`, `movie_resolution`, `movie_title`, `movie_year`) VALUES (" +
                                         "'" + selectedMovie.getImdbID() + "', " +
@@ -562,7 +562,7 @@ public class RequestHandler implements CustomRunnable {
                 .setColor(BotColors.SUCCESS)
         ).exceptionally(ExceptionLogger.get());
 
-        Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.newMoviesChannelId()).ifPresent(textChannel ->
+        Main.getBotApi().getTextChannelById(BotConfig.getInstance().newMoviesChannelId()).ifPresent(textChannel ->
                 textChannel.sendMessage(new EmbedBuilder()
                         .setTitle(selectedMovie.getTitle())
                         .setDescription("**Year:** " + selectedMovie.getYear() + "\n" +

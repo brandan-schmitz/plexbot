@@ -1,9 +1,9 @@
 package net.celestialdata.plexbot.commands;
 
 import com.vdurmont.emoji.EmojiParser;
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.commandhandler.Command;
 import net.celestialdata.plexbot.commandhandler.CommandExecutor;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -32,7 +32,7 @@ public class PingCommand implements CommandExecutor {
 
         // Build and send the message with the ping result
         message.getChannel().sendMessage(new EmbedBuilder()
-                .setTitle(EmojiParser.parseToUnicode(":tools:") + "  " + ConfigProvider.BOT_SETTINGS.botName() + " Ping  " + EmojiParser.parseToUnicode(":tools:"))
+                .setTitle(EmojiParser.parseToUnicode(":tools:") + "  " + BotConfig.getInstance().botName() + " Ping  " + EmojiParser.parseToUnicode(":tools:"))
                 .addInlineField("Response Time:", timeDiff + " milliseconds")
                 .setColor(Color.BLUE))
                 .exceptionally(ExceptionLogger.get());

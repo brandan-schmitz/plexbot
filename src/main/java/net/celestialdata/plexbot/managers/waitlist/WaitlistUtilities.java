@@ -1,8 +1,8 @@
 package net.celestialdata.plexbot.managers.waitlist;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.utils.BotColors;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -29,7 +29,7 @@ public class WaitlistUtilities {
         // Get the channel the waitlist messages are in then fetch the message for the movie and update it with
         // the current date and time.
         try {
-            Main.getBotApi().getTextChannelById(ConfigProvider.BOT_SETTINGS.waitlistChannelId()).ifPresent(textChannel ->
+            Main.getBotApi().getTextChannelById(BotConfig.getInstance().waitlistChannelId()).ifPresent(textChannel ->
                     textChannel.getMessageById(DbOperations.waitlistItemOps.getItemById(movieInfo.getImdbID()).getMessageId()).join().edit(new EmbedBuilder()
                             .setTitle(movieInfo.getTitle())
                             .setDescription("**Year:** " + movieInfo.getYear() + "\n" +

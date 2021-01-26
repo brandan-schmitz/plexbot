@@ -1,7 +1,7 @@
 package net.celestialdata.plexbot.managers;
 
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
-import net.celestialdata.plexbot.config.ConfigProvider;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import org.apache.commons.lang3.StringUtils;
 
@@ -74,7 +74,7 @@ public class DownloadManager implements CustomRunnable {
             // Open a connection to the file being downloaded
             URLConnection connection = new URL(downloadLink).openConnection();
             ReadableByteChannel readableByteChannel = Channels.newChannel(connection.getInputStream());
-            FileChannel fileOutputStream = new FileOutputStream(ConfigProvider.BOT_SETTINGS.tempFolder() + filename + ".pbdownload").getChannel();
+            FileChannel fileOutputStream = new FileOutputStream(BotConfig.getInstance().tempFolder() + filename + ".pbdownload").getChannel();
 
             // Get the size of the file in bytes used in calculating the progress of the download
             size = connection.getContentLengthLong();
@@ -106,11 +106,11 @@ public class DownloadManager implements CustomRunnable {
         // Attempt to move the file to the movie folder. This folder should contain a file called movie.pb otherwise the
         // rename process should be aborted.
         synchronized (lock) {
-            isFileServerMounted = new File(ConfigProvider.BOT_SETTINGS.movieFolder() + "movie.pb").exists();
+            isFileServerMounted = new File(BotConfig.getInstance().movieFolder() + "movie.pb").exists();
         }
         if (isFileServerMounted) {
-            Path tempFile = Paths.get(ConfigProvider.BOT_SETTINGS.tempFolder() + filename + ".pbdownload");
-            Path destination = Paths.get(ConfigProvider.BOT_SETTINGS.movieFolder() + filename + fileExtension);
+            Path tempFile = Paths.get(BotConfig.getInstance().tempFolder() + filename + ".pbdownload");
+            Path destination = Paths.get(BotConfig.getInstance().movieFolder() + filename + fileExtension);
 
             try {
                 Files.move(tempFile, destination, StandardCopyOption.REPLACE_EXISTING);

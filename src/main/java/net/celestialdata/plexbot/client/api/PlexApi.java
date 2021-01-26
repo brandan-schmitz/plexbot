@@ -13,9 +13,9 @@
 package net.celestialdata.plexbot.client.api;
 
 import com.google.gson.reflect.TypeToken;
+import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.client.*;
 import net.celestialdata.plexbot.client.model.PlexUser;
-import net.celestialdata.plexbot.config.ConfigProvider;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class PlexApi {
         Object localVarPostBody = null;
 
         // Set the base path to the plex server
-        this.apiClient.setBasePath("http://" + ConfigProvider.PLEX_SERVER_SETTINGS.ipAddress() + ":" + ConfigProvider.PLEX_SERVER_SETTINGS.port());
+        this.apiClient.setBasePath("http://" + BotConfig.getInstance().plexConnectionAddress() + ":" + BotConfig.getInstance().plexPort());
 
         // create path and map variables
         String localVarPath = "/library/sections/all/refresh";

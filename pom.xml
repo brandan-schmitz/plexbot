@@ -6,7 +6,7 @@
 
     <groupId>net.celestialdata</groupId>
     <artifactId>plexbot</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -107,9 +107,19 @@
 
         <!-- Bot Functions Dependencies -->
         <dependency>
-            <groupId>org.cfg4j</groupId>
-            <artifactId>cfg4j-core</artifactId>
-            <version>4.4.1</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-configuration2</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.26</version>
         </dependency>
         <dependency>
             <groupId>com.vdurmont</groupId>
@@ -242,7 +252,7 @@
                         <goals>
                             <goal>native-image</goal>
                         </goals>
-                        <phase>package</phase>
+                        <phase>none</phase>
                     </execution>
                 </executions>
                 <configuration>
