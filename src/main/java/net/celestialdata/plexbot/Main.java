@@ -80,6 +80,27 @@ public class Main {
         // Disable debug logging
         FallbackLoggerConfiguration.setDebug(false);
 
+        // Print copyright information about the bot
+        System.out.println("\n" +
+                "           _____  _      ________   ______   ____ _______                \n" +
+                "          |  __ \\| |    |  ____\\ \\ / /  _ \\ / __ \\__   __|          \n" +
+                "          | |__) | |    | |__   \\ V /| |_) | |  | | | |                 \n" +
+                "          |  ___/| |    |  __|   > < |  _ <| |  | | | |                  \n" +
+                "          | |    | |____| |____ / . \\| |_) | |__| | | |                 \n" +
+                "          |_|    |______|______/_/ \\_\\____/ \\____/  |_|               \n" +
+                "                                                                         \n" +
+                "                   Version 1.2.5 - 01/26/2021                            \n" +
+                "                                                                         \n" +
+                "  This software is distributed under the GNU GENERAL PUBLIC v3 license   \n" +
+                "      and is available for anyone to use and modify as long as the       \n" +
+                "           proper attributes are given in the modified code.             \n" +
+                "                                                                         \n");
+
+        // Initialize the bot configuration.
+        System.out.print("Loading bot configuration file...");
+        BotConfig.getInstance();
+        System.out.println("Done");
+
         // Initialize the database connections
         System.out.print("Connecting to the database...");
         HibernateUtil.getSessionFactory();

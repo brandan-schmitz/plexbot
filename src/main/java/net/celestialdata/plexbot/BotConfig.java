@@ -6,6 +6,9 @@ import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * Used to access the configuration stored in the Trawler config.yaml
@@ -31,7 +34,22 @@ public class BotConfig {
         try {
             config = new Configurations().fileBased(YAMLConfiguration.class, yamlFile);
         } catch (ConfigurationException e) {
-            System.out.println("Unable to load configuration file. Please make sure config.yaml is present and valid.");
+            try {
+                // Copy the sample file over to the new file
+                Files.copy(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("config.sample")),
+                        Paths.get(new File("").getAbsolutePath() + "/config.yaml"));
+
+                System.out.println("\n" +
+                        "ERROR: The bots configuration file does not exist! If this is the first time running\n" +
+                        "       the bot then is normal. Please check the directory where you installed the bot and\n" +
+                        "       modify the config.yaml file that was just generated. Once you have modified this file\n" +
+                        "       you may start the bot again.\n");
+            } catch (Exception ignored) {
+                System.out.println("\n" +
+                        "ERROR: The bots configuration file does not exist and I was unable to create one! \n" +
+                        "       Please check the Plexbot source repo for a sample config.yaml file to use.\n");
+            }
+
             System.exit(1);
         }
     }

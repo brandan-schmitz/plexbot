@@ -60,7 +60,9 @@ Below is a table that describes all the channels that Plexbot requires in order 
 
 ### Bot Configuration
 
-The bot requires a `config.yaml` to be located in the same folder as the bot JAR file in order to run. If running this from an IDE, you should have the file located within the root of the project folder. Below is an example configuration file. Please note that the values provided are **examples** and will not work. You will need to customize them yourself. 
+The bot requires a `config.yaml` to be located in the same folder as the bot JAR file in order to run. If running this from an IDE, you should have the file located within the root of the project folder. Below is an example configuration file. Please note that the values provided are **examples** and will not work. You will need to customize them yourself.
+
+***This should be automatically generated the first time you run the bot. Once it is generated you will need to modify the values in the file to match your environment before you can run the bot.***
 
 ```yaml
 ####################
@@ -76,11 +78,8 @@ BotSettings:
   # The prefix the bot will use to listen for commands. Must be contained within ""
   botPrefix: "!"
 
-  # The folder that the movies are stored in
-  movieFolder: /path/to/movie/folder
-
-  # The folder that is used for temporary file operations
-  tempFolder: /path/to/temp/folder
+  # The ID of the user responsible for managing the bot
+  adminUserId: 012345678901234567
 
   # URL of Image displayed in place of movies that do not have a poster image
   noPosterImageUrl: https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png
@@ -88,6 +87,12 @@ BotSettings:
   # Base URL of the current YTS domain to look at for API requests
   # At the time of this commit, this is the current domain so this can be left as is
   currentYtsDomain: https://yts.mx
+
+
+###########################
+### Channel ID Settings ###
+###########################
+ChannelSettings:
 
   # The ID of the channel for listing movies that can be upgraded to a better resolution
   upgradableMoviesChannelId: 012345678901234567
@@ -104,27 +109,37 @@ BotSettings:
   # The ID of the channel for notifications about movies that have been added to the waiting list
   waitlistChannelId: 012345678901234567
 
-  # The ID of the user responsible for managing the bot
-  adminUserId: 012345678901234567
+
+#######################
+### Folder Settings ###
+#######################
+FolderSettings:
+
+  # The folder that the movies are stored in
+  movieFolder: /path/to/movie/folder
+
+  # The folder that is used for temporary file operations
+  tempFolder: /path/to/temp/folder
+
 
 #########################
 ### Database Settings ###
 #########################
 DatabaseSettings:
   # The IP or URL of the server hosting the bots database
-  ipAddress: 127.0.0.1
+  dbConnectionAddress: 127.0.0.1
 
   # The database server port
-  port: 3306
+  dbPort: 3306
 
   # The name of the database the bot should use
-  dbName: Plexbot
+  dbName: plexbot
 
   # The username the bot will use to access the database
-  username: Plexbot
+  dbUsername: plexbot
 
   # The password the bot will use to access the database
-  password: somepassword
+  dbPassword: somepassword
 
 
 ##################################
@@ -133,16 +148,16 @@ DatabaseSettings:
 PlexServerSettings:
   # The IP address of the Plex Media Server. If the bot is on the same network as the Plex server,
   # this can be the private/local IP address, otherwise this should be the public IP address of the server
-  ipAddress: 127.0.0.1
+  plexConnectionAddress: 127.0.0.1
 
   # The port of the Plex Media Server. Plex defaults to 32400 unless it is manually changed
-  port: 32400
+  plexPort: 32400
 
   # The username to your plex.tv account
-  username: username
+  plexUsername: username
 
   # The password to your plex.tv account.
-  password: Password1234
+  plexPassword: Password1234
 
   # The Client Identifier used to identify individual devices on a Plex account. This needs to be a unique
   # UUID. You can generate one with the following commands:
