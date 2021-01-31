@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.Objects;
@@ -21,7 +20,6 @@ import java.util.Objects;
 /**
  * Base response of request to YTS
  */
-@Schema(description = "Base response of request to YTS")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class YtsBaseResponse {
     @SerializedName("status")
@@ -45,7 +43,6 @@ public class YtsBaseResponse {
      * @return status
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Request status")
     public String getStatus() {
         return status;
     }
@@ -67,7 +64,6 @@ public class YtsBaseResponse {
      * @return statusMessage
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Request status message")
     public String getStatusMessage() {
         return statusMessage;
     }
@@ -88,7 +84,7 @@ public class YtsBaseResponse {
      *
      * @return data
      **/
-    @Schema(description = "")
+    @SuppressWarnings("unused")
     public YtsSearchResult getData() {
         return data;
     }

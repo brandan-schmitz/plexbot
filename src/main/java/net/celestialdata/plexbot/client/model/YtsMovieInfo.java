@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import java.util.Objects;
 /**
  * Information about a specific movie available on YTS
  */
-@Schema(description = "Information about a specific movie available on YTS")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class YtsMovieInfo {
     @SerializedName("id")
@@ -116,7 +114,6 @@ public class YtsMovieInfo {
      * @return id
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "YTS movie ID")
     public Integer getId() {
         return id;
     }
@@ -138,7 +135,6 @@ public class YtsMovieInfo {
      * @return url
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie URL")
     public String getUrl() {
         return url;
     }
@@ -159,7 +155,7 @@ public class YtsMovieInfo {
      *
      * @return imdbCode
      **/
-    @Schema(description = "Movie IMDB code")
+    @SuppressWarnings("unused")
     public String getImdbCode() {
         return imdbCode;
     }
@@ -181,7 +177,6 @@ public class YtsMovieInfo {
      * @return title
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Title")
     public String getTitle() {
         return title;
     }
@@ -203,7 +198,6 @@ public class YtsMovieInfo {
      * @return titleEnglish
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Title (in english)")
     public String getTitleEnglish() {
         return titleEnglish;
     }
@@ -225,7 +219,6 @@ public class YtsMovieInfo {
      * @return titleLong
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Full movie title")
     public String getTitleLong() {
         return titleLong;
     }
@@ -247,7 +240,6 @@ public class YtsMovieInfo {
      * @return slug
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie slug code")
     public String getSlug() {
         return slug;
     }
@@ -269,7 +261,6 @@ public class YtsMovieInfo {
      * @return year
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie release year")
     public Integer getYear() {
         return year;
     }
@@ -291,7 +282,6 @@ public class YtsMovieInfo {
      * @return rating
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie average rating")
     public Double getRating() {
         return rating;
     }
@@ -313,7 +303,6 @@ public class YtsMovieInfo {
      * @return runtime
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie runtime (minutes)")
     public Integer getRuntime() {
         return runtime;
     }
@@ -344,7 +333,6 @@ public class YtsMovieInfo {
      * @return genres
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "List of generes the movie is classified under")
     public List<String> getGenres() {
         return genres;
     }
@@ -366,7 +354,6 @@ public class YtsMovieInfo {
      * @return summary
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Summary of movie plot")
     public String getSummary() {
         return summary;
     }
@@ -388,7 +375,6 @@ public class YtsMovieInfo {
      * @return descriptionFull
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Full length movie description")
     public String getDescriptionFull() {
         return descriptionFull;
     }
@@ -410,7 +396,6 @@ public class YtsMovieInfo {
      * @return synopsis
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie plot")
     public String getSynopsis() {
         return synopsis;
     }
@@ -432,7 +417,6 @@ public class YtsMovieInfo {
      * @return ytTrailerCode
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "YTS Movie trailer code")
     public String getYtTrailerCode() {
         return ytTrailerCode;
     }
@@ -454,7 +438,6 @@ public class YtsMovieInfo {
      * @return language
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie language")
     public String getLanguage() {
         return language;
     }
@@ -476,7 +459,6 @@ public class YtsMovieInfo {
      * @return mpaRating
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie rating")
     public String getMpaRating() {
         return mpaRating;
     }
@@ -498,7 +480,6 @@ public class YtsMovieInfo {
      * @return backgroundImage
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie background image url")
     public String getBackgroundImage() {
         return backgroundImage;
     }
@@ -520,7 +501,6 @@ public class YtsMovieInfo {
      * @return backgroundImageOriginal
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie original background image url")
     public String getBackgroundImageOriginal() {
         return backgroundImageOriginal;
     }
@@ -542,7 +522,6 @@ public class YtsMovieInfo {
      * @return smallCoverImage
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie poster image (small)")
     public String getSmallCoverImage() {
         return smallCoverImage;
     }
@@ -564,7 +543,6 @@ public class YtsMovieInfo {
      * @return mediumCoverImage
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie poster image (medium)")
     public String getMediumCoverImage() {
         return mediumCoverImage;
     }
@@ -586,7 +564,6 @@ public class YtsMovieInfo {
      * @return largeCoverImage
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie poster image (large)")
     public String getLargeCoverImage() {
         return largeCoverImage;
     }
@@ -608,7 +585,6 @@ public class YtsMovieInfo {
      * @return state
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Status of the movie listing")
     public String getState() {
         return state;
     }
@@ -638,7 +614,7 @@ public class YtsMovieInfo {
      *
      * @return torrents
      **/
-    @Schema(description = "List of movie torrents")
+    @SuppressWarnings("unused")
     public List<YtsTorrentInfo> getTorrents() {
         return torrents;
     }
@@ -660,7 +636,6 @@ public class YtsMovieInfo {
      * @return dateUploaded
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Date uploaded")
     public String getDateUploaded() {
         return dateUploaded;
     }
@@ -682,7 +657,6 @@ public class YtsMovieInfo {
      * @return dateUploadedUnix
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Date uploaded (unix format)")
     public Integer getDateUploadedUnix() {
         return dateUploadedUnix;
     }

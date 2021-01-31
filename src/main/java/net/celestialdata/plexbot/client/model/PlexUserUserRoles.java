@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ import java.util.Objects;
  * User roles
  */
 @SuppressWarnings("unused")
-@Schema(description = "User roles")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class PlexUserUserRoles {
     @SerializedName("roles")
@@ -51,7 +49,6 @@ public class PlexUserUserRoles {
      * @return roles
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "List of user roles")
     public List<String> getRoles() {
         return roles;
     }

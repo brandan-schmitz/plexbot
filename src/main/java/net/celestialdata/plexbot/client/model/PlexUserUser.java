@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.Objects;
@@ -76,7 +75,6 @@ public class PlexUserUser {
      * @return id
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User ID")
     public Integer getId() {
         return id;
     }
@@ -98,7 +96,6 @@ public class PlexUserUser {
      * @return uuid
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User UUID")
     public String getUuid() {
         return uuid;
     }
@@ -120,7 +117,6 @@ public class PlexUserUser {
      * @return email
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User email")
     public String getEmail() {
         return email;
     }
@@ -142,7 +138,6 @@ public class PlexUserUser {
      * @return joinedAt
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Date user joined")
     public String getJoinedAt() {
         return joinedAt;
     }
@@ -164,7 +159,6 @@ public class PlexUserUser {
      * @return username
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User username")
     public String getUsername() {
         return username;
     }
@@ -186,7 +180,6 @@ public class PlexUserUser {
      * @return title
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User display name")
     public String getTitle() {
         return title;
     }
@@ -208,7 +201,6 @@ public class PlexUserUser {
      * @return thumb
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User thumbnail link")
     public String getThumb() {
         return thumb;
     }
@@ -230,7 +222,6 @@ public class PlexUserUser {
      * @return authToken
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User auth token")
     public String getAuthToken() {
         return authToken;
     }
@@ -252,7 +243,6 @@ public class PlexUserUser {
      * @return authenticationToken
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User auth token")
     public String getAuthenticationToken() {
         return authenticationToken;
     }
@@ -274,7 +264,6 @@ public class PlexUserUser {
      * @return subscription
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "")
     public PlexUserUserSubscription getSubscription() {
         return subscription;
     }
@@ -296,7 +285,6 @@ public class PlexUserUser {
      * @return roles
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "")
     public PlexUserUserRoles getRoles() {
         return roles;
     }
@@ -318,7 +306,6 @@ public class PlexUserUser {
      * @return confirmedAt
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User confirmation date")
     public String getConfirmedAt() {
         return confirmedAt;
     }
@@ -340,7 +327,6 @@ public class PlexUserUser {
      * @return rememberMe
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User remember login")
     public Boolean isRememberMe() {
         return rememberMe;
     }

@@ -17,7 +17,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.io.IOException;
@@ -27,7 +26,6 @@ import java.util.Objects;
  * Information about a file within a real-debrid torrent
  */
 @SuppressWarnings("unused")
-@Schema(description = "Information about a file within a real-debrid torrent")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RdbTorrentFile {
     @SerializedName("id")
@@ -53,7 +51,6 @@ public class RdbTorrentFile {
      * @return id
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "File ID")
     public Integer getId() {
         return id;
     }
@@ -75,7 +72,6 @@ public class RdbTorrentFile {
      * @return path
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Path to the file within the torrent folder")
     public String getPath() {
         return path;
     }
@@ -97,7 +93,6 @@ public class RdbTorrentFile {
      * @return bytes
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Size of file in bytes")
     public Long getBytes() {
         return bytes;
     }
@@ -119,7 +114,6 @@ public class RdbTorrentFile {
      * @return selected
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Status of file selection")
     public SelectedEnum getSelected() {
         return selected;
     }

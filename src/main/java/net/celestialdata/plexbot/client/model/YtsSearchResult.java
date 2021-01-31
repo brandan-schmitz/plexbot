@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ import java.util.Objects;
  * Data resulting from a search for a movie on YTS using the query_term parameter
  */
 @SuppressWarnings("unused")
-@Schema(description = "Data resulting from a search for a movie on YTS using the query_term parameter")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class YtsSearchResult {
     @SerializedName("movie_count")
@@ -51,7 +49,6 @@ public class YtsSearchResult {
      * @return movieCount
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Number of movies returned in this search")
     public Integer getMovieCount() {
         return movieCount;
     }
@@ -73,7 +70,6 @@ public class YtsSearchResult {
      * @return limit
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Maximum number of results displayed on a \"page\"")
     public Integer getLimit() {
         return limit;
     }
@@ -95,7 +91,6 @@ public class YtsSearchResult {
      * @return pageNumber
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Current \"page\" of results")
     public Integer getPageNumber() {
         return pageNumber;
     }
@@ -126,7 +121,6 @@ public class YtsSearchResult {
      * @return movies
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "List of movies")
     public List<YtsMovieInfo> getMovies() {
         return movies;
     }

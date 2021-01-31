@@ -17,8 +17,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.v3.oas.annotations.media.Schema;
-import net.celestialdata.plexbot.BotConfig;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.annotation.processing.Generated;
 import java.io.IOException;
@@ -30,78 +29,56 @@ import java.util.Objects;
  * Information about a movie from OMDb
  */
 @SuppressWarnings("unused")
-@Schema(description = "Information about a movie from OMDb")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class OmdbMovieInfo {
+    @ConfigProperty(name = "bot.defaultPoster")
+    String defaultPoster;
     @SerializedName("Title")
     private String title = null;
-
     @SerializedName("Year")
     private String year = null;
-
     @SerializedName("Rated")
     private String rated = null;
-
     @SerializedName("Released")
     private String released = null;
-
     @SerializedName("Runtime")
     private String runtime = null;
-
     @SerializedName("Genre")
     private String genre = null;
-
     @SerializedName("Director")
     private String director = null;
-
     @SerializedName("Writer")
     private String writer = null;
-
     @SerializedName("Actors")
     private String actors = null;
-
     @SerializedName("Plot")
     private String plot = null;
-
     @SerializedName("Language")
     private String language = null;
-
     @SerializedName("Country")
     private String country = null;
-
     @SerializedName("Awards")
     private String awards = null;
-
     @SerializedName("Poster")
     private String poster = null;
-
     @SerializedName("Ratings")
     private List<OmdbMovieRating> ratings = null;
-
     @SerializedName("Metascore")
     private String metascore = null;
-
     @SerializedName("imdbRating")
     private String imdbRating = null;
-
     @SerializedName("imdbVotes")
     private String imdbVotes = null;
-
     @SerializedName("imdbID")
     private String imdbID = null;
-
     @SerializedName("Type")
     private String type = null;
-
     @SerializedName("DVD")
     private String DVD = null;
-
     @SerializedName("BoxOffice")
     private String boxOffice = null;
-
     @SerializedName("Production")
     private String production = null;
-
     @SerializedName("Website")
     private String website = null;
     @SerializedName("Response")
@@ -120,7 +97,6 @@ public class OmdbMovieInfo {
      *
      * @return title
      **/
-    @Schema(description = "Movie Title")
     public String getTitle() {
         return title;
     }
@@ -141,7 +117,6 @@ public class OmdbMovieInfo {
      *
      * @return year
      **/
-    @Schema(description = "Movie Year")
     public String getYear() {
         return year;
     }
@@ -163,7 +138,6 @@ public class OmdbMovieInfo {
      * @return rated
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Rating")
     public String getRated() {
         return rated;
     }
@@ -185,7 +159,6 @@ public class OmdbMovieInfo {
      * @return released
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Released")
     public String getReleased() {
         return released;
     }
@@ -207,7 +180,6 @@ public class OmdbMovieInfo {
      * @return runtime
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Runtime (minutes)")
     public String getRuntime() {
         return runtime;
     }
@@ -229,7 +201,6 @@ public class OmdbMovieInfo {
      * @return genre
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Genre")
     public String getGenre() {
         return genre;
     }
@@ -250,7 +221,6 @@ public class OmdbMovieInfo {
      *
      * @return director
      **/
-    @Schema(description = "Movie Director")
     public String getDirector() {
         return director;
     }
@@ -272,7 +242,6 @@ public class OmdbMovieInfo {
      * @return writer
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Writer")
     public String getWriter() {
         return writer;
     }
@@ -294,7 +263,6 @@ public class OmdbMovieInfo {
      * @return actors
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Actors")
     public String getActors() {
         return actors;
     }
@@ -315,7 +283,6 @@ public class OmdbMovieInfo {
      *
      * @return plot
      **/
-    @Schema(description = "Movie Plot")
     public String getPlot() {
         return plot;
     }
@@ -337,7 +304,6 @@ public class OmdbMovieInfo {
      * @return language
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Language")
     public String getLanguage() {
         return language;
     }
@@ -359,7 +325,6 @@ public class OmdbMovieInfo {
      * @return country
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Country")
     public String getCountry() {
         return country;
     }
@@ -381,7 +346,6 @@ public class OmdbMovieInfo {
      * @return awards
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Awards")
     public String getAwards() {
         return awards;
     }
@@ -402,10 +366,9 @@ public class OmdbMovieInfo {
      *
      * @return poster
      **/
-    @Schema(description = "Movie Poster URL")
     public String getPoster() {
         if (poster.equalsIgnoreCase("N/A")) {
-            return BotConfig.getInstance().noPosterImageUrl();
+            return defaultPoster;
         } else return poster;
     }
 
@@ -434,7 +397,6 @@ public class OmdbMovieInfo {
      * @return ratings
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Ratings")
     public List<OmdbMovieRating> getRatings() {
         return ratings;
     }
@@ -456,7 +418,6 @@ public class OmdbMovieInfo {
      * @return metascore
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Metascore")
     public String getMetascore() {
         return metascore;
     }
@@ -478,7 +439,6 @@ public class OmdbMovieInfo {
      * @return imdbRating
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie IMDB Ratings")
     public String getImdbRating() {
         return imdbRating;
     }
@@ -500,7 +460,6 @@ public class OmdbMovieInfo {
      * @return imdbVotes
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie IMDB Votes")
     public String getImdbVotes() {
         return imdbVotes;
     }
@@ -521,7 +480,6 @@ public class OmdbMovieInfo {
      *
      * @return imdbID
      **/
-    @Schema(description = "Movie IMDB ID")
     public String getImdbID() {
         return imdbID;
     }
@@ -543,7 +501,6 @@ public class OmdbMovieInfo {
      * @return type
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Type")
     public String getType() {
         return type;
     }
@@ -565,7 +522,6 @@ public class OmdbMovieInfo {
      * @return DVD
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie DVD Sales")
     public String getDVD() {
         return DVD;
     }
@@ -587,7 +543,6 @@ public class OmdbMovieInfo {
      * @return boxOffice
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Box Office Sales")
     public String getBoxOffice() {
         return boxOffice;
     }
@@ -609,7 +564,6 @@ public class OmdbMovieInfo {
      * @return production
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Production Cost")
     public String getProduction() {
         return production;
     }
@@ -631,7 +585,6 @@ public class OmdbMovieInfo {
      * @return website
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Movie Website")
     public String getWebsite() {
         return website;
     }
@@ -652,7 +605,6 @@ public class OmdbMovieInfo {
      *
      * @return response
      **/
-    @Schema(description = "API Response Success State")
     public ResponseEnum getResponse() {
         return response;
     }
@@ -674,7 +626,6 @@ public class OmdbMovieInfo {
      * @return error
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "API Error Message (if error occurred)")
     public String getError() {
         return error;
     }

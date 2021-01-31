@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.Objects;
@@ -21,7 +20,6 @@ import java.util.Objects;
 /**
  * Represent a user in Plex
  */
-@Schema(description = "Represent a user in Plex")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class PlexUser {
     @SerializedName("user")
@@ -38,7 +36,6 @@ public class PlexUser {
      *
      * @return user
      **/
-    @Schema(description = "")
     public PlexUserUser getUser() {
         return user;
     }

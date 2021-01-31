@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.Objects;
@@ -21,7 +20,6 @@ import java.util.Objects;
 /**
  * Displays errors for Real-Debrid calls
  */
-@Schema(description = "Displays errors for Real-Debrid calls")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RdbError {
     @SerializedName("error")
@@ -42,7 +40,6 @@ public class RdbError {
      * @return error
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Error message")
     public String getError() {
         return error;
     }
@@ -64,7 +61,6 @@ public class RdbError {
      * @return errorCode
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Error code, reference here: https://api.real-debrid.com/#api_error_codes")
     public Integer getErrorCode() {
         return errorCode;
     }

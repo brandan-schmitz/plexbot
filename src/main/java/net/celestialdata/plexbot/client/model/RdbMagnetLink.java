@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.Objects;
@@ -21,7 +20,6 @@ import java.util.Objects;
 /**
  * Response generated when adding a magnet link
  */
-@Schema(description = "Response generated when adding a magnet link")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RdbMagnetLink {
     @SerializedName("id")
@@ -41,7 +39,7 @@ public class RdbMagnetLink {
      *
      * @return id
      **/
-    @Schema(description = "ID of the created torrent")
+    @SuppressWarnings("unused")
     public String getId() {
         return id;
     }
@@ -63,7 +61,6 @@ public class RdbMagnetLink {
      * @return uri
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "URL of the created torrent")
     public String getUri() {
         return uri;
     }

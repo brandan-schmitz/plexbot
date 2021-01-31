@@ -28,6 +28,7 @@ import java.util.stream.Stream;
  * Provides a method for authorizing against the CloudFlare DDoS protection
  * page that was added to the YTS API website
  */
+@SuppressWarnings("CdiInjectionPointsInspection")
 public class CloudflareAuthorizer {
     private final HttpClient httpClient;
     private final HttpClientContext httpClientContext;

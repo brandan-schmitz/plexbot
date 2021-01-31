@@ -13,10 +13,12 @@
 package net.celestialdata.plexbot.client.api;
 
 import com.google.gson.reflect.TypeToken;
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.client.*;
 import net.celestialdata.plexbot.client.model.PlexUser;
+import org.eclipse.microprofile.config.ConfigProvider;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,7 +26,10 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
+@ApplicationScoped
 public class PlexApi {
+    @Inject
+    BotClient botClient;
     private ApiClient apiClient;
 
     public PlexApi() {
@@ -55,8 +60,11 @@ public class PlexApi {
     public com.squareup.okhttp.Call refreshLibrariesCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
+        String ipAddress = ConfigProvider.getConfig().getValue("plex.ip", String.class);
+        int port = ConfigProvider.getConfig().getValue("plex.port", Integer.class);
+
         // Set the base path to the plex server
-        this.apiClient.setBasePath("http://" + BotConfig.getInstance().plexConnectionAddress() + ":" + BotConfig.getInstance().plexPort());
+        this.apiClient.setBasePath("http://" + ipAddress + ":" + port);
 
         // create path and map variables
         String localVarPath = "/library/sections/all/refresh";
@@ -119,7 +127,7 @@ public class PlexApi {
             refreshLibrariesWithHttpInfo();
         } catch (ApiException e) {
             if (e.getCode() == 401) {
-                BotClient.refreshClient();
+                botClient.refreshClient();
                 refreshLibrariesWithHttpInfo();
             }
         }

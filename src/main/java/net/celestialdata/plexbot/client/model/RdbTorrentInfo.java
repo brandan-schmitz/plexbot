@@ -17,7 +17,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.io.IOException;
@@ -28,7 +27,7 @@ import java.util.Objects;
 /**
  * Information on a real-debrid torrent
  */
-@Schema(description = "Information on a real-debrid torrent")
+@SuppressWarnings("unused")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RdbTorrentInfo {
     @SerializedName("id")
@@ -83,7 +82,6 @@ public class RdbTorrentInfo {
      *
      * @return id
      **/
-    @Schema(description = "Torrent ID")
     public String getId() {
         return id;
     }
@@ -105,7 +103,6 @@ public class RdbTorrentInfo {
      * @return filename
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Torrent filename")
     public String getFilename() {
         return filename;
     }
@@ -127,7 +124,6 @@ public class RdbTorrentInfo {
      * @return originalFilename
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Original name of the torrent")
     public String getOriginalFilename() {
         return originalFilename;
     }
@@ -149,7 +145,6 @@ public class RdbTorrentInfo {
      * @return hash
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "SHA1 Hash of the torrent")
     public String getHash() {
         return hash;
     }
@@ -171,7 +166,6 @@ public class RdbTorrentInfo {
      * @return bytes
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Size of selected files only")
     public Long getBytes() {
         return bytes;
     }
@@ -193,7 +187,6 @@ public class RdbTorrentInfo {
      * @return originalBytes
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Total size of the torrent")
     public Long getOriginalBytes() {
         return originalBytes;
     }
@@ -215,7 +208,6 @@ public class RdbTorrentInfo {
      * @return host
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Host main domain")
     public String getHost() {
         return host;
     }
@@ -237,7 +229,6 @@ public class RdbTorrentInfo {
      * @return split
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Split size of links")
     public Integer getSplit() {
         return split;
     }
@@ -258,7 +249,6 @@ public class RdbTorrentInfo {
      *
      * @return progress
      **/
-    @Schema(description = "Progress of torrent download to real-debrid")
     public Integer getProgress() {
         return progress;
     }
@@ -279,7 +269,6 @@ public class RdbTorrentInfo {
      *
      * @return status
      **/
-    @Schema(description = "Current status of the torrent")
     public StatusEnum getStatus() {
         return status;
     }
@@ -301,7 +290,6 @@ public class RdbTorrentInfo {
      * @return added
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Date added")
     public String getAdded() {
         return added;
     }
@@ -331,7 +319,6 @@ public class RdbTorrentInfo {
      *
      * @return files
      **/
-    @Schema(description = "")
     public List<RdbTorrentFile> getFiles() {
         return files;
     }
@@ -361,7 +348,6 @@ public class RdbTorrentInfo {
      *
      * @return links
      **/
-    @Schema(description = "Host download links")
     public List<String> getLinks() {
         return links;
     }
@@ -383,7 +369,6 @@ public class RdbTorrentInfo {
      * @return ended
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Date/Time torrent finished downloading (Only present when status is downloaded)")
     public String getEnded() {
         return ended;
     }
@@ -405,7 +390,6 @@ public class RdbTorrentInfo {
      * @return speed
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Download speed in bytes (Only present in \"downloading\", \"compressing\", \"uploading\" status)")
     public Integer getSpeed() {
         return speed;
     }
@@ -427,7 +411,6 @@ public class RdbTorrentInfo {
      * @return seeders
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Number of seeders (Only present in \"downloading\", \"magnet_conversion\" status)")
     public Integer getSeeders() {
         return seeders;
     }

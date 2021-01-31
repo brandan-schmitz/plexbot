@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.Objects;
@@ -22,7 +21,6 @@ import java.util.Objects;
  * Ratings for a movie from OMDb
  */
 @SuppressWarnings("unused")
-@Schema(description = "Ratings for a movie from OMDb")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class OmdbMovieRating {
     @SerializedName("Source")
@@ -43,7 +41,6 @@ public class OmdbMovieRating {
      * @return source
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Rating Source")
     public String getSource() {
         return source;
     }
@@ -65,7 +62,6 @@ public class OmdbMovieRating {
      * @return value
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Rating Value")
     public String getValue() {
         return value;
     }

@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.Objects;
@@ -66,7 +65,6 @@ public class YtsTorrentInfo {
      * @return url
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Torrent file download link")
     public String getUrl() {
         return url;
     }
@@ -87,7 +85,7 @@ public class YtsTorrentInfo {
      *
      * @return hash
      **/
-    @Schema(description = "Torrent hash")
+    @SuppressWarnings("unused")
     public String getHash() {
         return hash;
     }
@@ -108,7 +106,7 @@ public class YtsTorrentInfo {
      *
      * @return quality
      **/
-    @Schema(description = "Torrent quality")
+    @SuppressWarnings("unused")
     public String getQuality() {
         return quality;
     }
@@ -129,7 +127,7 @@ public class YtsTorrentInfo {
      *
      * @return type
      **/
-    @Schema(description = "Torrent recording type")
+    @SuppressWarnings("unused")
     public String getType() {
         return type;
     }
@@ -151,7 +149,6 @@ public class YtsTorrentInfo {
      * @return seeds
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Number of seeders")
     public Integer getSeeds() {
         return seeds;
     }
@@ -173,7 +170,6 @@ public class YtsTorrentInfo {
      * @return peers
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Number of peers")
     public Integer getPeers() {
         return peers;
     }
@@ -194,7 +190,7 @@ public class YtsTorrentInfo {
      *
      * @return size
      **/
-    @Schema(description = "Torrent size")
+    @SuppressWarnings("unused")
     public String getSize() {
         return size;
     }
@@ -216,7 +212,6 @@ public class YtsTorrentInfo {
      * @return sizeBytes
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Torrent size (bytes)")
     public Long getSizeBytes() {
         return sizeBytes;
     }
@@ -238,7 +233,6 @@ public class YtsTorrentInfo {
      * @return dateUploaded
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Date uploaded")
     public String getDateUploaded() {
         return dateUploaded;
     }
@@ -260,7 +254,6 @@ public class YtsTorrentInfo {
      * @return dateUploadedUnix
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Date uploaded (unix format)")
     public Integer getDateUploadedUnix() {
         return dateUploadedUnix;
     }

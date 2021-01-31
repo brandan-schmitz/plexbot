@@ -13,12 +13,12 @@
 package net.celestialdata.plexbot.client.api;
 
 import com.google.gson.reflect.TypeToken;
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.client.*;
 import net.celestialdata.plexbot.client.auth.CloudflareAuthorizer;
 import net.celestialdata.plexbot.client.model.YtsBaseResponse;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.HttpClients;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.script.ScriptException;
 import java.io.IOException;
@@ -30,6 +30,8 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public class YtsApi {
+    @ConfigProperty(name = "bot.ytsUrl")
+    String ytsUrl;
     private ApiClient apiClient;
 
     public YtsApi() {
@@ -40,12 +42,12 @@ public class YtsApi {
         this.apiClient = apiClient;
     }
 
-    private static String getCloudflareClearanceCode() {
+    private String getCloudflareClearanceCode() {
         String clearanceCode = "";
 
         CloudflareAuthorizer cloudflareAuthorizer = new CloudflareAuthorizer(HttpClients.createDefault(), HttpClientContext.create());
         try {
-            if (cloudflareAuthorizer.tryAuthorization(BotConfig.getInstance().currentYtsDomain())) {
+            if (cloudflareAuthorizer.tryAuthorization(ytsUrl)) {
                 clearanceCode = cloudflareAuthorizer.getClearanceCookie();
             }
         } catch (IOException | ScriptException e) {

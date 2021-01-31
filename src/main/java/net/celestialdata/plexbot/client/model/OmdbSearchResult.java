@@ -17,7 +17,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.io.IOException;
@@ -28,7 +27,7 @@ import java.util.Objects;
 /**
  * Result of searching for a movie on OMDb
  */
-@Schema(description = "Result of searching for a movie on OMDb")
+@SuppressWarnings("unused")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class OmdbSearchResult {
     @SerializedName("Search")
@@ -58,7 +57,6 @@ public class OmdbSearchResult {
      *
      * @return search
      **/
-    @Schema(required = true, description = "")
     public List<OmdbMovieInfo> getSearch() {
         return search;
     }
@@ -80,7 +78,6 @@ public class OmdbSearchResult {
      * @return totalResults
      **/
     @SuppressWarnings("unused")
-    @Schema(required = true, description = "")
     public String getTotalResults() {
         return totalResults;
     }
@@ -101,7 +98,6 @@ public class OmdbSearchResult {
      *
      * @return response
      **/
-    @Schema(required = true, description = "")
     public ResponseEnum getResponse() {
         return response;
     }
@@ -123,7 +119,6 @@ public class OmdbSearchResult {
      * @return error
      **/
     @SuppressWarnings("unused")
-    @Schema(required = true, description = "")
     public String getError() {
         return error;
     }

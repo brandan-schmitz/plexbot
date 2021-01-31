@@ -17,7 +17,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.io.IOException;
@@ -27,7 +26,6 @@ import java.util.Objects;
  * Real-Debrid User
  */
 @SuppressWarnings("unused")
-@Schema(description = "Real-Debrid User")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RdbUser {
     @SerializedName("id")
@@ -66,7 +64,6 @@ public class RdbUser {
      * @return id
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User's ID")
     public Integer getId() {
         return id;
     }
@@ -88,7 +85,6 @@ public class RdbUser {
      * @return username
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User's Username")
     public String getUsername() {
         return username;
     }
@@ -110,7 +106,6 @@ public class RdbUser {
      * @return email
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User's Email")
     public String getEmail() {
         return email;
     }
@@ -132,7 +127,6 @@ public class RdbUser {
      * @return points
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User's Fidelity Points")
     public Integer getPoints() {
         return points;
     }
@@ -154,7 +148,6 @@ public class RdbUser {
      * @return locale
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User's Language")
     public String getLocale() {
         return locale;
     }
@@ -176,7 +169,6 @@ public class RdbUser {
      * @return avatar
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User's Avatar Image URL")
     public String getAvatar() {
         return avatar;
     }
@@ -198,7 +190,6 @@ public class RdbUser {
      * @return type
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User's Premium Status")
     public TypeEnum getType() {
         return type;
     }
@@ -220,7 +211,6 @@ public class RdbUser {
      * @return premium
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "User's emaining time as a premium user in seconds")
     public Integer getPremium() {
         return premium;
     }
@@ -242,7 +232,6 @@ public class RdbUser {
      * @return expiration
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Date at which the user loses their premium status")
     public String getExpiration() {
         return expiration;
     }

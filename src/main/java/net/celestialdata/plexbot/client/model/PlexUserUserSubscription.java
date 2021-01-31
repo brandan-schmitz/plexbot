@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ import java.util.Objects;
  * User subscription information
  */
 @SuppressWarnings("unused")
-@Schema(description = "User subscription information")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class PlexUserUserSubscription {
     @SerializedName("active")
@@ -51,7 +49,6 @@ public class PlexUserUserSubscription {
      * @return active
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Subscription active status")
     public Boolean isActive() {
         return active;
     }
@@ -73,7 +70,6 @@ public class PlexUserUserSubscription {
      * @return status
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Subscription status")
     public String getStatus() {
         return status;
     }
@@ -95,7 +91,6 @@ public class PlexUserUserSubscription {
      * @return plan
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Subscription plan")
     public String getPlan() {
         return plan;
     }
@@ -126,7 +121,6 @@ public class PlexUserUserSubscription {
      * @return features
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Subscription features")
     public List<String> getFeatures() {
         return features;
     }

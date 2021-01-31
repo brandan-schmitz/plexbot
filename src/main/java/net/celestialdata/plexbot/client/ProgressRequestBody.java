@@ -23,6 +23,7 @@ public class ProgressRequestBody extends RequestBody {
     private final RequestBody requestBody;
     private final ProgressRequestListener progressListener;
 
+    @SuppressWarnings("CdiInjectionPointsInspection")
     public ProgressRequestBody(RequestBody requestBody, ProgressRequestListener progressListener) {
         this.requestBody = requestBody;
         this.progressListener = progressListener;
@@ -46,7 +47,6 @@ public class ProgressRequestBody extends RequestBody {
     }
 
     private Sink sink(Sink sink) {
-        //noinspection NullableProblems
         return new ForwardingSink(sink) {
 
             long bytesWritten = 0L;

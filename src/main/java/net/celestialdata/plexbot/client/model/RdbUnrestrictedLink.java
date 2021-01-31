@@ -17,7 +17,6 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.io.IOException;
@@ -28,7 +27,6 @@ import java.util.Objects;
 /**
  * An unrestricted link on Real-Debrid
  */
-@Schema(description = "An unrestricted link on Real-Debrid")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RdbUnrestrictedLink {
     @SerializedName("id")
@@ -73,7 +71,6 @@ public class RdbUnrestrictedLink {
      * @return id
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Unrestricted link ID")
     public String getId() {
         return id;
     }
@@ -95,7 +92,6 @@ public class RdbUnrestrictedLink {
      * @return filename
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Name of the file")
     public String getFilename() {
         return filename;
     }
@@ -117,7 +113,6 @@ public class RdbUnrestrictedLink {
      * @return filesize
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Size of the file in bytes (0 if unknown)")
     public Long getFilesize() {
         return filesize;
     }
@@ -139,7 +134,6 @@ public class RdbUnrestrictedLink {
      * @return link
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Original link")
     public String getLink() {
         return link;
     }
@@ -161,7 +155,6 @@ public class RdbUnrestrictedLink {
      * @return host
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Hostname of the original server")
     public String getHost() {
         return host;
     }
@@ -183,7 +176,6 @@ public class RdbUnrestrictedLink {
      * @return chunks
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Maximum number of chunks allowed")
     public Integer getChunks() {
         return chunks;
     }
@@ -205,7 +197,6 @@ public class RdbUnrestrictedLink {
      * @return crc
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Disable or enable CRC checking")
     public CrcEnum getCrc() {
         return crc;
     }
@@ -226,7 +217,7 @@ public class RdbUnrestrictedLink {
      *
      * @return download
      **/
-    @Schema(description = "Generated download link")
+    @SuppressWarnings("unused")
     public String getDownload() {
         return download;
     }
@@ -248,7 +239,6 @@ public class RdbUnrestrictedLink {
      * @return streamable
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Is the file streamable")
     public StreamableEnum getStreamable() {
         return streamable;
     }
@@ -270,7 +260,6 @@ public class RdbUnrestrictedLink {
      * @return mimeType
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Type of the file based off its extension")
     public String getMimeType() {
         return mimeType;
     }
@@ -301,7 +290,6 @@ public class RdbUnrestrictedLink {
      * @return alternative
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "")
     public List<RbdUnrestrictedAlternativeLink> getAlternative() {
         return alternative;
     }
@@ -323,7 +311,6 @@ public class RdbUnrestrictedLink {
      * @return type
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Type of the file, generally its quality")
     public String getType() {
         return type;
     }

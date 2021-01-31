@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.Objects;
@@ -22,7 +21,6 @@ import java.util.Objects;
  * Alternative download links for an unrestricted link on Real-Debrid.
  */
 @SuppressWarnings("unused")
-@Schema(description = "Alternative download links for an unrestricted link on Real-Debrid.")
 @Generated(value = "net.celestialdata.plexbot.codegen.v3.generators.java.JavaClientCodegen", date = "2020-11-23T04:57:45.670Z[GMT]")
 public class RbdUnrestrictedAlternativeLink {
     @SerializedName("id")
@@ -52,7 +50,6 @@ public class RbdUnrestrictedAlternativeLink {
      * @return id
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Unrestricted Link ID")
     public String getId() {
         return id;
     }
@@ -74,7 +71,6 @@ public class RbdUnrestrictedAlternativeLink {
      * @return filename
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "File Name")
     public String getFilename() {
         return filename;
     }
@@ -96,7 +92,6 @@ public class RbdUnrestrictedAlternativeLink {
      * @return download
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Download Link")
     public String getDownload() {
         return download;
     }
@@ -118,7 +113,6 @@ public class RbdUnrestrictedAlternativeLink {
      * @return mimeType
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Type of file, generally based off its extension")
     public String getMimeType() {
         return mimeType;
     }
@@ -140,7 +134,6 @@ public class RbdUnrestrictedAlternativeLink {
      * @return type
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Type of file, generally based off its quality")
     public String getType() {
         return type;
     }

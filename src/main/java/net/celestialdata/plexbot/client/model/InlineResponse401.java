@@ -13,7 +13,6 @@
 package net.celestialdata.plexbot.client.model;
 
 import com.google.gson.annotations.SerializedName;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.processing.Generated;
 import java.util.Objects;
@@ -40,7 +39,6 @@ public class InlineResponse401 {
      * @return error
      **/
     @SuppressWarnings("unused")
-    @Schema(description = "Error message")
     public String getError() {
         return error;
     }
