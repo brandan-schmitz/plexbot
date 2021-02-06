@@ -22,7 +22,10 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.listener.server.member.ServerMemberJoinListener;
 import org.javacord.api.util.logging.FallbackLoggerConfiguration;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +34,7 @@ public class Main {
     private static final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     private static DiscordApi botApi;
     private static CommandHandler commandHandler;
+    private static String version;
 
     private static void registerBotCommands() {
         commandHandler = new JavacordHandler(botApi);
@@ -60,6 +64,10 @@ public class Main {
         return commandHandler;
     }
 
+    public static String getVersion() {
+        return version;
+    }
+
     /**
      * Generates a Bot Invite URL
      *
@@ -80,21 +88,35 @@ public class Main {
         // Disable debug logging
         FallbackLoggerConfiguration.setDebug(false);
 
-        // Print copyright information about the bot
-        System.out.println("\n" +
-                "           _____  _      ________   ______   ____ _______                \n" +
-                "          |  __ \\| |    |  ____\\ \\ / /  _ \\ / __ \\__   __|          \n" +
-                "          | |__) | |    | |__   \\ V /| |_) | |  | | | |                 \n" +
-                "          |  ___/| |    |  __|   > < |  _ <| |  | | | |                  \n" +
-                "          | |    | |____| |____ / . \\| |_) | |__| | | |                 \n" +
-                "          |_|    |______|______/_/ \\_\\____/ \\____/  |_|               \n" +
-                "                                                                         \n" +
-                "                   Version 1.2.5 - 01/26/2021                            \n" +
-                "                                                                         \n" +
-                "  This software is distributed under the GNU GENERAL PUBLIC v3 license   \n" +
-                "      and is available for anyone to use and modify as long as the       \n" +
-                "           proper attributes are given in the modified code.             \n" +
-                "                                                                         \n");
+        // Set the default version and date variables
+        version = "0.0.0";
+        String date = "00/00/0000";
+
+        // Load the application information
+        try (InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("pom.properties")) {
+            Properties properties = new Properties();
+            properties.load(inputStream);
+
+            version = properties.getProperty("application-version");
+            date = properties.getProperty("version-date");
+        } catch (IOException ignored) { }
+
+        // Display the application banner
+        System.out.format("\n" +
+                        "           _____  _      ________   ______   ____ _______                \n" +
+                        "          |  __ \\| |    |  ____\\ \\ / /  _ \\ / __ \\__   __|          \n" +
+                        "          | |__) | |    | |__   \\ V /| |_) | |  | | | |                 \n" +
+                        "          |  ___/| |    |  __|   > < |  _ <| |  | | | |                  \n" +
+                        "          | |    | |____| |____ / . \\| |_) | |__| | | |                 \n" +
+                        "          |_|    |______|______/_/ \\_\\____/ \\____/  |_|               \n" +
+                        "                                                                         \n" +
+                        "                   Version %s - %s                            \n" +
+                        "                                                                         \n" +
+                        "  This software is distributed under the GNU GENERAL PUBLIC v3 license   \n" +
+                        "      and is available for anyone to use and modify as long as the       \n" +
+                        "           proper attributes are given in the modified code.             \n" +
+                        "                                                                         \n",
+                version, date);
 
         // Initialize the bot configuration.
         System.out.print("Loading bot configuration file...");
