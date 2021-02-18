@@ -32,6 +32,12 @@ public class Movie implements BaseModel {
     @Column(name = "movie_filename")
     private String filename;
 
+    @Column(name = "movie_extension")
+    private String extension;
+
+    @Column(name = "movie_foldername")
+    private String folderName;
+
     public Movie() {
     }
 
@@ -43,13 +49,17 @@ public class Movie implements BaseModel {
      * @param year movie release year
      * @param resolution movie resolution
      * @param filename filename of the movie file
+     * @param extension file extension type of the movie file
+     * @param folderName folder name for the movie's files
      */
-    public Movie(String id, String title, String year, int resolution, String filename) {
+    public Movie(String id, String title, String year, int resolution, String filename, String extension, String folderName) {
         this.id = id;
         this.title = title;
         this.year = year;
         this.resolution = resolution;
         this.filename = filename;
+        this.extension = extension;
+        this.folderName = folderName;
     }
 
     /**
@@ -133,13 +143,46 @@ public class Movie implements BaseModel {
     }
 
     /**
+     * Return the file extension type of the movie as stored on the filesystem
+     * @return file extension
+     */
+    public String getExtension() {
+        return extension;
+    }
+
+    /**
+     * Set the file extension type of the movie as stored on the filesystem
+     * @param extension file extension
+     */
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
+
+    /**
+     * Return the folder name of the movie's folder as stored on the filesystem
+     * @return folder name
+     */
+    public String getFolderName() {
+        return folderName;
+    }
+
+    /**
+     * Set the folder name of the movie's folder as stored on the filesystem
+     * @param folderName folder name
+     */
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
+    }
+
+    /**
      * Return a string representation of the movie
      * @return movie string representation
      */
     @Override
     public String toString() {
         return "Movie [id=" + this.id + ", title=" + this.title + ", year=" + this.year +
-                ", resolution=" + this.resolution + ", filename=" + this.filename + "]";
+                ", resolution=" + this.resolution + ", filename=" + this.filename +
+                ", extension=" + this.extension + ", folderName=" + folderName + "]";
     }
 
     /**

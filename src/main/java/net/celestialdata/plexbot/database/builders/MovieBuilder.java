@@ -8,6 +8,8 @@ public class MovieBuilder {
     private String year;
     private int resolution;
     private String filename;
+    private String extension;
+    private String folderName;
 
     public MovieBuilder withId(String id) {
         this.id = id;
@@ -34,7 +36,17 @@ public class MovieBuilder {
         return this;
     }
 
+    public MovieBuilder withExtension(String extension) {
+        this.extension = extension;
+        return this;
+    }
+
+    public MovieBuilder withFolderName(String folderName) {
+        this.folderName = folderName;
+        return this;
+    }
+
     public Movie build() {
-        return new Movie(this.id, this.title, this.year, this.resolution, this.filename);
+        return new Movie(this.id, this.title, this.year, this.resolution, this.filename, this.extension, this.folderName);
     }
 }

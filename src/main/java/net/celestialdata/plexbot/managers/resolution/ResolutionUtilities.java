@@ -5,6 +5,7 @@ import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.UpgradeItemBuilder;
+import net.celestialdata.plexbot.database.models.Movie;
 import net.celestialdata.plexbot.utils.BotColors;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -26,7 +27,8 @@ public class ResolutionUtilities {
      * @param newSize       the size of the new video file
      */
     static void addUpgradableMovie(OmdbMovieInfo movieInfo, int oldResolution, int newResolution, String newSize) {
-        MediaInfo mediaInfo = MediaInfo.mediaInfo(BotConfig.getInstance().movieFolder() + DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename());
+        Movie dbMovie = DbOperations.movieOps.getMovieById(movieInfo.getImdbID());
+        MediaInfo mediaInfo = MediaInfo.mediaInfo(BotConfig.getInstance().movieFolder() + dbMovie.getFolderName() + "/" + dbMovie.getFilename());
 
         // First check to see if the movie is already listed in the upgrade list, if not add it and send the message
         if (!DbOperations.upgradeItemOps.exists(movieInfo.getImdbID())) {

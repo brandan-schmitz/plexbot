@@ -41,7 +41,7 @@ public class DownloadManager implements CustomRunnable {
         this.fileExtension = fileExtension;
 
         // Remove anything from the filename that may cause issues
-        filename = movieInfo.getTitle() + " (" + movieInfo.getYear() + ")";
+        filename = movieInfo.getTitle() + " (" + movieInfo.getYear() + ") {imdb-" + movieInfo.getImdbID() + "}";
         filename = filename.replace("<", "");
         filename = filename.replace(">", "");
         filename = filename.replace(":", "");
@@ -52,6 +52,7 @@ public class DownloadManager implements CustomRunnable {
         filename = filename.replace("?", "");
         filename = filename.replace("*", "");
         filename = filename.replace(".", "");
+        filename = filename.replace("·", "-");
         filename = StringUtils.stripAccents(filename);
     }
 
@@ -109,9 +110,23 @@ public class DownloadManager implements CustomRunnable {
             isFileServerMounted = new File(BotConfig.getInstance().movieFolder() + "movie.pb").exists();
         }
         if (isFileServerMounted) {
-            Path tempFile = Paths.get(BotConfig.getInstance().tempFolder() + filename + ".pbdownload");
-            Path destination = Paths.get(BotConfig.getInstance().movieFolder() + filename + fileExtension);
+            // Create the new folder
+            Path folder = Paths.get(BotConfig.getInstance().movieFolder() + filename);
+            try {
+                Files.createDirectory(folder);
+            } catch (IOException e) {
+                if (!(e instanceof FileAlreadyExistsException)) {
+                    e.printStackTrace();
+                    isProcessing = false;
+                    didProcessingFail = true;
+                    isFileServerMounted = true;
+                    lock.notifyAll();
+                }
+            }
 
+            // Movie the media to the media's folder
+            Path tempFile = Paths.get(BotConfig.getInstance().tempFolder() + filename + ".pbdownload");
+            Path destination = Paths.get(BotConfig.getInstance().movieFolder() + filename + "/" + filename + fileExtension);
             try {
                 Files.move(tempFile, destination, StandardCopyOption.REPLACE_EXISTING);
                 synchronized (lock) {

@@ -254,6 +254,8 @@ public class WaitlistDownloader implements CustomRunnable {
                 .withYear(movieInfo.getYear())
                 .withResolution(torrentHandler.getTorrentQuality())
                 .withFilename(downloadManager.getFilename() + fileExtension)
+                .withExtension(fileExtension.replace(".", ""))
+                .withFolderName(downloadManager.getFilename())
                 .build()
         );
 

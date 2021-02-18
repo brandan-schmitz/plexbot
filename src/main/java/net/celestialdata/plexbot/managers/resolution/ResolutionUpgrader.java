@@ -7,6 +7,7 @@ import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.*;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
+import net.celestialdata.plexbot.database.models.Movie;
 import net.celestialdata.plexbot.database.models.UpgradeItem;
 import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.utils.BotColors;
@@ -243,9 +244,9 @@ public class ResolutionUpgrader implements CustomRunnable {
         }
 
         // Attempt to delete the old movie files
-        File oldVersion = new File(BotConfig.getInstance().movieFolder() +
-                DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename());
-        if (!oldVersion.delete()) {
+        Movie oldMovieEntry = DbOperations.movieOps.getMovieById(movieInfo.getImdbID());
+        File oldFile = new File(BotConfig.getInstance().movieFolder() + oldMovieEntry.getFolderName() + "/" + oldMovieEntry.getFilename());
+        if (!oldFile.delete()) {
             try {
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
             } catch (Exception e) {
@@ -269,6 +270,8 @@ public class ResolutionUpgrader implements CustomRunnable {
                 .withYear(movieInfo.getYear())
                 .withResolution(torrentHandler.getTorrentQuality())
                 .withFilename(downloadManager.getFilename() + fileExtension)
+                .withExtension(fileExtension.replace(".", ""))
+                .withFolderName(downloadManager.getFilename())
                 .build()
         );
 

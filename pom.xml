@@ -6,10 +6,10 @@
 
     <groupId>net.celestialdata</groupId>
     <artifactId>plexbot</artifactId>
-    <version>1.2.7</version>
+    <version>1.2.8</version>
 
     <properties>
-        <version-date>02/16/2021</version-date>
+        <version-date>02/18/2021</version-date>
         <application-version>${project.version}</application-version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
