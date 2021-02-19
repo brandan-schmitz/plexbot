@@ -2,7 +2,7 @@ package net.celestialdata.plexbot.managers.waitlist;
 
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.client.BotClient;
-import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
+import net.celestialdata.plexbot.client.model.OmdbItem;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.models.WaitlistItem;
 import net.celestialdata.plexbot.managers.BotStatusManager;
@@ -51,7 +51,7 @@ public class WaitlistChecker implements CustomRunnable {
             BotStatusManager.getInstance().setWaitlistManagerStatus(progress, DbOperations.waitlistItemOps.getCount());
 
             // Get the info about the movie from IMDB
-            OmdbMovieInfo movieInfo = null;
+            OmdbItem movieInfo = null;
             try {
                 movieInfo = BotClient.getInstance().omdbApi.getById(item.getId());
             } catch (Exception e) {

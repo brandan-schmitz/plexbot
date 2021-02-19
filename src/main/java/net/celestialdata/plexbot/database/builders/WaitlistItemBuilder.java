@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.database.builders;
 
-import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
+import net.celestialdata.plexbot.client.model.OmdbItem;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.models.User;
 import net.celestialdata.plexbot.database.models.WaitlistItem;
@@ -43,7 +43,7 @@ public class WaitlistItemBuilder {
         return this;
     }
 
-    public WaitlistItemBuilder fromOmdbInfo(OmdbMovieInfo movieInfo) {
+    public WaitlistItemBuilder fromOmdbItem(OmdbItem movieInfo) {
         this.id = movieInfo.getImdbID();
         this.title = movieInfo.getTitle();
         this.year = movieInfo.getYear();

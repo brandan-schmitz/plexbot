@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.workhandlers;
 
-import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
+import net.celestialdata.plexbot.client.model.OmdbItem;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import org.javacord.api.entity.message.Message;
@@ -21,10 +21,10 @@ import java.util.concurrent.TimeUnit;
 class MovieSelectionHandler {
     public final Object lock = new Object();
     private final ArrayList<EmbedBuilder> selectScreens = new ArrayList<>();
-    private final List<OmdbMovieInfo> movieList;
+    private final List<OmdbItem> movieList;
     private final Message sentMessage;
     private int currentPage = 0;
-    private OmdbMovieInfo selectedMovie;
+    private OmdbItem selectedMovie;
     private boolean beenSet = false;
     private boolean wasCanceled = false;
 
@@ -32,12 +32,10 @@ class MovieSelectionHandler {
      * This is the main constructor for the selection handler. It is responsible for
      * building a list of the movies the search returned, creating the screens with each
      * movie and registering the ReactionHandlers for the handler.
-     *
-     * @param movieList   The list of movies the user can choose from.
+     *  @param movieList   The list of movies the user can choose from.
      * @param sentMessage The javacord message entity that the bot replied with to the
-     *                    original request message.
      */
-    MovieSelectionHandler(List<OmdbMovieInfo> movieList, Message sentMessage) {
+    MovieSelectionHandler(List<OmdbItem> movieList, Message sentMessage) {
         this.sentMessage = sentMessage;
         this.movieList = movieList;
 
@@ -62,7 +60,7 @@ class MovieSelectionHandler {
         } else {
             // Build a screen for each movie in the list and add it to the array of screens.
             int posCounter = 1;
-            for (OmdbMovieInfo m : movieList) {
+            for (OmdbItem m : movieList) {
                 selectScreens.add(new EmbedBuilder()
                         .setTitle("Choose your movie")
                         .setDescription("It looks like your search returned " + movieList.size() + " results. Please use the arrow reactions to " +
@@ -207,10 +205,10 @@ class MovieSelectionHandler {
     /**
      * Returns the movie that was selected
      *
-     * @return The OmdbMovie entity for the selected movie.
+     * @return The OmdbItem entity for the selected movie.
      * @throws NullPointerException If a movie was not selected for some reason it throws a NPE.
      */
-    OmdbMovieInfo getSelectedMovie() {
+    OmdbItem getSelectedMovie() {
         return selectedMovie;
     }
 }

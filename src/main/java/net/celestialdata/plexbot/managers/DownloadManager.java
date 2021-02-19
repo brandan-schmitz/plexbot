@@ -1,7 +1,7 @@
 package net.celestialdata.plexbot.managers;
 
 import net.celestialdata.plexbot.BotConfig;
-import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
+import net.celestialdata.plexbot.client.model.OmdbItem;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,7 +36,7 @@ public class DownloadManager implements CustomRunnable {
     private String filename;
     private final String fileExtension;
 
-    public DownloadManager(String downloadLink, OmdbMovieInfo movieInfo, String fileExtension) {
+    public DownloadManager(String downloadLink, OmdbItem movieInfo, String fileExtension) {
         this.downloadLink = downloadLink;
         this.fileExtension = fileExtension;
 
@@ -70,6 +70,7 @@ public class DownloadManager implements CustomRunnable {
     public void run() {
         // Configure task to run the endTask method if there was an error
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
+        Exception exception = null;
 
         try {
             // Open a connection to the file being downloaded
@@ -97,6 +98,7 @@ public class DownloadManager implements CustomRunnable {
 
         } catch (IOException e) {
             synchronized (lock) {
+                exception = e;
                 didDownloadFail = true;
                 isDownloading = false;
                 isProcessing = false;
@@ -116,7 +118,7 @@ public class DownloadManager implements CustomRunnable {
                 Files.createDirectory(folder);
             } catch (IOException e) {
                 if (!(e instanceof FileAlreadyExistsException)) {
-                    e.printStackTrace();
+                    exception = e;
                     isProcessing = false;
                     didProcessingFail = true;
                     isFileServerMounted = true;
@@ -136,6 +138,7 @@ public class DownloadManager implements CustomRunnable {
                 }
             } catch (IOException e) {
                 synchronized (lock) {
+                    exception = e;
                     isProcessing = false;
                     didProcessingFail = true;
                     isFileServerMounted = true;
@@ -150,7 +153,12 @@ public class DownloadManager implements CustomRunnable {
                 lock.notifyAll();
             }
         }
-        endTask();
+
+        if ((didDownloadFail || didProcessingFail) && exception != null) {
+            endTask(exception);
+        } else {
+            endTask();
+        }
     }
 
     /**

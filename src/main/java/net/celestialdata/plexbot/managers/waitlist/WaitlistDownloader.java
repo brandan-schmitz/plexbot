@@ -17,10 +17,10 @@ import org.javacord.api.util.logging.ExceptionLogger;
 
 public class WaitlistDownloader implements CustomRunnable {
     private final TorrentHandler torrentHandler;
-    private final OmdbMovieInfo movieInfo;
+    private final OmdbItem movieInfo;
     private final Object rdbLock = new Object();
 
-    public WaitlistDownloader(TorrentHandler torrentHandler, OmdbMovieInfo movieInfo) {
+    public WaitlistDownloader(TorrentHandler torrentHandler, OmdbItem movieInfo) {
         this.torrentHandler = torrentHandler;
         this.movieInfo = movieInfo;
     }
@@ -91,17 +91,29 @@ public class WaitlistDownloader implements CustomRunnable {
             return;
         }
 
-        // Select the files to download
+        // Select the proper movie files to download
         String fileToSelect = "";
         String fileExtension = "";
-        for (RdbTorrentFile file : rdbTorrentInfo.getFiles()) {
-            if (file.getPath().contains(".mp4") || file.getPath().contains(".MP4")) {
-                fileToSelect = String.valueOf(file.getId());
-                fileExtension = ".mp4";
-            } else if (file.getPath().contains(".mkv") || file.getPath().contains(".MKV")) {
-                fileToSelect = String.valueOf(file.getId());
-                fileExtension = ".mkv";
+        if (rdbTorrentInfo.getFiles() != null) {
+            for (RdbTorrentFile file : rdbTorrentInfo.getFiles()) {
+                if (file.getPath() != null) {
+                    if (file.getPath().contains(".mp4") || file.getPath().contains(".MP4")) {
+                        fileToSelect = String.valueOf(file.getId());
+                        fileExtension = ".mp4";
+                    } else if (file.getPath().contains(".mkv") || file.getPath().contains(".MKV")) {
+                        fileToSelect = String.valueOf(file.getId());
+                        fileExtension = ".mkv";
+                    }
+                } else {
+                    WaitlistUtilities.updateMessage(movieInfo);
+                    endTask();
+                    return;
+                }
             }
+        } else {
+            WaitlistUtilities.updateMessage(movieInfo);
+            endTask();
+            return;
         }
 
         // Select the proper files on RDB
@@ -151,7 +163,13 @@ public class WaitlistDownloader implements CustomRunnable {
         // Make the link unrestricted
         RdbUnrestrictedLink unrestrictedLink;
         try {
-            unrestrictedLink = BotClient.getInstance().rdbApi.unrestrictLink(rdbTorrentInfo.getLinks().get(0));
+            if (rdbTorrentInfo.getLinks() != null) {
+                unrestrictedLink = BotClient.getInstance().rdbApi.unrestrictLink(rdbTorrentInfo.getLinks().get(0));
+            } else {
+                WaitlistUtilities.updateMessage(movieInfo);
+                endTask();
+                return;
+            }
         } catch (Exception e) {
             try {
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
@@ -166,7 +184,14 @@ public class WaitlistDownloader implements CustomRunnable {
         }
 
         // Get the download link and create the DownloadHandler for the movie
-        String downloadLink = unrestrictedLink.getDownload();
+        String downloadLink;
+        if (unrestrictedLink.getDownload() != null) {
+            downloadLink = unrestrictedLink.getDownload().toString();
+        } else {
+            WaitlistUtilities.updateMessage(movieInfo);
+            endTask();
+            return;
+        }
         downloadManager = new DownloadManager(downloadLink, movieInfo, fileExtension);
 
         // Start the download process

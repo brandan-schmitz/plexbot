@@ -2,7 +2,7 @@ package net.celestialdata.plexbot.managers.waitlist;
 
 import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
-import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
+import net.celestialdata.plexbot.client.model.OmdbItem;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.utils.BotColors;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -23,9 +23,9 @@ public class WaitlistUtilities {
      * Update the message about a movie with an updated timestamp for when it was last checked for.
      *
      * @param movieInfo the OmdbMovie to update the message for
-     * @see OmdbMovieInfo
+     * @see OmdbItem
      */
-    static void updateMessage(OmdbMovieInfo movieInfo) {
+    static void updateMessage(OmdbItem movieInfo) {
         // Get the channel the waitlist messages are in then fetch the message for the movie and update it with
         // the current date and time.
         try {

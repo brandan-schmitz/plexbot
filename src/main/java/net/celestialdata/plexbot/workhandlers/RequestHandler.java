@@ -1,5 +1,6 @@
 package net.celestialdata.plexbot.workhandlers;
 
+import com.google.common.collect.Lists;
 import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
@@ -73,18 +74,18 @@ public class RequestHandler implements CustomRunnable {
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
 
         MovieSelectionHandler selectionHandler;
-        OmdbMovieInfo selectedMovie;
+        OmdbItem selectedMovie;
         TorrentHandler torrentHandler;
         DownloadManager downloadManager;
         String magnetLink;
-        String downloadLink;
+        String downloadLink = null;
 
         // Search for the movie
-        List<OmdbMovieInfo> resultList = new ArrayList<>();
+        List<OmdbItem> resultList = new ArrayList<>();
         if (!searchId.isEmpty()) {
             try {
                 var result = BotClient.getInstance().omdbApi.getById(searchId);
-                if (result.getResponse() == OmdbMovieInfo.ResponseEnum.TRUE) {
+                if (result.getResponse() == OmdbItem.ResponseEnum.TRUE) {
                     resultList.add(result);
                 } else {
                     displayError("Unrecognized IMDB Code, please check your code and try again.");
@@ -103,9 +104,9 @@ public class RequestHandler implements CustomRunnable {
                 return;
             } else {
                 try {
-                    var result = BotClient.getInstance().omdbApi.search(searchTitle, searchYear);
+                    var result = BotClient.getInstance().omdbApi.search(searchTitle, "movie", Integer.valueOf(searchYear), null);
                     if (result.getResponse() == OmdbSearchResult.ResponseEnum.TRUE) {
-                        resultList = result.getSearch();
+                        resultList = Lists.newArrayList(result.getSearch());
                     } else {
                         displayError("No movies found. Please adjust your search parameters and try again.");
                         endTask();
@@ -119,9 +120,10 @@ public class RequestHandler implements CustomRunnable {
             }
         } else {
             try {
-                var result = BotClient.getInstance().omdbApi.search(searchTitle);
+                var result = BotClient.getInstance().omdbApi.search(searchTitle, "movie", null, null);
+
                 if (result.getResponse() == OmdbSearchResult.ResponseEnum.TRUE) {
-                    resultList = result.getSearch();
+                    resultList = Lists.newArrayList(result.getSearch());
                 } else {
                     displayError("No movies found. Please adjust your search parameters and try again.");
                     endTask();
@@ -219,7 +221,7 @@ public class RequestHandler implements CustomRunnable {
                         " at this time. It has been added to the waiting list " +
                         "and will be automatically when it becomes available.");
                 if (!DbOperations.saveObject(new WaitlistItemBuilder()
-                        .fromOmdbInfo(selectedMovie)
+                        .fromOmdbItem(selectedMovie)
                         .withRequestedBy(userId)
                         .build()
                 )) {
@@ -296,14 +298,26 @@ public class RequestHandler implements CustomRunnable {
         // Select the proper movie files to download
         String fileToSelect = "";
         String fileExtension = "";
-        for (RdbTorrentFile file : rdbTorrentInfo.getFiles()) {
-            if (file.getPath().contains(".mp4") || file.getPath().contains(".MP4")) {
-                fileToSelect = String.valueOf(file.getId());
-                fileExtension = ".mp4";
-            } else if (file.getPath().contains(".mkv") || file.getPath().contains(".MKV")) {
-                fileToSelect = String.valueOf(file.getId());
-                fileExtension = ".mkv";
+        if (rdbTorrentInfo.getFiles() != null) {
+            for (RdbTorrentFile file : rdbTorrentInfo.getFiles()) {
+                if (file.getPath() != null) {
+                    if (file.getPath().contains(".mp4") || file.getPath().contains(".MP4")) {
+                        fileToSelect = String.valueOf(file.getId());
+                        fileExtension = ".mp4";
+                    } else if (file.getPath().contains(".mkv") || file.getPath().contains(".MKV")) {
+                        fileToSelect = String.valueOf(file.getId());
+                        fileExtension = ".mkv";
+                    }
+                } else {
+                    displayError("There was an error masking the download. Please try again later.", "rdb-list-files");
+                    endTask();
+                    return;
+                }
             }
+        } else {
+            displayError("There was an error masking the download. Please try again later.", "rdb-list-files");
+            endTask();
+            return;
         }
 
         try {
@@ -367,7 +381,16 @@ public class RequestHandler implements CustomRunnable {
         // Make the link unrestricted
         RdbUnrestrictedLink unrestrictedLink;
         try {
-            unrestrictedLink = BotClient.getInstance().rdbApi.unrestrictLink(rdbTorrentInfo.getLinks().get(0));
+            if (rdbTorrentInfo.getLinks() != null) {
+                unrestrictedLink = BotClient.getInstance().rdbApi.unrestrictLink(rdbTorrentInfo.getLinks().get(0));
+            } else {
+                displayError("There was an error masking the download. Please try again later.", "rdb-load-link");
+                try {
+                    BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+                } catch (ApiException ignored) {}
+                endTask();
+                return;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             displayError("There was an error masking the download. Please try again later.", "rdb-unrestrict-link");
@@ -380,7 +403,11 @@ public class RequestHandler implements CustomRunnable {
         }
 
         // Get the download link
-        downloadLink = unrestrictedLink.getDownload();
+        if (unrestrictedLink.getDownload() != null) {
+            downloadLink = unrestrictedLink.getDownload().toString();
+        } else {
+            displayError("There was an error masking the download. Please try again later.", "rdb-download-link");
+        }
         sentMessage.edit(new EmbedBuilder()
                 .setTitle("Addition Status")
                 .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
@@ -425,6 +452,7 @@ public class RequestHandler implements CustomRunnable {
                     }
                 } catch (InterruptedException e) {
                     displayError("There was an error while downloading this movie. Please try again later.", "file-download-fail");
+                    e.printStackTrace();
                     endTask(e);
                     return;
                 }

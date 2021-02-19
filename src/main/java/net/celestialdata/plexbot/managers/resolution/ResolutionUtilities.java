@@ -2,7 +2,7 @@ package net.celestialdata.plexbot.managers.resolution;
 
 import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
-import net.celestialdata.plexbot.client.model.OmdbMovieInfo;
+import net.celestialdata.plexbot.client.model.OmdbItem;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.UpgradeItemBuilder;
 import net.celestialdata.plexbot.database.models.Movie;
@@ -26,7 +26,7 @@ public class ResolutionUtilities {
      * @param newResolution the numerical value of the resolution of the version of the movie that can be downloaded
      * @param newSize       the size of the new video file
      */
-    static void addUpgradableMovie(OmdbMovieInfo movieInfo, int oldResolution, int newResolution, String newSize) {
+    static void addUpgradableMovie(OmdbItem movieInfo, int oldResolution, int newResolution, String newSize) {
         Movie dbMovie = DbOperations.movieOps.getMovieById(movieInfo.getImdbID());
         MediaInfo mediaInfo = MediaInfo.mediaInfo(BotConfig.getInstance().movieFolder() + dbMovie.getFolderName() + "/" + dbMovie.getFilename());
 

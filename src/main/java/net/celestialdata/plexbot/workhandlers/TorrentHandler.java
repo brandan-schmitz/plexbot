@@ -1,5 +1,6 @@
 package net.celestialdata.plexbot.workhandlers;
 
+import com.google.common.collect.Lists;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.YtsMovieInfo;
@@ -8,6 +9,7 @@ import net.celestialdata.plexbot.client.model.YtsTorrentInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class TorrentHandler {
     private final String movieId;
@@ -35,8 +37,8 @@ public class TorrentHandler {
 
     public void buildTorrentList() {
         for (YtsMovieInfo movieInfo : movieList) {
-            if (movieInfo.getImdbCode().equalsIgnoreCase(movieId)) {
-                torrents = movieInfo.getTorrents();
+            if (Objects.requireNonNull(movieInfo.getImdbCode()).equalsIgnoreCase(movieId)) {
+                torrents = Lists.newArrayList(Objects.requireNonNull(movieInfo.getTorrents()));
             }
         }
     }
@@ -51,37 +53,37 @@ public class TorrentHandler {
 
     private void chooseBestTorrent() {
         for (YtsTorrentInfo torrent : torrents) {
-            if (torrent.getQuality().contains("720")) {
+            if (Objects.requireNonNull(torrent.getQuality()).contains("720")) {
                 selectedTorrent = torrent;
             }
         }
 
         for (YtsTorrentInfo torrent : torrents) {
-            if (torrent.getQuality().contains("720") && torrent.getType().contains("bluray")) {
+            if (Objects.requireNonNull(torrent.getQuality()).contains("720") && Objects.requireNonNull(torrent.getType()).contains("bluray")) {
                 selectedTorrent = torrent;
             }
         }
 
         for (YtsTorrentInfo torrent : torrents) {
-            if (torrent.getQuality().contains("1080")) {
+            if (Objects.requireNonNull(torrent.getQuality()).contains("1080")) {
                 selectedTorrent = torrent;
             }
         }
 
         for (YtsTorrentInfo torrent : torrents) {
-            if (torrent.getQuality().contains("1080") && torrent.getType().contains("bluray")) {
+            if (Objects.requireNonNull(torrent.getQuality()).contains("1080") && Objects.requireNonNull(torrent.getType()).contains("bluray")) {
                 selectedTorrent = torrent;
             }
         }
 
         for (YtsTorrentInfo torrent : torrents) {
-            if (torrent.getQuality().contains("2160")) {
+            if (Objects.requireNonNull(torrent.getQuality()).contains("2160")) {
                 selectedTorrent = torrent;
             }
         }
 
         for (YtsTorrentInfo torrent : torrents) {
-            if (torrent.getQuality().contains("2160") && torrent.getType().contains("bluray")) {
+            if (Objects.requireNonNull(torrent.getQuality()).contains("2160") && Objects.requireNonNull(torrent.getType()).contains("bluray")) {
                 selectedTorrent = torrent;
             }
         }
@@ -107,7 +109,7 @@ public class TorrentHandler {
     public int getTorrentQuality() {
         int quality = 0;
 
-        if (selectedTorrent.getQuality().contains("720")) {
+        if (Objects.requireNonNull(selectedTorrent.getQuality()).contains("720")) {
             quality = 720;
         } else if (selectedTorrent.getQuality().contains("1080")) {
             quality = 1080;
