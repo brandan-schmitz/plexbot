@@ -463,7 +463,7 @@ components:
           type: integer
           description: Date uploaded (unix format)
     OmdbSearchResult:
-      description: Result of searching for a movie on OMDb
+      description: Result of searching for a movie on OMDB
       type: object
       title: ''
       properties:
@@ -472,7 +472,7 @@ components:
           uniqueItems: true
           minItems: 1
           items:
-            $ref: '#/components/schemas/OmdbMovieInfo'
+            $ref: '#/components/schemas/OmdbItem'
         totalResults:
           type: string
           minLength: 1
@@ -490,8 +490,8 @@ components:
         - totalResults
         - Response
         - Error
-    OmdbMovieInfo:
-      description: Information about a movie from OMDb
+    OmdbItem:
+      description: Information about item from OMDB
       type: object
       x-examples:
         example-1:
@@ -522,40 +522,48 @@ components:
           Production: string
           Website: string
           Response: string
-      title: ''
+      title: OmdbItem
       properties:
         Title:
           type: string
           minLength: 1
-          description: Movie Title
+          description: Title
         Year:
           type: string
           minLength: 1
-          description: Movie Year
+          description: Release Year
         Rated:
           type: string
           minLength: 1
-          description: Movie Rating
+          description: Rating
         Released:
           type: string
           minLength: 1
-          description: Movie Released
+          description: Release Date
+        Season:
+          type: string
+          minLength: 1
+          description: Season Number
+        Episode:
+          type: string
+          minLength: 1
+          description: Episode Number
         Runtime:
           type: string
           minLength: 1
-          description: Movie Runtime (minutes)
+          description: Runtime (minutes)
         Genre:
           type: string
           minLength: 1
-          description: Movie Genre
+          description: Genres
         Director:
           type: string
           minLength: 1
-          description: Movie Director
+          description: Director
         Writer:
           type: string
           minLength: 1
-          description: Movie Writer
+          description: Writers
         Actors:
           type: string
           minLength: 1
@@ -563,66 +571,74 @@ components:
         Plot:
           type: string
           minLength: 1
-          description: Movie Plot
+          description: Plot
         Language:
           type: string
           minLength: 1
-          description: Movie Language
+          description: Language
         Country:
           type: string
           minLength: 1
-          description: Movie Country
+          description: Country
         Awards:
           type: string
           minLength: 1
-          description: Movie Awards
+          description: Awards
         Poster:
           type: string
           minLength: 1
-          description: Movie Poster URL
+          description: Poster URL
         Ratings:
           type: array
           uniqueItems: true
           minItems: 1
-          description: Movie Ratings
+          description: Ratings
           items:
-            $ref: '#/components/schemas/OmdbMovieRating'
+            $ref: '#/components/schemas/OmdbItemRating'
         Metascore:
           type: string
           minLength: 1
-          description: Movie Metascore
+          description: Metascore
         imdbRating:
           type: string
           minLength: 1
-          description: Movie IMDB Ratings
+          description: IMDB Ratings
         imdbVotes:
           type: string
           minLength: 1
-          description: Movie IMDB Votes
+          description: IMDB Votes
         imdbID:
           type: string
           minLength: 1
-          description: Movie IMDB ID
+          description: IMDB ID
+        seriesID:
+          type: string
+          minLength: 1
+          description: TV Series IMDB ID
         Type:
           type: string
           minLength: 1
-          description: Movie Type
+          description: Type
+          enum:
+            - episode
+            - series
+            - movie
         DVD:
           type: string
           minLength: 1
-          description: Movie DVD Sales
+          description: DVD Sales
         BoxOffice:
           type: string
           minLength: 1
-          description: Movie Box Office Sales
+          description: Box Office Sales
         Production:
           type: string
           minLength: 1
-          description: Movie Production Cost
+          description: Production Cost
         Website:
           type: string
           minLength: 1
-          description: Movie Website
+          description: Website
         Response:
           type: string
           minLength: 1
@@ -633,8 +649,8 @@ components:
         Error:
           type: string
           description: API Error Message (if error occurred)
-    OmdbMovieRating:
-      description: Ratings for a movie from OMDb
+    OmdbItemRating:
+      description: Ratings for a movie from OMDB
       type: object
       properties:
         Source:
@@ -645,7 +661,7 @@ components:
           type: string
           minLength: 1
           description: Rating Value
-      title: ''
+      title: OmdbItemRating
     PlexUser:
       description: Represent a user in Plex
       type: object
@@ -726,12 +742,22 @@ components:
             rememberMe:
               type: boolean
               description: User remember login
+    RdbSelectFiles:
+      title: RdbSelectFiles
+      type: object
+      description: DTO to select which files for RDB to download
+      properties:
+        files:
+          type: string
+          description: Selected files IDs (comma separated) or "all"
+      required:
+        - files
   securitySchemes:
     omdbApiKey:
       name: apikey
       type: apiKey
       in: query
-      description: OMDb API Key
+      description: OMDB API Key
     rdbApiKey:
       type: http
       scheme: bearer
@@ -749,6 +775,9 @@ components:
       name: X-Plex-Client-Identifier
       type: apiKey
       in: header
+  responses: {}
+  parameters: {}
+  examples: {}
 paths:
   /user:
     get:
@@ -967,11 +996,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type: object
-              properties:
-                files:
-                  type: string
-                  description: Selected files IDs (comma separated) or "all"
+              $ref: '#/components/schemas/RdbSelectFiles'
         description: ''
   '/torrents/delete/{id}':
     parameters:
@@ -1033,13 +1058,36 @@ paths:
           name: query_term
           required: true
           description: 'Search by Movie Title/IMDb Code, Actor Name/IMDb Code, Director Name/IMDb Code '
-  '/?s={search}&type=movie':
+  '/?s={search}':
     get:
       servers:
         - url: 'http://www.omdbapi.com'
-      summary: OMDb - Search for a movie
       tags:
-        - OMDb
+        - OMDB
+      summary: OMDB - Search OMDB for a movie or TV show
+      operationId: search
+      parameters:
+        - name: 'y'
+          in: query
+          description: Year of release
+          required: false
+          schema:
+            type: integer
+        - name: type
+          in: query
+          description: Return movie or series
+          schema:
+            type: string
+            enum:
+              - movie
+              - series
+          required: true
+        - name: page
+          in: query
+          description: Page number to return
+          required: false
+          schema:
+            type: integer
       responses:
         '200':
           description: OK
@@ -1047,16 +1095,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OmdbSearchResult'
-      operationId: search
+        '401':
+          description: Not authenticated
       security:
         - omdbApiKey: []
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: 'y'
-          description: Filter search by year
-      description: Search for a movie on OMDb
+      description: Search OMDB for a movie or TV show
     parameters:
       - schema:
           type: string
@@ -1073,30 +1116,28 @@ paths:
     get:
       servers:
         - url: 'http://www.omdbapi.com'
-      summary: OMDb - Get information about a movie
+      summary: OMDB - Get information about a movie or TV show by its IMDB ID
       tags:
-        - OMDb
+        - OMDB
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OmdbMovieInfo'
+                $ref: '#/components/schemas/OmdbItem'
       operationId: getById
       security:
         - omdbApiKey: []
-      description: Get information about a movie from OMDb
+      description: Get information about a movie or TV show from OMDB by its IMDB ID
+      parameters: []
   /users/sign_in.json:
-    get:
-      servers:
-        - url: 'https://plex.tv'
+    post:
       summary: Plex - Sign In
-      tags:
-        - Plex
+      operationId: signIn
       responses:
-        '201':
-          description: Created
+        '200':
+          description: OK
           content:
             application/json:
               schema:
@@ -1110,40 +1151,30 @@ paths:
                 properties:
                   error:
                     type: string
-                    description: Error message
-      operationId: signIn
+                    description: Error Message
+      tags:
+        - Plex
       description: Sign into a plex account and get a User object
       security:
         - plexAuth: []
         - plexClientIdentifier: []
-      parameters: []
   /library/sections/all/refresh:
     get:
-      servers:
-        - url: 'http://{ipAddress}:{port}'
-          description: plexServer
-          variables:
-            ipAddress:
-              default: 0.0.0.0
-              description: IP Address of the Plex Media Server
-            port:
-              default: '32400'
-              description: Port of the Plex Media Server
       summary: Plex - Refresh Libraries
-      tags:
-        - Plex
+      operationId: refreshLibraries
       responses:
         '200':
           description: OK
         '401':
           description: Unauthorized
-      operationId: refreshLibraries
-      description: Scan all media libraries on the Plex server to index new media.
+      description: Scan all media libraries on the Plex server to index new media.Scan all media libraries on the Plex server to index new media.
       security:
         - plexAuthToken: []
         - plexClientIdentifier: []
+      tags:
+        - Plex
 tags:
   - name: RDB
   - name: YTS
-  - name: OMDb
+  - name: OMDB
   - name: Plex
