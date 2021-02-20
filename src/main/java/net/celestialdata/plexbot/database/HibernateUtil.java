@@ -1,10 +1,7 @@
 package net.celestialdata.plexbot.database;
 
 import net.celestialdata.plexbot.BotConfig;
-import net.celestialdata.plexbot.database.models.Movie;
-import net.celestialdata.plexbot.database.models.UpgradeItem;
-import net.celestialdata.plexbot.database.models.User;
-import net.celestialdata.plexbot.database.models.WaitlistItem;
+import net.celestialdata.plexbot.database.models.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -51,6 +48,11 @@ public class HibernateUtil {
                 sources.addAnnotatedClass(UpgradeItem.class);
                 sources.addAnnotatedClass(User.class);
                 sources.addAnnotatedClass(WaitlistItem.class);
+                sources.addAnnotatedClass(Show.class);
+                sources.addAnnotatedClass(Season.class);
+                sources.addAnnotatedClass(Episode.class);
+                sources.addAnnotatedClass(EpisodeSubtitle.class);
+                sources.addAnnotatedClass(MovieSubtitle.class);
                 Metadata metadata = sources.getMetadataBuilder().build();
 
                 sessionFactory = metadata.getSessionFactoryBuilder().applyInterceptor(new CustomInterceptor()).build();
