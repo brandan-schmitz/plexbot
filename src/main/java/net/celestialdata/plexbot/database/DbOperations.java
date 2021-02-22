@@ -299,4 +299,177 @@ public class DbOperations {
             }
         }
     }
+
+    public static class showOps {
+        /**
+         * Fetch a list of all the Shows in the database
+         *
+         * @return a list of Shows in the database
+         */
+        public static List<Show> getAllItems() {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.createQuery("FROM Show").list();
+            } catch (NoResultException e) {
+                return new ArrayList<>();
+            }
+        }
+
+        /**
+         * Count the number of Shows in the database
+         *
+         * @return the number of Shows in the database
+         */
+        public static int getCount() {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return ((Long) session.createQuery("select count(*) from Show").uniqueResult()).intValue();
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+
+        /**
+         * Fetch a Show by its IMDb code
+         *
+         * @param imdbCode IMDb code to search for
+         * @return {@link Show } stored in database
+         * @throws ObjectNotFoundException thrown when a Show is not found in the database
+         */
+        public static Show getItemById(String imdbCode) throws ObjectNotFoundException {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.load(Show.class, imdbCode);
+            }
+        }
+
+        /**
+         * Check if a Show exists in the database
+         *
+         * @param imdbCode IMDb code to search for
+         * @return true if the Show was found in the database
+         */
+        public static boolean exists(String imdbCode) {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.get(Show.class, imdbCode) != null;
+            }
+        }
+    }
+
+    public static class seasonOps {
+        /**
+         * Fetch a list of all the Seasons in the database
+         *
+         * @return a list of Seasons in the database
+         */
+        public static List<Season> getAllItems() {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.createQuery("FROM Season").list();
+            } catch (NoResultException e) {
+                return new ArrayList<>();
+            }
+        }
+
+        /**
+         * Count the number of Seasons in the database
+         *
+         * @return the number of Seasons in the database
+         */
+        public static int getCount() {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return ((Long) session.createQuery("select count(*) from Season").uniqueResult()).intValue();
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+
+        /**
+         * Fetch a list of seasons for a show
+         *
+         * @param show Show to get a list of seasons for
+         * @return {@link Season } stored in database
+         */
+        public static List<Season> getSeasonsByShow(Show show) {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.createQuery("FROM Season WHERE show = " + show).list();
+            } catch (NoResultException e) {
+                return new ArrayList<>();
+            }
+        }
+
+        /**
+         * Fetch a specific season for a show
+         * @param show Show to get a season for
+         * @param seasonId season number to get
+         * @return {@link Season} stored in database
+         * @throws NoResultException thrown when a season could not be found matching required parameters
+         */
+        public static Season getSeason(Show show, int seasonId) throws NoResultException {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return (Season) session.createQuery("FROM Season WHERE show = " + show + " and number = " + seasonId).uniqueResult();
+            }
+        }
+
+        /**
+         * Check if a Show exists in the database
+         *
+         * @param imdbCode IMDb code to search for
+         * @return true if the Show was found in the database
+         */
+        public static boolean exists(String imdbCode) {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.get(Show.class, imdbCode) != null;
+            }
+        }
+    }
+
+    public static class episodeOps {
+        /**
+         * Fetch a list of all the Episodes in the database
+         *
+         * @return a list of Episodes in the database
+         */
+        public static List<Episode> getAllItems() {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.createQuery("FROM Episode").list();
+            } catch (NoResultException e) {
+                return new ArrayList<>();
+            }
+        }
+
+        /**
+         * Count the number of Episodes in the database
+         *
+         * @return the number of Episodes in the database
+         */
+        public static int getCount() {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return ((Long) session.createQuery("select count(*) from Episode").uniqueResult()).intValue();
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+
+        /**
+         * Fetch a Episode by its IMDb code
+         *
+         * @param imdbCode IMDb code to search for
+         * @return {@link Episode } stored in database
+         * @throws ObjectNotFoundException thrown when a Episode is not found in the database
+         */
+        public static Episode getItemById(String imdbCode) throws ObjectNotFoundException {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.load(Episode.class, imdbCode);
+            }
+        }
+
+        /**
+         * Check if a Episode exists in the database
+         *
+         * @param imdbCode IMDb code to search for
+         * @return true if the Episode was found in the database
+         */
+        public static boolean exists(String imdbCode) {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.get(Episode.class, imdbCode) != null;
+            }
+        }
+    }
 }
