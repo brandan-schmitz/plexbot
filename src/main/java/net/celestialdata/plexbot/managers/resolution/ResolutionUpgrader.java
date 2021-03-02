@@ -12,6 +12,7 @@ import net.celestialdata.plexbot.database.models.UpgradeItem;
 import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.CustomRunnable;
+import net.celestialdata.plexbot.utils.MediaInfoHelper;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
@@ -290,6 +291,8 @@ public class ResolutionUpgrader implements CustomRunnable {
                 .withTitle(movieInfo.getTitle())
                 .withYear(movieInfo.getYear())
                 .withResolution(torrentHandler.getTorrentQuality())
+                .withWidth(MediaInfoHelper.getWidth(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + fileExtension))
+                .withWidth(MediaInfoHelper.getHeight(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + fileExtension))
                 .withFilename(downloadManager.getFilename() + fileExtension)
                 .withExtension(fileExtension.replace(".", ""))
                 .withFolderName(downloadManager.getFilename())

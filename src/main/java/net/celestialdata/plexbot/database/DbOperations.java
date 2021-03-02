@@ -1,9 +1,14 @@
 package net.celestialdata.plexbot.database;
 
+import net.celestialdata.plexbot.BotConfig;
+import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.database.models.*;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.MessageDecoration;
 
 import javax.persistence.NoResultException;
 import java.io.Serializable;
@@ -36,6 +41,13 @@ public class DbOperations {
             if (transaction != null) {
                 transaction.rollback();
             }
+
+            new MessageBuilder()
+                    .append("An error has occurred while performing the following task:", MessageDecoration.BOLD)
+                    .appendCode("", "DB Object Save")
+                    .appendCode("java", ExceptionUtils.getMessage(e))
+                    .appendCode("java", ExceptionUtils.getStackTrace(e))
+                    .send(Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join());
             return false;
         } finally {
             session.close();
@@ -58,6 +70,13 @@ public class DbOperations {
             if (transaction != null) {
                 transaction.rollback();
             }
+
+            new MessageBuilder()
+                    .append("An error has occurred while performing the following task:", MessageDecoration.BOLD)
+                    .appendCode("", "DB Object Delete")
+                    .appendCode("java", ExceptionUtils.getMessage(e))
+                    .appendCode("java", ExceptionUtils.getStackTrace(e))
+                    .send(Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join());
             return false;
         } finally {
             session.close();
@@ -469,6 +488,90 @@ public class DbOperations {
         public static boolean exists(String imdbCode) {
             try (Session session = HibernateUtil.getSessionFactory().openSession()) {
                 return session.get(Episode.class, imdbCode) != null;
+            }
+        }
+    }
+
+    public static class movieSubtitleOps {
+        /**
+         * Fetch a list of all the MovieSubtitles in the database
+         *
+         * @return a list of MovieSubtitles in the database
+         */
+        public static List<MovieSubtitle> getAllItems() {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.createQuery("FROM MovieSubtitle").list();
+            } catch (NoResultException e) {
+                return new ArrayList<>();
+            }
+        }
+
+        /**
+         * Count the number of MovieSubtitles in the database
+         *
+         * @return the number of MovieSubtitles in the database
+         */
+        public static int getCount() {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return ((Long) session.createQuery("select count(*) from MovieSubtitle").uniqueResult()).intValue();
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+
+        /**
+         * Check if a MovieSubtitle exists in the database
+         *
+         * @param filename filename of the subtitle
+         * @return true if the subtitle was found in the database
+         */
+        public static boolean exists(String filename) {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.createQuery("FROM MovieSubtitle subtitle WHERE subtitle.filename = :name")
+                        .setParameter("name", filename)
+                        .uniqueResult() != null;
+            }
+        }
+    }
+
+    public static class episodeSubtitleOps {
+        /**
+         * Fetch a list of all the EpisodeSubtitles in the database
+         *
+         * @return a list of EpisodeSubtitles in the database
+         */
+        public static List<EpisodeSubtitle> getAllItems() {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.createQuery("FROM EpisodeSubtitle").list();
+            } catch (NoResultException e) {
+                return new ArrayList<>();
+            }
+        }
+
+        /**
+         * Count the number of EpisodeSubtitles in the database
+         *
+         * @return the number of EpisodeSubtitles in the database
+         */
+        public static int getCount() {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return ((Long) session.createQuery("select count(*) from EpisodeSubtitle").uniqueResult()).intValue();
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+
+        /**
+         * Check if a EpisodeSubtitle exists in the database
+         *
+         * @param filename filename of the subtitle
+         * @return true if the subtitle was found in the database
+         */
+        public static boolean exists(String filename) {
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.createQuery("FROM EpisodeSubtitle subtitle WHERE subtitle.filename = :name")
+                        .setParameter("name", filename)
+                        .uniqueResult() != null;
             }
         }
     }

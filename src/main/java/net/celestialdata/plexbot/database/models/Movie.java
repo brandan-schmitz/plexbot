@@ -29,6 +29,12 @@ public class Movie implements BaseModel {
     @Column(name = "movie_resolution", nullable = false)
     private int resolution;
 
+    @Column(name = "movie_height")
+    private int height;
+
+    @Column(name = "movie_width")
+    private int width;
+
     @Column(name = "movie_filename")
     private String filename;
 
@@ -48,15 +54,19 @@ public class Movie implements BaseModel {
      * @param title movie title
      * @param year movie release year
      * @param resolution movie resolution
+     * @param height movie height in pixels
+     * @param width movie width in pixels
      * @param filename filename of the movie file
      * @param extension file extension type of the movie file
      * @param folderName folder name for the movie's files
      */
-    public Movie(String id, String title, String year, int resolution, String filename, String extension, String folderName) {
+    public Movie(String id, String title, String year, int resolution, int height, int width, String filename, String extension, String folderName) {
         this.id = id;
         this.title = title;
         this.year = year;
         this.resolution = resolution;
+        this.height = height;
+        this.width = width;
         this.filename = filename;
         this.extension = extension;
         this.folderName = folderName;
@@ -127,6 +137,38 @@ public class Movie implements BaseModel {
     }
 
     /**
+     * Return the height of the movie in pixels
+     * @return movie height
+     */
+    public int getHeight() {
+        return height;
+    }
+
+    /**
+     * Set the height of the movie in pixels
+     * @param height movie height
+     */
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    /**
+     * Get the width of the movie in pixels
+     * @return movie width
+     */
+    public int getWidth() {
+        return width;
+    }
+
+    /**
+     * Set the width of the movie in pixels
+     * @param width movie width
+     */
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    /**
      * Return the filename of the movie as stored on the filesystem
      * @return movie filename
      */
@@ -181,8 +223,8 @@ public class Movie implements BaseModel {
     @Override
     public String toString() {
         return "Movie [id=" + this.id + ", title=" + this.title + ", year=" + this.year +
-                ", resolution=" + this.resolution + ", filename=" + this.filename +
-                ", extension=" + this.extension + ", folderName=" + folderName + "]";
+                ", resolution=" + this.resolution + ", height=" + this.height + ", width=" + this.width
+                + ", filename=" + this.filename + ", extension=" + this.extension + ", folderName=" + folderName + "]";
     }
 
     /**

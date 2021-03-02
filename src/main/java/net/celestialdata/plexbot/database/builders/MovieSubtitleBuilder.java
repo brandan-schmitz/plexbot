@@ -8,6 +8,7 @@ public class MovieSubtitleBuilder {
     private String languageCode;
     private String filetype;
     private String filename;
+    private boolean forced;
 
     public MovieSubtitleBuilder withMovie(Movie movie) {
         this.movie = movie;
@@ -29,7 +30,12 @@ public class MovieSubtitleBuilder {
         return this;
     }
 
+    public MovieSubtitleBuilder withForced(boolean forced) {
+        this.forced = forced;
+        return this;
+    }
+
     public MovieSubtitle build() {
-        return new MovieSubtitle(movie, languageCode, filetype, filename);
+        return new MovieSubtitle(movie, languageCode, filetype, filename, forced);
     }
 }

@@ -24,10 +24,14 @@ public interface CustomRunnable extends Runnable {
 
     default void endTask(Throwable error) {
         BotStatusManager.getInstance().removeProcess(taskName());
+        reportError(error);
+    }
 
+    default void reportError(Throwable error) {
         new MessageBuilder()
                 .append("An error has occurred while performing the following task:", MessageDecoration.BOLD)
                 .appendCode("", taskName())
+                .appendCode("java", ExceptionUtils.getMessage(error))
                 .appendCode("java", ExceptionUtils.getStackTrace(error))
                 .send(Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join());
     }

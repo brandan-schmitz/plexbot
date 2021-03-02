@@ -3,7 +3,7 @@ package net.celestialdata.plexbot.managers;
 import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.client.model.OmdbItem;
 import net.celestialdata.plexbot.utils.CustomRunnable;
-import org.apache.commons.lang3.StringUtils;
+import net.celestialdata.plexbot.utils.FilenameSanitizer;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,7 +33,7 @@ public class DownloadManager implements CustomRunnable {
     private boolean isFileServerMounted = false;
     private long progress = 0;
     private long size = 0;
-    private String filename;
+    private final String filename;
     private final String fileExtension;
 
     public DownloadManager(String downloadLink, OmdbItem movieInfo, String fileExtension) {
@@ -41,19 +41,7 @@ public class DownloadManager implements CustomRunnable {
         this.fileExtension = fileExtension;
 
         // Remove anything from the filename that may cause issues
-        filename = movieInfo.getTitle() + " (" + movieInfo.getYear() + ") {imdb-" + movieInfo.getImdbID() + "}";
-        filename = filename.replace("<", "");
-        filename = filename.replace(">", "");
-        filename = filename.replace(":", "");
-        filename = filename.replace("\"", "");
-        filename = filename.replace("/", "");
-        filename = filename.replace("<\\", "");
-        filename = filename.replace("|", "");
-        filename = filename.replace("?", "");
-        filename = filename.replace("*", "");
-        filename = filename.replace(".", "");
-        filename = filename.replace("·", "-");
-        filename = StringUtils.stripAccents(filename);
+        filename = FilenameSanitizer.sanitize(movieInfo.getTitle() + " (" + movieInfo.getYear() + ") {imdb-" + movieInfo.getImdbID() + "}");
     }
 
     @Override
@@ -107,9 +95,11 @@ public class DownloadManager implements CustomRunnable {
         }
 
         // Attempt to move the file to the movie folder. This folder should contain a file called movie.pb otherwise the
-        // rename process should be aborted.
+        // rename process should be aborted unless the mount check is disabled for the bot.
         synchronized (lock) {
-            isFileServerMounted = new File(BotConfig.getInstance().movieFolder() + "movie.pb").exists();
+            if (BotConfig.getInstance().checkMount()) {
+                isFileServerMounted = new File(BotConfig.getInstance().movieFolder() + "mount.pb").exists();
+            } else isFileServerMounted = true;
         }
         if (isFileServerMounted) {
             // Create the new folder

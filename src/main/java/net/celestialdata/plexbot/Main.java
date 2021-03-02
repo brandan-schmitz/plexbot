@@ -3,10 +3,7 @@ package net.celestialdata.plexbot;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
 import net.celestialdata.plexbot.commandhandler.JavacordHandler;
-import net.celestialdata.plexbot.commands.HelpCommand;
-import net.celestialdata.plexbot.commands.PingCommand;
-import net.celestialdata.plexbot.commands.PurgeCommand;
-import net.celestialdata.plexbot.commands.RequestMovieCommand;
+import net.celestialdata.plexbot.commands.*;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.HibernateUtil;
 import net.celestialdata.plexbot.database.builders.UserBuilder;
@@ -42,6 +39,7 @@ public class Main {
         commandHandler.registerCommand(new PingCommand());
         commandHandler.registerCommand(new HelpCommand());
         commandHandler.registerCommand(new PurgeCommand());
+        commandHandler.registerCommand(new ImportCommand());
         commandHandler.registerCommand(new RequestMovieCommand());
     }
 

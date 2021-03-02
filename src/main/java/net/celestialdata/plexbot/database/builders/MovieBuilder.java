@@ -7,6 +7,8 @@ public class MovieBuilder {
     private String title;
     private String year;
     private int resolution;
+    private int height;
+    private int width;
     private String filename;
     private String extension;
     private String folderName;
@@ -31,6 +33,16 @@ public class MovieBuilder {
         return this;
     }
 
+    public MovieBuilder withHeight(int height) {
+        this.height = height;
+        return this;
+    }
+
+    public MovieBuilder withWidth(int width) {
+        this.width = width;
+        return this;
+    }
+
     public MovieBuilder withFilename(String filename) {
         this.filename = filename;
         return this;
@@ -47,6 +59,7 @@ public class MovieBuilder {
     }
 
     public Movie build() {
-        return new Movie(this.id, this.title, this.year, this.resolution, this.filename, this.extension, this.folderName);
+        return new Movie(this.id, this.title, this.year, this.resolution, this.height,
+                this.width, this.filename, this.extension, this.folderName);
     }
 }

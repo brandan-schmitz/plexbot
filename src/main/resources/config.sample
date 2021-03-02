@@ -39,6 +39,9 @@ ChannelSettings:
   # The ID of the channel for notifications about movies that have been added to the library
   newMoviesChannelId: 012345678901234567
 
+  # The ID of the channel for notifications about new TV episodes that have been added to the library
+  newEpisodesChannelId: 012345678901234567
+
   # The ID of the channel for notifications about movies that have been added to the waiting list
   waitlistChannelId: 012345678901234567
 
@@ -51,8 +54,19 @@ FolderSettings:
   # The folder that the movies are stored in
   movieFolder: /path/to/movie/folder
 
+  # The folder that the TV shows are stored in
+  tvFolder: /path/to/tv/folder
+
+  # The folder where media to be imported into the libraries is stored in
+  importFolder: /path/to/import/folder
+
   # The folder that is used for temporary file operations
   tempFolder: /path/to/temp/folder
+
+  # Check if the mount file (mount.pb) exists in the movie, tv, and import folders
+  # This can be used to make sure that remote filesystems are mounted and the files
+  # are accessible to the bot.
+  checkMount: true
 
 
 #########################

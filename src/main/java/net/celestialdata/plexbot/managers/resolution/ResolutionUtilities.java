@@ -7,9 +7,9 @@ import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.UpgradeItemBuilder;
 import net.celestialdata.plexbot.database.models.Movie;
 import net.celestialdata.plexbot.utils.BotColors;
+import net.celestialdata.plexbot.utils.MediaInfoHelper;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
-import uk.co.caprica.vlcjinfo.MediaInfo;
 
 /**
  * A class for handling all things related to the upgrade manager
@@ -28,7 +28,7 @@ public class ResolutionUtilities {
      */
     static void addUpgradableMovie(OmdbItem movieInfo, int oldResolution, int newResolution, String newSize) {
         Movie dbMovie = DbOperations.movieOps.getMovieById(movieInfo.getImdbID());
-        MediaInfo mediaInfo = MediaInfo.mediaInfo(BotConfig.getInstance().movieFolder() + dbMovie.getFolderName() + "/" + dbMovie.getFilename());
+        String filesize = MediaInfoHelper.getFilesize(BotConfig.getInstance().movieFolder() + dbMovie.getFolderName() + "/" + dbMovie.getFilename());
 
         // First check to see if the movie is already listed in the upgrade list, if not add it and send the message
         if (!DbOperations.upgradeItemOps.exists(movieInfo.getImdbID())) {
@@ -36,7 +36,7 @@ public class ResolutionUtilities {
                     textChannel -> textChannel.sendMessage(new EmbedBuilder()
                             .setTitle(movieInfo.getTitle())
                             .setDescription(
-                                    "**Current Size:** " + mediaInfo.first("General").value("File size") + "\n" +
+                                    "**Current Size:** " + filesize + "\n" +
                                             "**New Size:** " + newSize + "\n\n" +
                                             "**ID:** " + movieInfo.getImdbID() + "\n" +
                                             "**Year:** " + movieInfo.getYear() + "\n" +

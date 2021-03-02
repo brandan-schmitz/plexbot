@@ -24,13 +24,17 @@ public class EpisodeSubtitle implements BaseModel {
     @Column(name = "subtitle_filename")
     private String filename;
 
+    @Column(name = "subtitle_forced")
+    private boolean forced;
+
     public EpisodeSubtitle() {}
 
-    public EpisodeSubtitle(Episode episode, String languageCode, String filetype, String filename) {
+    public EpisodeSubtitle(Episode episode, String languageCode, String filetype, String filename, boolean forced) {
         this.episode = episode;
         this.languageCode = languageCode;
         this.filetype = filetype;
         this.filename = filename;
+        this.forced = forced;
     }
 
     public int getId() {
@@ -67,5 +71,13 @@ public class EpisodeSubtitle implements BaseModel {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public boolean isForced() {
+        return forced;
+    }
+
+    public void setForced(boolean forced) {
+        this.forced = forced;
     }
 }

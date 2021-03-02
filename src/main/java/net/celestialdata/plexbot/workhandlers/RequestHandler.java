@@ -14,6 +14,7 @@ import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.utils.CustomRunnable;
+import net.celestialdata.plexbot.utils.MediaInfoHelper;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -560,6 +561,8 @@ public class RequestHandler implements CustomRunnable {
                 .withTitle(selectedMovie.getTitle())
                 .withYear(selectedMovie.getYear())
                 .withResolution(torrentHandler.getTorrentQuality())
+                .withWidth(MediaInfoHelper.getWidth(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + fileExtension))
+                .withHeight(MediaInfoHelper.getHeight(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + fileExtension))
                 .withFilename(downloadManager.getFilename() + fileExtension)
                 .build()
         );

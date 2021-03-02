@@ -160,6 +160,14 @@ public class BotConfig {
     }
 
     /**
+     * Return the ID of the channel where notifications about tv episodes that have been added to the library are created.
+     * @return channel id
+     */
+    public long newEpisodesChannelId() {
+        return config.getLong("ChannelSettings.newEpisodesChannelId");
+    }
+
+    /**
      * Return the ID of the channel where notifications about movies that are in the waitinglist are located.
      * @return channel id
      */
@@ -168,19 +176,68 @@ public class BotConfig {
     }
 
     /**
-     * Return the folder that movies are stored in. This should end in a trailing / symbol.
+     * Return the folder that movies are stored in.
      * @return folder path
      */
     public String movieFolder() {
-        return config.getString("FolderSettings.movieFolder", "/path/to/movies/");
+        var value = config.getString("FolderSettings.movieFolder", "");
+
+        if (!value.endsWith("/")) {
+            value = value + "/";
+        }
+
+        return value;
     }
 
     /**
-     * Return the folder that is used for temporary file actions by the bot. This should end in a trailing / symbol.
+     * Return the folder that TV Shows are stored in.
+     * @return folder path
+     */
+    public String tvFolder() {
+        var value = config.getString("FolderSettings.tvFolder", "");
+
+        if (!value.endsWith("/")) {
+            value = value + "/";
+        }
+
+        return value;
+    }
+
+    /**
+     * Return the folder that files to be imported are stored in.
+     * @return folder path
+     */
+    public String importFolder() {
+        var value = config.getString("FolderSettings.importFolder", "");
+
+        if (!value.endsWith("/")) {
+            value = value + "/";
+        }
+
+        return value;
+    }
+
+    /**
+     * Return the folder that is used for temporary file actions by the bot.
      * @return folder path
      */
     public String tempFolder() {
-        return config.getString("FolderSettings.tempFolder", "/path/to/temp/");
+        var value = config.getString("FolderSettings.tempFolder", "");
+
+        if (!value.endsWith("/")) {
+            value = value + "/";
+        }
+
+        return value;
+    }
+
+    /**
+     * Return if the bot should check to see if the mount file (mount.pb) is located in the
+     * movies, tv, and import folders.
+     * @return should mounts be checked
+     */
+    public boolean checkMount() {
+        return config.getBoolean("FolderSettings.checkMount");
     }
 
     /**

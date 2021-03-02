@@ -51,6 +51,7 @@ Below is a table that describes all the channels that Plexbot requires in order 
 | upgraded-movies   | This channel is used to notify users that a movie has been upgraded to a better resolution. | Server Administrator:<br />`Read`<br /><br />Plexbot:<br />`Read, Edit, Send, Delete`<br /><br />Others:<br />`Read` |
 | bot-status        | This channel is used by the bot to display its current status message. | Server Administrator:<br />`Read`<br /><br />Plexbot:<br />`Read, Send, Edit, Delete`<br /><br />Others:<br />`Read` |
 | new-movies        | This channel is used to notify users that a movie has been added to the library. | Server Administrator:<br />`Read`<br /><br />Plexbot:<br />`Read, Send, Edit, Delete`<br /><br />Others:<br />`Read` |
+| new-episodes      | This channel is used to notify users that a new TV episode has been added to the library. | Server Administrator:<br />`Read`<br /><br />Plexbot:<br />`Read, Send, Edit, Delete`<br /><br />Others:<br />`Read` |
 | waiting-list      | This channel is used to list the movies that are in the waiting list. | Server Administrator:<br />`Read`<br /><br />Plexbot:<br />`Read, Send, Edit, Delete`<br /><br />Others:<br />`Read` |
 | movie-request*    | This channel is used by users to request that movies be downloaded. | Server Administrator:<br />`Read, Send, React, Edit, Delete`<br /><br />Plexbot:<br />`Read, Send, React, Edit, Delete`<br /><br />Others:<br />`Read, Send, React, Edit (self), Delete (self)` |
 
@@ -106,6 +107,9 @@ ChannelSettings:
   # The ID of the channel for notifications about movies that have been added to the library
   newMoviesChannelId: 012345678901234567
 
+  # The ID of the channel for notifications about new TV episodes that have been added to the library
+  newEpisodesChannelId: 012345678901234567
+
   # The ID of the channel for notifications about movies that have been added to the waiting list
   waitlistChannelId: 012345678901234567
 
@@ -118,8 +122,19 @@ FolderSettings:
   # The folder that the movies are stored in
   movieFolder: /path/to/movie/folder
 
+  # The folder that the TV shows are stored in
+  tvFolder: /path/to/tv/folder
+
+  # The folder where media to be imported into the libraries is stored in
+  importFolder: /path/to/import/folder
+
   # The folder that is used for temporary file operations
   tempFolder: /path/to/temp/folder
+
+  # Check if the mount file (mount.pb) exists in the movie, tv, and import folders
+  # This can be used to make sure that remote filesystems are mounted and the files
+  # are accessible to the bot.
+  checkMount: true
 
 
 #########################

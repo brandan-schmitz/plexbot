@@ -8,6 +8,7 @@ public class EpisodeSubtitleBuilder {
     private String languageCode;
     private String filetype;
     private String filename;
+    private boolean forced;
 
     public EpisodeSubtitleBuilder withEpisode(Episode episode) {
         this.episode = episode;
@@ -29,7 +30,12 @@ public class EpisodeSubtitleBuilder {
         return this;
     }
 
+    public EpisodeSubtitleBuilder withForced(boolean forced) {
+        this.forced = forced;
+        return this;
+    }
+
     public EpisodeSubtitle build() {
-        return new EpisodeSubtitle(episode, languageCode, filetype, filename);
+        return new EpisodeSubtitle(episode, languageCode, filetype, filename, forced);
     }
 }

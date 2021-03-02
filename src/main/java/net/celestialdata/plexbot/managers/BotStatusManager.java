@@ -22,11 +22,13 @@ final public class BotStatusManager implements Runnable {
     private final ArrayList<String> currentProcesses;
     private String resolutionManagerStatus;
     private String waitlistManagerStatus;
+    private String importManagerStatus;
     private Color statusColor = BotColors.SUCCESS;
 
     private BotStatusManager() {
         resolutionManagerStatus = "Idle";
         waitlistManagerStatus = "Idle";
+        importManagerStatus = "Idle";
         currentProcesses = new ArrayList<>();
 
         Main.getBotApi().getTextChannelById(BotConfig.getInstance().botStatusChannelId()).ifPresent(channel ->
@@ -71,6 +73,7 @@ final public class BotStatusManager implements Runnable {
                         "Items in the queued section will process once there is room.\n\n" +
                         "**Waitlist Manager:**\n```" + waitlistManagerStatus + "```\n" +
                         "**Resolution Manager:**\n```" + resolutionManagerStatus + "```\n" +
+                        "**Import Manager:**\n```" + importManagerStatus + "```\n" +
                         "**Running Tasks:**\n```" + buildProcessList() + "```")
                 .setFooter("Plexbot v" + Main.getVersion() + " - " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         .format(ZonedDateTime.now()) + " CST");
@@ -124,6 +127,18 @@ final public class BotStatusManager implements Runnable {
 
     public void clearWaitlistManagerStatus() {
         this.waitlistManagerStatus = "Idle";
+    }
+
+    public void setImportManagerStatus(int currentNumber, int total) {
+        this.importManagerStatus = "Importing file " + currentNumber + " of " + total;
+    }
+
+    public void setImportManagerStatus(String status) {
+        this.importManagerStatus = status;
+    }
+
+    public void clearImportManagerStatus() {
+        this.importManagerStatus = "Idle";
     }
 
     public void addProcess(String processName) {

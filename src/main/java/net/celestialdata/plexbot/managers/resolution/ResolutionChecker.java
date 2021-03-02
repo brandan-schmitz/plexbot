@@ -43,9 +43,9 @@ public class ResolutionChecker implements CustomRunnable {
 
     @Override
     public void endTask(Throwable error) {
+        reportError(error);
         BotStatusManager.getInstance().removeProcess(taskName());
         BotStatusManager.getInstance().clearResolutionManagerStatus();
-        error.printStackTrace();
     }
 
     @Override
