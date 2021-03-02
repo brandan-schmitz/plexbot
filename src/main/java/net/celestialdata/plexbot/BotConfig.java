@@ -8,6 +8,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -238,6 +239,22 @@ public class BotConfig {
      */
     public boolean checkMount() {
         return config.getBoolean("FolderSettings.checkMount");
+    }
+
+    /**
+     * Return the list of users authorized to use the import command.
+     * @return user list
+     */
+    public List<Long> authorizedImportUsers() {
+        return config.getList(Long.class, "ImportSettings.authorizedUsers");
+    }
+
+    /**
+     * Return the list of files to ignore during the import command.
+     * @return file list
+     */
+    public List<String> ignoredImportFiles() {
+        return config.getList(String.class, "ImportSettings.ignoredFiles");
     }
 
     /**

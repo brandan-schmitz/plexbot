@@ -2,6 +2,7 @@ package net.celestialdata.plexbot.database.models;
 
 import javax.persistence.*;
 
+@SuppressWarnings("unused")
 @Entity
 @Table(name = "Episodes")
 public class Episode implements BaseModel {
@@ -33,7 +34,7 @@ public class Episode implements BaseModel {
     @Column(name = "episode_filetype")
     private String filetype;
 
-    @Column(name = "eiposde_filename")
+    @Column(name = "episode_filename")
     private String filename;
 
     public Episode() {}

@@ -207,8 +207,8 @@ public class ImportManager implements CustomRunnable {
             return;
         }
 
-        // Remove the mount.pb file from the list if it exists
-        fileList.removeIf((file) -> file.equalsIgnoreCase("mount.pb") || file.equalsIgnoreCase(".DS_STORE"));
+        // Remove files listed in the ignore list
+        fileList.removeIf(file -> BotConfig.getInstance().ignoredImportFiles().contains(file));
 
         // Parse the file list into different file types
         fileList.forEach((file) -> {

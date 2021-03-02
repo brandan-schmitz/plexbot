@@ -319,6 +319,7 @@ public class DbOperations {
         }
     }
 
+    @SuppressWarnings("unused")
     public static class showOps {
         /**
          * Fetch a list of all the Shows in the database
@@ -372,6 +373,7 @@ public class DbOperations {
         }
     }
 
+    @SuppressWarnings("unused")
     public static class seasonOps {
         /**
          * Fetch a list of all the Seasons in the database
@@ -439,6 +441,7 @@ public class DbOperations {
         }
     }
 
+    @SuppressWarnings("unused")
     public static class episodeOps {
         /**
          * Fetch a list of all the Episodes in the database
@@ -492,6 +495,7 @@ public class DbOperations {
         }
     }
 
+    @SuppressWarnings("unused")
     public static class movieSubtitleOps {
         /**
          * Fetch a list of all the MovieSubtitles in the database
@@ -534,6 +538,7 @@ public class DbOperations {
         }
     }
 
+    @SuppressWarnings("unused")
     public static class episodeSubtitleOps {
         /**
          * Fetch a list of all the EpisodeSubtitles in the database

@@ -137,6 +137,22 @@ FolderSettings:
   checkMount: true
 
 
+###############################
+### Import Manager Settings ###
+###############################
+ImportSettings:
+  # List of users (by ID) that are allowed to use the import command
+  authorizedUsers:
+    - 012345678901234567
+    - 012345678901234567
+
+  # List of files to ignore in the import folder during the import process
+  ignoredFiles:
+    - "mount.pb"
+    - ".DS_Store"
+    - ".stignore"
+
+
 #########################
 ### Database Settings ###
 #########################

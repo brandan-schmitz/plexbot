@@ -2,6 +2,7 @@ package net.celestialdata.plexbot.database.models;
 
 import javax.persistence.*;
 
+@SuppressWarnings("unused")
 @Entity
 @Table(name = "Episode_Subtitles")
 public class EpisodeSubtitle implements BaseModel {
