@@ -274,7 +274,9 @@ public class DbOperations {
 
         public static List<WaitlistItem> getAllItemsByUser(Long userId) {
             try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-                return session.createQuery("from WaitlistItem i where i.requestedBy.id = " + userId).list();
+                return session.createQuery("from WaitlistItem item where item.requestedBy.id = :userId")
+                        .setParameter("userId", userId)
+                        .list();
             } catch (NoResultException e) {
                 return new ArrayList<>();
             }
@@ -409,7 +411,9 @@ public class DbOperations {
          */
         public static List<Season> getSeasonsByShow(Show show) {
             try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-                return session.createQuery("FROM Season WHERE show = " + show).list();
+                return session.createQuery("FROM Season season WHERE season.show = :show")
+                        .setParameter("show", show)
+                        .list();
             } catch (NoResultException e) {
                 return new ArrayList<>();
             }
@@ -418,25 +422,32 @@ public class DbOperations {
         /**
          * Fetch a specific season for a show
          * @param show Show to get a season for
-         * @param seasonId season number to get
+         * @param seasonNumber season number to get
          * @return {@link Season} stored in database
          * @throws NoResultException thrown when a season could not be found matching required parameters
          */
-        public static Season getSeason(Show show, int seasonId) throws NoResultException {
+        public static Season getSeason(Show show, int seasonNumber) throws NoResultException {
             try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-                return (Season) session.createQuery("FROM Season WHERE show = " + show + " and number = " + seasonId).uniqueResult();
+                return (Season) session.createQuery("FROM Season season WHERE season.show = :show and season.number = :number")
+                        .setParameter("show", show)
+                        .setParameter("number", seasonNumber)
+                        .uniqueResult();
             }
         }
 
         /**
          * Check if a Show exists in the database
          *
-         * @param imdbCode IMDb code to search for
+         * @param show show the season is for
+         * @param seasonNumber number of the season
          * @return true if the Show was found in the database
          */
-        public static boolean exists(String imdbCode) {
+        public static boolean exists(Show show, int seasonNumber) {
             try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-                return session.get(Show.class, imdbCode) != null;
+                return session.createQuery("FROM Season season WHERE season.show = :show and season.number = :number")
+                        .setParameter("show", show)
+                        .setParameter("number", seasonNumber)
+                        .uniqueResult() != null;
             }
         }
     }

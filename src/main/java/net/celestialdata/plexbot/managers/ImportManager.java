@@ -379,12 +379,15 @@ public class ImportManager implements CustomRunnable {
                 }
 
                 // Ensure the season is saved to the database
-                Season dbSeason = new SeasonBuilder()
-                        .withShow(dbShow)
-                        .withNumber(seasonNum)
-                        .withFoldername(seasonFoldername)
-                        .build();
-                DbOperations.saveObject(dbSeason);
+                if (!DbOperations.seasonOps.exists(dbShow, seasonNum)) {
+                    DbOperations.saveObject(new SeasonBuilder()
+                            .withShow(dbShow)
+                            .withNumber(seasonNum)
+                            .withFoldername(seasonFoldername)
+                            .build());
+                }
+                Season dbSeason = DbOperations.seasonOps.getSeason(dbShow, seasonNum);
+
 
                 // Check if the media already is in the system and display a message if it is and the overwrite flag was not given
                 if (exists && !overwrite) {
