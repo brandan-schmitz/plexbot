@@ -348,7 +348,7 @@ public class ImportManager implements CustomRunnable {
 
                 if (episodeNum <= 9) {
                     episodeString = "e0" + episodeNum;
-                } else episodeString = "s" + episodeNum;
+                } else episodeString = "e" + episodeNum;
 
                 // Configure the file/folder names for the show and episode
                 showFoldername = FilenameSanitizer.sanitize(show.getTitle());
@@ -589,7 +589,7 @@ public class ImportManager implements CustomRunnable {
 
                 if (episodeNum <= 9) {
                     episodeString = "e0" + episodeNum;
-                } else episodeString = "s" + episodeNum;
+                } else episodeString = "e" + episodeNum;
 
                 // Configure the file/folder names for the show and episode
                 showFoldername = FilenameSanitizer.sanitize(show.getTitle());
