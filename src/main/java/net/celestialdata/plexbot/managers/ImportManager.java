@@ -439,6 +439,13 @@ public class ImportManager implements CustomRunnable {
                 );
             }
 
+            // Trigger a refresh of the media libraries on the plex server
+            try {
+                BotClient.getInstance().plexApi.refreshLibraries();
+            } catch (Exception e) {
+                reportError(e);
+            }
+
             progress++;
         }
 
@@ -631,6 +638,13 @@ public class ImportManager implements CustomRunnable {
                         .withFilename(subtitleFilename)
                         .build()
                 );
+            }
+
+            // Trigger a refresh of the media libraries on the plex server
+            try {
+                BotClient.getInstance().plexApi.refreshLibraries();
+            } catch (Exception e) {
+                reportError(e);
             }
 
             progress++;
