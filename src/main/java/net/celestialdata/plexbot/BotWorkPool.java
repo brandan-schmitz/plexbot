@@ -2,6 +2,9 @@ package net.celestialdata.plexbot;
 
 import net.celestialdata.plexbot.managers.BotStatusManager;
 import net.celestialdata.plexbot.utils.CustomRunnable;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.MessageDecoration;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -20,7 +23,12 @@ public class BotWorkPool {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                new MessageBuilder()
+                        .append("An error has occurred while performing the following task:", MessageDecoration.BOLD)
+                        .appendCode("", "Bot Work Pool")
+                        .appendCode("java", ExceptionUtils.getMessage(e))
+                        .appendCode("java", ExceptionUtils.getStackTrace(e))
+                        .send(Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join());
             }
             executor.execute(r);
         });

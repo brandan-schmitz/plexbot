@@ -260,6 +260,22 @@ public class ImportManager implements CustomRunnable {
                 continue;
             }
 
+            // Determine the resolution of the file
+            int resolution = 0;
+            if (height > 0 && height <= 240) {
+                resolution = 240;
+            } else if (height > 240 && height <= 360) {
+                resolution = 360;
+            } else if (height > 360 && height <= 480) {
+                resolution = 480;
+            } else if (height > 480 && height <= 720 ) {
+                resolution = 720;
+            } else if (height > 720 && height <= 1080) {
+                resolution = 1080;
+            } else if (height > 1080) {
+                resolution = 2160;
+            }
+
             // Check the type of media and move it into place based on the type
             if (omdbItem.getType() == OmdbItem.TypeEnum.MOVIE) {
                 String foldername = FilenameSanitizer.sanitize(omdbItem.getTitle() + " (" + omdbItem.getYear() + ") {imdb-" + omdbItem.getImdbID() + "}");
@@ -293,13 +309,12 @@ public class ImportManager implements CustomRunnable {
                     continue;
                 }
 
-                // TODO: Calculate the resolution in the form used by TYS
                 // Save the movie to the database
                 DbOperations.saveObject(new MovieBuilder()
                         .withId(code)
                         .withTitle(omdbItem.getTitle())
                         .withYear(omdbItem.getYear())
-                        .withResolution(0)
+                        .withResolution(resolution)
                         .withHeight(height)
                         .withWidth(width)
                         .withFilename(filename)
@@ -416,12 +431,14 @@ public class ImportManager implements CustomRunnable {
                         .withShow(dbShow)
                         .withSeason(dbSeason)
                         .withImdbCode(code)
+                        .withTitle(omdbItem.getTitle())
                         .withYear(omdbItem.getYear())
                         .withFilename(episodeFilename)
                         .withFiletype(filetype)
                         .withNumber(episodeNum)
                         .withWidth(width)
                         .withHeight(height)
+                        .withResolution(resolution)
                         .build());
 
                 // Display a message about the episode being added

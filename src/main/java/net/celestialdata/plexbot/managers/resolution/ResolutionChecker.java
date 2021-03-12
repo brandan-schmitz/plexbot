@@ -74,7 +74,7 @@ public class ResolutionChecker implements CustomRunnable {
             try {
                 torrentHandler.searchYts();
             } catch (Exception e) {
-                e.printStackTrace();
+                reportError(e);
                 continue;
             }
 

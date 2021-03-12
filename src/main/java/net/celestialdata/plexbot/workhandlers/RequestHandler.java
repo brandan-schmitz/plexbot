@@ -10,6 +10,7 @@ import net.celestialdata.plexbot.client.model.*;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
 import net.celestialdata.plexbot.database.builders.WaitlistItemBuilder;
+import net.celestialdata.plexbot.managers.BotStatusManager;
 import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
@@ -64,6 +65,13 @@ public class RequestHandler implements CustomRunnable {
     @Override
     public String taskName() {
         return processName;
+    }
+
+    @Override
+    public void endTask(Throwable e) {
+        BotStatusManager.getInstance().removeProcess(taskName());
+        reportError(e);
+        displayError("An unknown error has occurred while processing this request. Brandan has been notified of the error.", e.getMessage());
     }
 
     /**
@@ -290,7 +298,6 @@ public class RequestHandler implements CustomRunnable {
         try {
             rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
         } catch (Exception e) {
-            e.printStackTrace();
             displayError("There was an error masking the download. Please try again later.", "rdb-get-info");
             endTask(e);
             return;
@@ -324,7 +331,6 @@ public class RequestHandler implements CustomRunnable {
         try {
             BotClient.getInstance().rdbApi.selectTorrentFiles(rdbTorrentInfo.getId(), fileToSelect);
         } catch (Exception e) {
-            e.printStackTrace();
             displayError("There was an error masking the download. Please try again later.", "rdb-select-files");
             endTask(e);
             return;
@@ -361,19 +367,33 @@ public class RequestHandler implements CustomRunnable {
                 }
             }
 
-            while (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.UPLOADING ||
-                    rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.COMPRESSING) {
+            while (rdbTorrentInfo.getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
+                sentMessage.edit(new EmbedBuilder()
+                        .setTitle("Addition Status")
+                        .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
+                        .addField("Progress:",
+                                BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
+                                        BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
+                                        BotEmojis.TODO_STEP + "  **Mask download file:** Processing...\n" +
+                                        BotEmojis.TODO_STEP + "  Download movie\n" +
+                                        BotEmojis.TODO_STEP + "  Add movie to database")
+                        .setFooter("Message updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                                .format(ZonedDateTime.now()) + " CST")
+                        .setColor(BotColors.INFO))
+                        .exceptionally(ExceptionLogger.get());
+
                 rdbLock.wait(2000);
                 rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
-            }
 
-            if (BotClient.getInstance().rdbApi.getTorrentInfo(rdbTorrentInfo.getId()).getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
-                displayError("There was an error masking the download. Please try again later.", "rdb-download-file");
-                endTask();
-                return;
+                if (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.VIRUS ||
+                        rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.ERROR ||
+                        rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.DEAD) {
+                    displayError("There was an error masking the download. Please try again later.", "rdb-download-file");
+                    endTask();
+                    return;
+                }
             }
         } catch (InterruptedException | ApiException e) {
-            e.printStackTrace();
             displayError("There was an error masking the download. Please try again later.", "rdb-download-file");
             endTask(e);
             return;
@@ -393,12 +413,12 @@ public class RequestHandler implements CustomRunnable {
                 return;
             }
         } catch (Exception e) {
-            e.printStackTrace();
             displayError("There was an error masking the download. Please try again later.", "rdb-unrestrict-link");
             try {
-                e.printStackTrace();
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-            } catch (ApiException ignored) {}
+            } catch (ApiException e1) {
+                reportError(e1);
+            }
             endTask(e);
             return;
         }
@@ -427,12 +447,12 @@ public class RequestHandler implements CustomRunnable {
         downloadManager = new DownloadManager(downloadLink, selectedMovie, fileExtension);
         BotWorkPool.getInstance().submitProcess(downloadManager);
 
-        // Wait for the file to be downloaded and processed
+        // Wait for the file to be downloaded
         synchronized (downloadManager.lock) {
             LocalDateTime lastUpdated = LocalDateTime.now();
-            while (downloadManager.isDownloading()) {
+            while (downloadManager.isDownloading() && !downloadManager.didUnknownErrorOccur()) {
                 try {
-                    downloadManager.lock.wait();
+                    downloadManager.lock.wait(10000);
 
                     // Update the download progress message
                     if (lastUpdated.plus(5, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
@@ -453,11 +473,23 @@ public class RequestHandler implements CustomRunnable {
                     }
                 } catch (InterruptedException e) {
                     displayError("There was an error while downloading this movie. Please try again later.", "file-download-fail");
-                    e.printStackTrace();
                     endTask(e);
                     return;
                 }
             }
+        }
+
+        // Verify that there was not an unknown error
+        if (downloadManager.didUnknownErrorOccur()) {
+            displayError("An unknown error has occurred while downloading this movie. Brandan has been notified of this issue.", downloadManager.getErrorMessage());
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (Exception e) {
+                endTask(e);
+                return;
+            }
+            endTask();
+            return;
         }
 
         // Verify that the download did not fail
@@ -476,9 +508,9 @@ public class RequestHandler implements CustomRunnable {
         // Wait for the bot to finish processing the file
         synchronized (downloadManager.lock) {
             LocalDateTime lastUpdated = LocalDateTime.now();
-            while (downloadManager.isProcessing()) {
+            while (downloadManager.isProcessing() && !downloadManager.didUnknownErrorOccur()) {
                 try {
-                    downloadManager.lock.wait();
+                    downloadManager.lock.wait(10000);
 
                     // Update the download progress to show it's processing the file
                     if (lastUpdated.plus(5, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
@@ -489,7 +521,7 @@ public class RequestHandler implements CustomRunnable {
                                         BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
                                                 BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
                                                 BotEmojis.FINISHED_STEP + "  Mask download file\n" +
-                                                BotEmojis.TODO_STEP + "  **Download movie:** processing\n" +
+                                                BotEmojis.TODO_STEP + "  **Download movie:** Processing...\n" +
                                                 BotEmojis.TODO_STEP + "  Add movie to database")
                                 .setFooter("Message updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                                         .format(ZonedDateTime.now()) + " CST")
@@ -505,6 +537,20 @@ public class RequestHandler implements CustomRunnable {
             }
         }
 
+        // Verify that there was not an unknown error
+        if (downloadManager.didUnknownErrorOccur()) {
+            displayError("An unknown error has occurred while processing this movie. Brandan has been notified of this issue.", downloadManager.getErrorMessage());
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (Exception e) {
+                endTask(e);
+                return;
+            }
+            endTask();
+            return;
+        }
+
+        // Check if the processing of the file failed
         if (downloadManager.didProcessingFail()) {
             if (!downloadManager.isFileServerMounted()) {
                 displayError("There was an error while processing this movie. Brandan has been notified " +
@@ -538,7 +584,7 @@ public class RequestHandler implements CustomRunnable {
         try {
             BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
         } catch (Exception e) {
-            e.printStackTrace();
+            reportError(e);
         }
 
         sentMessage.edit(new EmbedBuilder()
@@ -561,9 +607,13 @@ public class RequestHandler implements CustomRunnable {
                 .withTitle(selectedMovie.getTitle())
                 .withYear(selectedMovie.getYear())
                 .withResolution(torrentHandler.getTorrentQuality())
-                .withWidth(MediaInfoHelper.getWidth(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + fileExtension))
-                .withHeight(MediaInfoHelper.getHeight(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + fileExtension))
+                .withFolderName(downloadManager.getFilename())
                 .withFilename(downloadManager.getFilename() + fileExtension)
+                .withExtension(fileExtension.replace(".", ""))
+                .withWidth(MediaInfoHelper.getWidth(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + "/" +
+                        downloadManager.getFilename() + fileExtension))
+                .withHeight(MediaInfoHelper.getHeight(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + "/" +
+                        downloadManager.getFilename() + fileExtension))
                 .build()
         );
 
@@ -571,7 +621,7 @@ public class RequestHandler implements CustomRunnable {
         try {
             BotClient.getInstance().plexApi.refreshLibraries();
         } catch (Exception e) {
-            e.printStackTrace();
+            reportError(e);
         }
 
         sentMessage.edit(new EmbedBuilder()

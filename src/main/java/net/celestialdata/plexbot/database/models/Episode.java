@@ -19,6 +19,9 @@ public class Episode implements BaseModel {
     @JoinColumn(name = "episode_season", referencedColumnName = "season_id")
     private Season season;
 
+    @Column(name = "episode_title")
+    private String title;
+
     @Column(name = "episode_number")
     private int number;
 
@@ -31,6 +34,9 @@ public class Episode implements BaseModel {
     @Column(name = "episode_height")
     private int height;
 
+    @Column(name = "episode_resolution")
+    private int resolution;
+
     @Column(name = "episode_filetype")
     private String filetype;
 
@@ -39,14 +45,16 @@ public class Episode implements BaseModel {
 
     public Episode() {}
 
-    public Episode(String imdbCode, Show show, Season season, int number, String year, int width, int height, String filetype, String filename) {
+    public Episode(String imdbCode, Show show, Season season, String title, int number, String year, int width, int height, int resolution, String filetype, String filename) {
         this.imdbCode = imdbCode;
         this.show = show;
         this.season = season;
+        this.title = title;
         this.number = number;
         this.year = year;
         this.width = width;
         this.height = height;
+        this.resolution = resolution;
         this.filetype = filetype;
         this.filename = filename;
     }
@@ -73,6 +81,14 @@ public class Episode implements BaseModel {
 
     public void setSeason(Season season) {
         this.season = season;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public int getNumber() {
@@ -105,6 +121,14 @@ public class Episode implements BaseModel {
 
     public void setHeight(int height) {
         this.height = height;
+    }
+
+    public int getResolution() {
+        return resolution;
+    }
+
+    public void setResolution(int resolution) {
+        this.resolution = resolution;
     }
 
     public String getFiletype() {

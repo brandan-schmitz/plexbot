@@ -269,8 +269,9 @@ public class WaitlistDownloader implements CustomRunnable {
         // Delete the torrent from RealDebrid
         try {
             BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-        } catch (ApiException ignored) {
+        } catch (ApiException e) {
             WaitlistUtilities.updateMessage(movieInfo);
+            reportError(e);
         }
 
         // Add the movie to the database
@@ -279,11 +280,13 @@ public class WaitlistDownloader implements CustomRunnable {
                 .withTitle(movieInfo.getTitle())
                 .withYear(movieInfo.getYear())
                 .withResolution(torrentHandler.getTorrentQuality())
-                .withHeight(MediaInfoHelper.getHeight(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + fileExtension))
-                .withWidth(MediaInfoHelper.getWidth(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + fileExtension))
+                .withFolderName(downloadManager.getFilename())
                 .withFilename(downloadManager.getFilename() + fileExtension)
                 .withExtension(fileExtension.replace(".", ""))
-                .withFolderName(downloadManager.getFilename())
+                .withWidth(MediaInfoHelper.getWidth(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + "/" +
+                        downloadManager.getFilename() + fileExtension))
+                .withHeight(MediaInfoHelper.getHeight(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + "/" +
+                        downloadManager.getFilename() + fileExtension))
                 .build()
         );
 
@@ -291,7 +294,7 @@ public class WaitlistDownloader implements CustomRunnable {
         try {
             BotClient.getInstance().plexApi.refreshLibraries();
         } catch (Exception e) {
-            e.printStackTrace();
+            reportError(e);
         }
 
         // Send a message to the new-movies notification channel stating the movie is now available on Plex

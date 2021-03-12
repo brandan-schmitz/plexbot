@@ -5,7 +5,6 @@ import net.celestialdata.plexbot.client.model.OmdbItem;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import net.celestialdata.plexbot.utils.FilenameSanitizer;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -28,13 +27,15 @@ public class DownloadManager implements CustomRunnable {
     private final String downloadLink;
     private boolean isDownloading = true;
     private boolean didDownloadFail = false;
-    private boolean isProcessing = true;
+    private boolean isProcessing = false;
     private boolean didProcessingFail = false;
     private boolean isFileServerMounted = false;
+    private boolean didUnknownErrorOccur = false;
     private long progress = 0;
     private long size = 0;
     private final String filename;
     private final String fileExtension;
+    private String errorMessage = "";
 
     public DownloadManager(String downloadLink, OmdbItem movieInfo, String fileExtension) {
         this.downloadLink = downloadLink;
@@ -55,10 +56,19 @@ public class DownloadManager implements CustomRunnable {
     }
 
     @Override
+    public void endTask(Throwable e) {
+        BotStatusManager.getInstance().removeProcess(taskName());
+        errorMessage = e.getMessage();
+        didUnknownErrorOccur = true;
+        isDownloading = false;
+        isProcessing = false;
+        reportError(e);
+    }
+
+    @Override
     public void run() {
         // Configure task to run the endTask method if there was an error
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
-        Exception exception = null;
 
         try {
             // Open a connection to the file being downloaded
@@ -77,78 +87,76 @@ public class DownloadManager implements CustomRunnable {
                 }
             }
 
-            // Mark that the download has finished without errors and close the connection to the server.
-            synchronized (lock) {
-                isDownloading = false;
-                lock.notifyAll();
-            }
+            // Close the connection to the server
             fileOutputStream.close();
 
+            // Mark the file as downloaded
+            synchronized (lock) {
+                isDownloading = false;
+                isProcessing = true;
+                lock.notifyAll();
+            }
         } catch (IOException e) {
             synchronized (lock) {
-                exception = e;
                 didDownloadFail = true;
                 isDownloading = false;
                 isProcessing = false;
                 lock.notifyAll();
             }
+            endTask(e);
+            return;
         }
 
-        // Attempt to move the file to the movie folder. This folder should contain a file called movie.pb otherwise the
-        // rename process should be aborted unless the mount check is disabled for the bot.
-        synchronized (lock) {
-            if (BotConfig.getInstance().checkMount()) {
-                isFileServerMounted = new File(BotConfig.getInstance().movieFolder() + "mount.pb").exists();
-            } else isFileServerMounted = true;
-        }
-        if (isFileServerMounted) {
-            // Create the new folder
-            Path folder = Paths.get(BotConfig.getInstance().movieFolder() + filename);
-            try {
-                Files.createDirectory(folder);
-            } catch (IOException e) {
-                if (!(e instanceof FileAlreadyExistsException)) {
-                    exception = e;
-                    isProcessing = false;
-                    didProcessingFail = true;
-                    isFileServerMounted = true;
-                    lock.notifyAll();
-                }
-            }
-
-            // Movie the media to the media's folder
-            Path tempFile = Paths.get(BotConfig.getInstance().tempFolder() + filename + ".pbdownload");
-            Path destination = Paths.get(BotConfig.getInstance().movieFolder() + filename + "/" + filename + fileExtension);
-            try {
-                Files.move(tempFile, destination, StandardCopyOption.REPLACE_EXISTING);
-                synchronized (lock) {
-                    isProcessing = false;
-                    didProcessingFail = false;
-                    lock.notifyAll();
-                }
-            } catch (IOException e) {
-                synchronized (lock) {
-                    exception = e;
-                    isProcessing = false;
-                    didProcessingFail = true;
-                    isFileServerMounted = true;
-                    lock.notifyAll();
-                }
-            }
-        } else {
+        // Check to see if the bot has the file server mounted (if enabled in configuration)
+        if (BotConfig.getInstance().checkMount() && Files.notExists(Paths.get(BotConfig.getInstance().movieFolder() + "mount.pb"))) {
             synchronized (lock) {
                 didProcessingFail = true;
                 isProcessing = false;
                 isFileServerMounted = false;
                 lock.notifyAll();
             }
+            endTask();
+            return;
         }
 
-        if ((didDownloadFail || didProcessingFail) && exception != null) {
-            endTask(exception);
-        } else {
-            endTask();
+        // Create the destination folder if it does not exist
+        try {
+            Files.createDirectory(Paths.get(BotConfig.getInstance().movieFolder() + filename));
+        } catch (IOException e) {
+            if (!(e instanceof FileAlreadyExistsException)) {
+                synchronized (lock) {
+                    isProcessing = false;
+                    didProcessingFail = true;
+                    isFileServerMounted = true;
+                    lock.notifyAll();
+                }
+                endTask(e);
+                return;
+            }
         }
+
+        // Move the file to the correct destination
+        Path tempFile = Paths.get(BotConfig.getInstance().tempFolder() + filename + ".pbdownload");
+        Path destination = Paths.get(BotConfig.getInstance().movieFolder() + filename + "/" + filename + fileExtension);
+        try {
+            Files.move(tempFile, destination, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            synchronized (lock) {
+                isProcessing = false;
+                didProcessingFail = true;
+                isFileServerMounted = true;
+                lock.notifyAll();
+            }
+            endTask(e);
+            return;
+        }
+
+        synchronized (lock) {
+            didProcessingFail = false;
+            isProcessing = false;
+            lock.notifyAll();
+        }
+        endTask();
     }
 
     /**
@@ -219,5 +227,13 @@ public class DownloadManager implements CustomRunnable {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isFileServerMounted() {
         return isFileServerMounted;
+    }
+
+    public boolean didUnknownErrorOccur() {
+        return didUnknownErrorOccur;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
     }
 }

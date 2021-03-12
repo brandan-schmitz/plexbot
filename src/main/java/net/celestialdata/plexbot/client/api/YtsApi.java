@@ -14,11 +14,15 @@ package net.celestialdata.plexbot.client.api;
 
 import com.google.gson.reflect.TypeToken;
 import net.celestialdata.plexbot.BotConfig;
+import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.*;
 import net.celestialdata.plexbot.client.auth.CloudflareAuthorizer;
 import net.celestialdata.plexbot.client.model.YtsBaseResponse;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.HttpClients;
+import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.MessageDecoration;
 
 import javax.script.ScriptException;
 import java.io.IOException;
@@ -49,7 +53,12 @@ public class YtsApi {
                 clearanceCode = cloudflareAuthorizer.getClearanceCookie();
             }
         } catch (IOException | ScriptException e) {
-            e.printStackTrace();
+            new MessageBuilder()
+                    .append("An error has occurred while performing the following task:", MessageDecoration.BOLD)
+                    .appendCode("", "YTS Cloudflare Authorization")
+                    .appendCode("java", ExceptionUtils.getMessage(e))
+                    .appendCode("java", ExceptionUtils.getStackTrace(e))
+                    .send(Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join());
         }
 
         return clearanceCode;

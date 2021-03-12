@@ -205,7 +205,7 @@ public class ResolutionUpgrader implements CustomRunnable {
         // Wait for the download to finish downloading and processing the movie file
         synchronized (downloadManager.lock) {
             // Download the movie file
-            while (downloadManager.isDownloading()) {
+            while (downloadManager.isDownloading() && !downloadManager.didUnknownErrorOccur()) {
                 try {
                     downloadManager.lock.wait();
                 } catch (InterruptedException e) {
@@ -213,6 +213,18 @@ public class ResolutionUpgrader implements CustomRunnable {
                     return;
                 }
             }
+        }
+
+        // Verify that there was not an unknown error
+        if (downloadManager.didUnknownErrorOccur()) {
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (Exception e) {
+                endTask(e);
+                return;
+            }
+            endTask();
+            return;
         }
 
         // Exit if the download failed, cleaning up the torrent on real-debrid in the process
@@ -229,7 +241,7 @@ public class ResolutionUpgrader implements CustomRunnable {
 
         // Process the movie file
         synchronized (downloadManager.lock) {
-            while (downloadManager.isProcessing()) {
+            while (downloadManager.isProcessing() && !downloadManager.didUnknownErrorOccur()) {
                 try {
                     downloadManager.lock.wait();
                 } catch (InterruptedException e) {
@@ -237,6 +249,18 @@ public class ResolutionUpgrader implements CustomRunnable {
                     return;
                 }
             }
+        }
+
+        // Verify that there was not an unknown error
+        if (downloadManager.didUnknownErrorOccur()) {
+            try {
+                BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
+            } catch (Exception e) {
+                endTask(e);
+                return;
+            }
+            endTask();
+            return;
         }
 
         if (downloadManager.didProcessingFail()) {
@@ -282,20 +306,23 @@ public class ResolutionUpgrader implements CustomRunnable {
         // Delete the torrent from RealDebrid
         try {
             BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-        } catch (ApiException ignored) {
+        } catch (ApiException e) {
+            reportError(e);
         }
 
-        // Update the movie in the database
+        // Add the movie to the database
         DbOperations.saveObject(new MovieBuilder()
                 .withId(movieInfo.getImdbID())
                 .withTitle(movieInfo.getTitle())
                 .withYear(movieInfo.getYear())
                 .withResolution(torrentHandler.getTorrentQuality())
-                .withWidth(MediaInfoHelper.getWidth(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + fileExtension))
-                .withWidth(MediaInfoHelper.getHeight(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + fileExtension))
+                .withFolderName(downloadManager.getFilename())
                 .withFilename(downloadManager.getFilename() + fileExtension)
                 .withExtension(fileExtension.replace(".", ""))
-                .withFolderName(downloadManager.getFilename())
+                .withWidth(MediaInfoHelper.getWidth(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + "/" +
+                        downloadManager.getFilename() + fileExtension))
+                .withHeight(MediaInfoHelper.getHeight(BotConfig.getInstance().movieFolder() + downloadManager.getFilename() + "/" +
+                        downloadManager.getFilename() + fileExtension))
                 .build()
         );
 
@@ -303,7 +330,7 @@ public class ResolutionUpgrader implements CustomRunnable {
         try {
             BotClient.getInstance().plexApi.refreshLibraries();
         } catch (Exception e) {
-            e.printStackTrace();
+            reportError(e);
         }
 
         // Send a message to the upgraded-movies notification channel

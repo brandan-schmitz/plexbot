@@ -5,8 +5,10 @@ import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.StringBuilderPlus;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.MessageDecoration;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 import java.awt.*;
@@ -60,7 +62,12 @@ final public class BotStatusManager implements Runnable {
                 }
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            new MessageBuilder()
+                    .append("An error has occurred while performing the following task:", MessageDecoration.BOLD)
+                    .appendCode("", "Bot Status Manager")
+                    .appendCode("java", ExceptionUtils.getMessage(e))
+                    .appendCode("java", ExceptionUtils.getStackTrace(e))
+                    .send(Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join());
         }
     }
 
