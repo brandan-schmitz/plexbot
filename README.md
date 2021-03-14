@@ -89,6 +89,10 @@ BotSettings:
   # At the time of this commit, this is the current domain so this can be left as is
   currentYtsDomain: https://yts.mx
 
+  # The maximum number of tasks that should be executed at once. If your bot is operating
+  # slowly or crashing while processing multiple tasks, decrease this number.
+  concurentTasks: 8
+
 
 ###########################
 ### Channel ID Settings ###

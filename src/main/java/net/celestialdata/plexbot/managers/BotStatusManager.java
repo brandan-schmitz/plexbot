@@ -93,7 +93,7 @@ final public class BotStatusManager implements Runnable {
 
         if (currentProcesses.isEmpty()) {
             return "Idle";
-        } else if (currentProcesses.size() <=4 ) {
+        } else if (currentProcesses.size() <=(BotConfig.getInstance().concurrentTasks()-1) ) {
             for (String process : currentProcesses) {
                 stringBuilderPlus.appendLine(processNum + ") " + process);
                 processNum++;
@@ -102,14 +102,14 @@ final public class BotStatusManager implements Runnable {
             statusColor = BotColors.WARNING;
 
             for (String process : currentProcesses) {
-                if (processNum == 5) {
+                if (processNum == BotConfig.getInstance().concurrentTasks()) {
                     stringBuilderPlus.appendLine("```");
                     stringBuilderPlus.appendLine("**Queued Tasks:**");
                     stringBuilderPlus.appendLine("```");
                 }
 
-                if (processNum >= 5) {
-                    stringBuilderPlus.appendLine(processNum-4 + ") " + process);
+                if (processNum >= BotConfig.getInstance().concurrentTasks()) {
+                    stringBuilderPlus.appendLine(processNum-(BotConfig.getInstance().concurrentTasks()-1) + ") " + process);
                 } else {
                     stringBuilderPlus.appendLine(processNum + ") " + process);
                 }

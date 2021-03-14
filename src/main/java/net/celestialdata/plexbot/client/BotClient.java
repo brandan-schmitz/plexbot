@@ -1,10 +1,7 @@
 package net.celestialdata.plexbot.client;
 
 import net.celestialdata.plexbot.BotConfig;
-import net.celestialdata.plexbot.client.api.OmdbApi;
-import net.celestialdata.plexbot.client.api.PlexApi;
-import net.celestialdata.plexbot.client.api.RdbApi;
-import net.celestialdata.plexbot.client.api.YtsApi;
+import net.celestialdata.plexbot.client.api.*;
 
 import java.util.Objects;
 
@@ -15,6 +12,7 @@ public class BotClient {
     public final RdbApi rdbApi;
     @SuppressWarnings("unused")
     public final PlexApi plexApi;
+    public final EztvApi eztvApi;
 
     /**
      * Construct an instance of the BotClient which contains all the necessary API clients
@@ -26,12 +24,14 @@ public class BotClient {
         ApiClient omdbApiClient = new ApiClient();
         ApiClient plexApiClient = new ApiClient();
         ApiClient ytsApiClient = new ApiClient();
+        ApiClient eztvApiClient = new ApiClient();
 
         // Set the API base paths
         rdbApiClient.setBasePath("https://api.real-debrid.com/rest/1.0");
         omdbApiClient.setBasePath("http://www.omdbapi.com");
         plexApiClient.setBasePath("https://plex.tv");
         ytsApiClient.setBasePath(BotConfig.getInstance().currentYtsDomain() + "/api/v2");
+        eztvApiClient.setBasePath("https://eztv.re/api");
 
         // Set API authentication values
         rdbApiClient.setRdbBearerToken(BotConfig.getInstance().realDebridKey());
@@ -53,6 +53,7 @@ public class BotClient {
         omdbApi = new OmdbApi(omdbApiClient);
         plexApi = new PlexApi(plexApiClient);
         ytsApi = new YtsApi(ytsApiClient);
+        eztvApi = new EztvApi(eztvApiClient);
     }
 
     /**

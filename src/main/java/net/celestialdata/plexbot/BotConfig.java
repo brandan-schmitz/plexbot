@@ -128,6 +128,14 @@ public class BotConfig {
     }
 
     /**
+     * Return the number of tasks that should be allowed to run concurrently
+     * @return maximum concurrent tasks
+     */
+    public int concurrentTasks() {
+        return config.getInt("BotSettings.concurrentTasks", 8);
+    }
+
+    /**
      * Return the ID of the channel used for messages about movies that can be upgraded to a better resolution.
      * @return channel id
      */

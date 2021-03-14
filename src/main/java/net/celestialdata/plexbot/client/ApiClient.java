@@ -883,7 +883,7 @@ public class ApiClient {
      * @return Escaped string
      */
     public String escapeString(String str) {
-      return URLEncoder.encode(str, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        return URLEncoder.encode(str, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
     }
 
     /**
