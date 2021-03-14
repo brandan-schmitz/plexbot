@@ -16,6 +16,7 @@ public class FilenameSanitizer {
         input = input.replace("*", "");
         input = input.replace(".", "");
         input = input.replace("·", "-");
+        input = input.replace("–", "-");
         input = StringUtils.stripAccents(input);
         return input;
     }
