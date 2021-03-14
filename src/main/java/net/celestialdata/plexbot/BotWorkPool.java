@@ -16,7 +16,7 @@ public class BotWorkPool {
 
     private BotWorkPool() {
         // Configure the executor
-        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(BotConfig.getInstance().concurrentTasks());
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(BotConfig.getInstance().concurrentTasks()+1);
 
         // If the queue is full, wait 1 second and try again
         executor.setRejectedExecutionHandler((r, executor) -> {
