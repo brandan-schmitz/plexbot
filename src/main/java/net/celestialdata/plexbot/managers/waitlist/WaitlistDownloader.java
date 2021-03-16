@@ -141,18 +141,18 @@ public class WaitlistDownloader implements CustomRunnable {
                     rdbLock.wait(5000);
                     rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
                 }
-            }
 
-            while (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.UPLOADING ||
-                    rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.COMPRESSING) {
-                rdbLock.wait(2000);
-                rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
-            }
+                while (rdbTorrentInfo.getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
+                    rdbLock.wait(2000);
+                    rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
 
-            if (BotClient.getInstance().rdbApi.getTorrentInfo(rdbTorrentInfo.getId()).getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
-                WaitlistUtilities.updateMessage(movieInfo);
-                endTask();
-                return;
+                    if (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.VIRUS ||
+                            rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.ERROR ||
+                            rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.DEAD) {
+                        endTask();
+                        return;
+                    }
+                }
             }
         } catch (InterruptedException | ApiException e) {
             WaitlistUtilities.updateMessage(movieInfo);

@@ -365,32 +365,32 @@ public class RequestHandler implements CustomRunnable {
                     rdbLock.wait(5000);
                     rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
                 }
-            }
 
-            while (rdbTorrentInfo.getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
-                sentMessage.edit(new EmbedBuilder()
-                        .setTitle("Addition Status")
-                        .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
-                        .addField("Progress:",
-                                BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
-                                        BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
-                                        BotEmojis.TODO_STEP + "  **Mask download file:** Processing...\n" +
-                                        BotEmojis.TODO_STEP + "  Download movie\n" +
-                                        BotEmojis.TODO_STEP + "  Add movie to database")
-                        .setFooter("Message updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
-                                .format(ZonedDateTime.now()) + " CST")
-                        .setColor(BotColors.INFO))
-                        .exceptionally(ExceptionLogger.get());
+                while (rdbTorrentInfo.getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
+                    sentMessage.edit(new EmbedBuilder()
+                            .setTitle("Addition Status")
+                            .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")
+                            .addField("Progress:",
+                                    BotEmojis.FINISHED_STEP + "  User selects movie from <https://www.imdb.com>\n" +
+                                            BotEmojis.FINISHED_STEP + "  Locate movie file\n" +
+                                            BotEmojis.TODO_STEP + "  **Mask download file:** Processing...\n" +
+                                            BotEmojis.TODO_STEP + "  Download movie\n" +
+                                            BotEmojis.TODO_STEP + "  Add movie to database")
+                            .setFooter("Message updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                                    .format(ZonedDateTime.now()) + " CST")
+                            .setColor(BotColors.INFO))
+                            .exceptionally(ExceptionLogger.get());
 
-                rdbLock.wait(2000);
-                rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
+                    rdbLock.wait(2000);
+                    rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
 
-                if (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.VIRUS ||
-                        rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.ERROR ||
-                        rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.DEAD) {
-                    displayError("There was an error masking the download. Please try again later.", "rdb-download-file");
-                    endTask();
-                    return;
+                    if (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.VIRUS ||
+                            rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.ERROR ||
+                            rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.DEAD) {
+                        displayError("There was an error masking the download. Please try again later.", "rdb-download-file");
+                        endTask();
+                        return;
+                    }
                 }
             }
         } catch (InterruptedException | ApiException e) {

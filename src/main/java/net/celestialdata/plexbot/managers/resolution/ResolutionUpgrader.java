@@ -11,12 +11,17 @@ import net.celestialdata.plexbot.database.models.Movie;
 import net.celestialdata.plexbot.database.models.UpgradeItem;
 import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.utils.BotColors;
+import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import net.celestialdata.plexbot.utils.MediaInfoHelper;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import java.io.File;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 public class ResolutionUpgrader implements CustomRunnable {
     private final OmdbItem movieInfo;
@@ -151,17 +156,18 @@ public class ResolutionUpgrader implements CustomRunnable {
                     rdbLock.wait(5000);
                     rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
                 }
-            }
 
-            while (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.UPLOADING ||
-                    rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.COMPRESSING) {
-                rdbLock.wait(2000);
-                rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
-            }
+                while (rdbTorrentInfo.getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
+                    rdbLock.wait(2000);
+                    rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
 
-            if (BotClient.getInstance().rdbApi.getTorrentInfo(rdbTorrentInfo.getId()).getStatus() != RdbTorrentInfo.StatusEnum.DOWNLOADED) {
-                endTask();
-                return;
+                    if (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.VIRUS ||
+                            rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.ERROR ||
+                            rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.DEAD) {
+                        endTask();
+                        return;
+                    }
+                }
             }
         } catch (InterruptedException | ApiException e) {
             endTask(e);
