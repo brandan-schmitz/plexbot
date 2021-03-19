@@ -5,8 +5,8 @@ import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.model.OmdbItem;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.utils.BotColors;
+import org.hibernate.ObjectNotFoundException;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.util.logging.ExceptionLogger;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -25,20 +25,18 @@ public class WaitlistUtilities {
      * @param movieInfo the OmdbMovie to update the message for
      * @see OmdbItem
      */
-    static void updateMessage(OmdbItem movieInfo) {
+    static void updateMessage(OmdbItem movieInfo) throws ObjectNotFoundException,CompletionException {
         // Get the channel the waitlist messages are in then fetch the message for the movie and update it with
         // the current date and time.
-        try {
-            Main.getBotApi().getTextChannelById(BotConfig.getInstance().waitlistChannelId()).ifPresent(textChannel ->
-                    textChannel.getMessageById(DbOperations.waitlistItemOps.getItemById(movieInfo.getImdbID()).getMessageId()).join().edit(new EmbedBuilder()
-                            .setTitle(movieInfo.getTitle())
-                            .setDescription("**Year:** " + movieInfo.getYear() + "\n" +
-                                    "**Director(s):** " + movieInfo.getDirector() + "\n" +
-                                    "**Plot:** " + movieInfo.getPlot())
-                            .setImage(movieInfo.getPoster())
-                            .setColor(BotColors.INFO)
-                            .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                                    .format(ZonedDateTime.now()) + " CST")).exceptionally(ExceptionLogger.get()));
-        } catch (CompletionException ignored) {}
+        Main.getBotApi().getTextChannelById(BotConfig.getInstance().waitlistChannelId()).ifPresent(textChannel ->
+                textChannel.getMessageById(DbOperations.waitlistItemOps.getItemById(movieInfo.getImdbID()).getMessageId()).join().edit(new EmbedBuilder()
+                        .setTitle(movieInfo.getTitle())
+                        .setDescription("**Year:** " + movieInfo.getYear() + "\n" +
+                                "**Director(s):** " + movieInfo.getDirector() + "\n" +
+                                "**Plot:** " + movieInfo.getPlot())
+                        .setImage(movieInfo.getPoster())
+                        .setColor(BotColors.INFO)
+                        .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                                .format(ZonedDateTime.now()) + " CST")));
     }
 }

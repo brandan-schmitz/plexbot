@@ -9,6 +9,10 @@ import net.celestialdata.plexbot.database.models.WaitlistItem;
 import net.celestialdata.plexbot.managers.BotStatusManager;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
+import org.hibernate.ObjectNotFoundException;
+
+import java.util.List;
+import java.util.concurrent.CompletionException;
 
 public class WaitlistChecker implements CustomRunnable {
 
@@ -35,9 +39,9 @@ public class WaitlistChecker implements CustomRunnable {
 
     @Override
     public void endTask(Throwable error) {
-        reportError(error);
         BotStatusManager.getInstance().removeProcess(taskName());
         BotStatusManager.getInstance().clearWaitlistManagerStatus();
+        reportError(error);
     }
 
     @Override
@@ -48,19 +52,19 @@ public class WaitlistChecker implements CustomRunnable {
         int progress = 0;
 
         // Fetch all the movies in the waiting list and cycle through them
-        for (WaitlistItem item : DbOperations.waitlistItemOps.getAllItems()) {
+        List<WaitlistItem> items = DbOperations.waitlistItemOps.getAllItems();
+        for (WaitlistItem item : items) {
             progress++;
-            BotStatusManager.getInstance().setWaitlistManagerStatus(progress, DbOperations.waitlistItemOps.getCount());
+            BotStatusManager.getInstance().setWaitlistManagerStatus(progress, items.size());
 
             // Get the info about the movie from IMDB
             OmdbItem movieInfo;
             try {
                 movieInfo = BotClient.getInstance().omdbApi.getById(item.getId());
             } catch (ApiException e) {
-                endTask(e);
+                reportError(e);
                 continue;
             }
-            TorrentHandler torrentHandler;
 
             // Move to the next movie if the movie was manually added to the server/db
             // or already exists for some reason.
@@ -70,19 +74,28 @@ public class WaitlistChecker implements CustomRunnable {
             }
 
             // Set the torrent handler to the ID of the movie
-            torrentHandler = new TorrentHandler(item.getId());
+            TorrentHandler torrentHandler = new TorrentHandler(item.getId());
 
             // Search YTS for the movie
             try {
                 torrentHandler.searchYts();
-            } catch (Exception e) {
-                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ApiException e) {
+                try {
+                    WaitlistUtilities.updateMessage(movieInfo);
+                } catch (ObjectNotFoundException | CompletionException messageError) {
+                    reportError(messageError);
+                }
+                reportError(e);
                 continue;
             }
 
             // If the search failed or if the movie was not found then skip to the next movie
             if (torrentHandler.didSearchReturnNoResults()) {
-                WaitlistUtilities.updateMessage(movieInfo);
+                try {
+                    WaitlistUtilities.updateMessage(movieInfo);
+                } catch (ObjectNotFoundException | CompletionException messageError) {
+                    reportError(messageError);
+                }
                 continue;
             }
 

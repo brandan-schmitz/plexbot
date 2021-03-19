@@ -13,8 +13,11 @@ import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import net.celestialdata.plexbot.utils.MediaInfoHelper;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
+import org.hibernate.ObjectNotFoundException;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
+
+import java.util.concurrent.CompletionException;
 
 public class WaitlistDownloader implements CustomRunnable {
     private final TorrentHandler torrentHandler;
@@ -48,7 +51,11 @@ public class WaitlistDownloader implements CustomRunnable {
         // Get a list of movies matching the movie id
         torrentHandler.buildMovieList();
         if (torrentHandler.didBuildMovieListFail()) {
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask();
             return;
         }
@@ -56,7 +63,11 @@ public class WaitlistDownloader implements CustomRunnable {
         // Build the list of torrent files for the movie
         torrentHandler.buildTorrentList();
         if (torrentHandler.areNoTorrentsAvailable()) {
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask();
             return;
         }
@@ -64,7 +75,11 @@ public class WaitlistDownloader implements CustomRunnable {
         // Generate the magnet link for the movie torrent file
         torrentHandler.generateMagnetLink();
         if (torrentHandler.isNotMagnetLink()) {
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask();
             return;
         }
@@ -77,7 +92,11 @@ public class WaitlistDownloader implements CustomRunnable {
         try {
             rdbMagnetLink = BotClient.getInstance().rdbApi.addMagnet(magnetLink);
         } catch (Exception e) {
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask(e);
             return;
         }
@@ -87,7 +106,11 @@ public class WaitlistDownloader implements CustomRunnable {
         try {
             rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
         } catch (Exception e) {
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask(e);
             return;
         }
@@ -106,13 +129,21 @@ public class WaitlistDownloader implements CustomRunnable {
                         fileExtension = ".mkv";
                     }
                 } else {
-                    WaitlistUtilities.updateMessage(movieInfo);
+                    try {
+                        WaitlistUtilities.updateMessage(movieInfo);
+                    } catch (ObjectNotFoundException | CompletionException messageError) {
+                        reportError(messageError);
+                    }
                     endTask();
                     return;
                 }
             }
         } else {
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask();
             return;
         }
@@ -121,7 +152,11 @@ public class WaitlistDownloader implements CustomRunnable {
         try {
             BotClient.getInstance().rdbApi.selectTorrentFiles(rdbTorrentInfo.getId(), fileToSelect);
         } catch (Exception e) {
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask(e);
             return;
         }
@@ -155,7 +190,11 @@ public class WaitlistDownloader implements CustomRunnable {
                 }
             }
         } catch (InterruptedException | ApiException e) {
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask(e);
             return;
         }
@@ -167,7 +206,11 @@ public class WaitlistDownloader implements CustomRunnable {
             if (rdbTorrentInfo.getLinks() != null) {
                 unrestrictedLink = BotClient.getInstance().rdbApi.unrestrictLink(rdbTorrentInfo.getLinks().get(0));
             } else {
-                WaitlistUtilities.updateMessage(movieInfo);
+                try {
+                    WaitlistUtilities.updateMessage(movieInfo);
+                } catch (ObjectNotFoundException | CompletionException messageError) {
+                    reportError(messageError);
+                }
                 endTask();
                 return;
             }
@@ -175,11 +218,19 @@ public class WaitlistDownloader implements CustomRunnable {
             try {
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
             } catch (ApiException e1) {
-                WaitlistUtilities.updateMessage(movieInfo);
+                try {
+                    WaitlistUtilities.updateMessage(movieInfo);
+                } catch (ObjectNotFoundException | CompletionException messageError) {
+                    reportError(messageError);
+                }
                 endTask(e1);
                 return;
             }
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask(e);
             return;
         }
@@ -189,7 +240,11 @@ public class WaitlistDownloader implements CustomRunnable {
         if (unrestrictedLink.getDownload() != null) {
             downloadLink = unrestrictedLink.getDownload().toString();
         } else {
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask();
             return;
         }
@@ -205,7 +260,11 @@ public class WaitlistDownloader implements CustomRunnable {
                 try {
                     downloadManager.lock.wait();
                 } catch (InterruptedException e) {
-                    WaitlistUtilities.updateMessage(movieInfo);
+                    try {
+                        WaitlistUtilities.updateMessage(movieInfo);
+                    } catch (ObjectNotFoundException | CompletionException messageError) {
+                        reportError(messageError);
+                    }
                     endTask(e);
                     return;
                 }
@@ -217,11 +276,19 @@ public class WaitlistDownloader implements CustomRunnable {
             try {
                 BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
             } catch (Exception e) {
-                WaitlistUtilities.updateMessage(movieInfo);
+                try {
+                    WaitlistUtilities.updateMessage(movieInfo);
+                } catch (ObjectNotFoundException | CompletionException messageError) {
+                    reportError(messageError);
+                }
                 endTask(e);
                 return;
             }
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask();
             return;
         }
@@ -232,7 +299,11 @@ public class WaitlistDownloader implements CustomRunnable {
                 try {
                     downloadManager.lock.wait();
                 } catch (InterruptedException e) {
-                    WaitlistUtilities.updateMessage(movieInfo);
+                    try {
+                        WaitlistUtilities.updateMessage(movieInfo);
+                    } catch (ObjectNotFoundException | CompletionException messageError) {
+                        reportError(messageError);
+                    }
                     endTask(e);
                     return;
                 }
@@ -261,7 +332,11 @@ public class WaitlistDownloader implements CustomRunnable {
                                 .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.")
                 );
             }
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             endTask();
             return;
         }
@@ -270,7 +345,11 @@ public class WaitlistDownloader implements CustomRunnable {
         try {
             BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
         } catch (ApiException e) {
-            WaitlistUtilities.updateMessage(movieInfo);
+            try {
+                WaitlistUtilities.updateMessage(movieInfo);
+            } catch (ObjectNotFoundException | CompletionException messageError) {
+                reportError(messageError);
+            }
             reportError(e);
         }
 

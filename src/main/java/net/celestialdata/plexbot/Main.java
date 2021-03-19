@@ -18,6 +18,7 @@ import org.javacord.api.entity.permission.PermissionsBuilder;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.listener.server.member.ServerMemberJoinListener;
 import org.javacord.api.util.logging.FallbackLoggerConfiguration;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,6 +86,7 @@ public class Main {
     public static void main(String[] args) {
         // Disable debug logging
         FallbackLoggerConfiguration.setDebug(false);
+        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
 
         // Set the default version and date variables
         version = "0.0.0";

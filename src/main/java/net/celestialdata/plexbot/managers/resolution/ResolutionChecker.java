@@ -74,7 +74,7 @@ public class ResolutionChecker implements CustomRunnable {
             try {
                 torrentHandler.searchYts();
             } catch (Exception e) {
-                reportError(e);
+                reportError(e, m.id);
                 continue;
             }
 
@@ -112,7 +112,8 @@ public class ResolutionChecker implements CustomRunnable {
                             m.newResolution,
                             torrentHandler.getTorrentSize()
                     );
-                } catch (ApiException ignored) {
+                } catch (ApiException e) {
+                    reportError(e, m.id);
                 }
             }
         }
@@ -129,7 +130,8 @@ public class ResolutionChecker implements CustomRunnable {
                             BotWorkPool.getInstance().submitProcess(new ResolutionUpgrader(
                                     BotClient.getInstance().omdbApi.getById(item.getMovie().getId()))
                             );
-                        } catch (ApiException ignored) {
+                        } catch (ApiException e) {
+                            reportError(e, item.getMovie().getId());
                         }
                     }
             );

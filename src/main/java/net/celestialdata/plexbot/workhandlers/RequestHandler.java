@@ -103,7 +103,7 @@ public class RequestHandler implements CustomRunnable {
                 }
             } catch (Exception e) {
                 displayError(e.getMessage(), "omdb-lookup-id");
-                endTask();
+                endTask(e);
                 return;
             }
         } else if (!searchYear.isEmpty()) {
@@ -123,7 +123,7 @@ public class RequestHandler implements CustomRunnable {
                     }
                 } catch (Exception e) {
                     displayError(e.getMessage(), "omdb-search-year");
-                    endTask();
+                    endTask(e);
                     return;
                 }
             }
@@ -140,7 +140,7 @@ public class RequestHandler implements CustomRunnable {
                 }
             } catch (Exception e) {
                 displayError(e.getMessage(), "omdb-search");
-                endTask();
+                endTask(e);
                 return;
             }
         }
@@ -216,7 +216,7 @@ public class RequestHandler implements CustomRunnable {
             torrentHandler.searchYts();
         } catch (Exception e) {
             displayError("An error has occurred while searching for this movie's file. Please try again later.", "yts-search-fail");
-            endTask();
+            endTask(e);
             return;
         }
 
@@ -362,7 +362,7 @@ public class RequestHandler implements CustomRunnable {
                             .setColor(BotColors.INFO))
                             .exceptionally(ExceptionLogger.get());
 
-                    rdbLock.wait(5000);
+                    rdbLock.wait(10000);
                     rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
                 }
 
@@ -381,7 +381,7 @@ public class RequestHandler implements CustomRunnable {
                             .setColor(BotColors.INFO))
                             .exceptionally(ExceptionLogger.get());
 
-                    rdbLock.wait(2000);
+                    rdbLock.wait(5000);
                     rdbTorrentInfo = BotClient.getInstance().rdbApi.getTorrentInfo(rdbMagnetLink.getId());
 
                     if (rdbTorrentInfo.getStatus() == RdbTorrentInfo.StatusEnum.VIRUS ||
@@ -455,7 +455,7 @@ public class RequestHandler implements CustomRunnable {
                     downloadManager.lock.wait(10000);
 
                     // Update the download progress message
-                    if (lastUpdated.plus(5, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
+                    if (lastUpdated.plus(10, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
                         sentMessage.edit(new EmbedBuilder()
                                 .setTitle("Addition Status")
                                 .setDescription("The movie **" + selectedMovie.getTitle() + "** is being added.")

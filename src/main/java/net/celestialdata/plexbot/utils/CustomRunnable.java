@@ -35,4 +35,13 @@ public interface CustomRunnable extends Runnable {
                 .appendCode("java", ExceptionUtils.getStackTrace(error))
                 .send(Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join());
     }
+
+    default void reportError(Throwable error, String identifier) {
+        new MessageBuilder()
+                .append("An error has occurred while performing the following task:", MessageDecoration.BOLD)
+                .appendCode("", taskName() + " - " + identifier)
+                .appendCode("java", ExceptionUtils.getMessage(error))
+                .appendCode("java", ExceptionUtils.getStackTrace(error))
+                .send(Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join());
+    }
 }
