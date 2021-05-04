@@ -13,7 +13,7 @@ public class Season implements BaseModel {
     private int id;
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "season_show", referencedColumnName = "show_imdb", nullable = false)
+    @JoinColumn(name = "season_show", referencedColumnName = "show_id", nullable = false)
     private Show show;
 
     @Column(name = "season_number")
@@ -22,7 +22,8 @@ public class Season implements BaseModel {
     @Column(name = "season_foldername")
     private String foldername;
 
-    public Season() {}
+    public Season() {
+    }
 
     public Season(Show show, int number, String foldername) {
         this.show = show;

@@ -28,7 +28,8 @@ public class MovieSubtitle implements BaseModel {
     @Column(name = "subtitle_forced")
     private boolean forced;
 
-    public MovieSubtitle() {}
+    public MovieSubtitle() {
+    }
 
     public MovieSubtitle(Movie movie, String languageCode, String filetype, String filename, boolean forced) {
         this.movie = movie;

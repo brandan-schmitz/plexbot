@@ -5,20 +5,20 @@ import net.celestialdata.plexbot.database.models.Season;
 import net.celestialdata.plexbot.database.models.Show;
 
 public class EpisodeBuilder {
-    private String imdbCode;
+    private String tvdbId;
     private Show show;
     private Season season;
     private String title;
     private int number;
-    private String year;
+    private String date;
     private int width;
     private int height;
     private int resolution;
     private String filetype;
     private String filename;
 
-    public EpisodeBuilder withImdbCode(String imdbCode) {
-        this.imdbCode = imdbCode;
+    public EpisodeBuilder withTvdbId(String tvdbId) {
+        this.tvdbId = tvdbId;
         return this;
     }
 
@@ -42,8 +42,8 @@ public class EpisodeBuilder {
         return this;
     }
 
-    public EpisodeBuilder withYear(String year) {
-        this.year = year;
+    public EpisodeBuilder withDate(String date) {
+        this.date = date;
         return this;
     }
 
@@ -73,6 +73,6 @@ public class EpisodeBuilder {
     }
 
     public Episode build() {
-        return new Episode(imdbCode, show, season, title, number, year, width, height, resolution, filetype, filename);
+        return new Episode(tvdbId, show, season, title, number, date, width, height, resolution, filetype, filename);
     }
 }

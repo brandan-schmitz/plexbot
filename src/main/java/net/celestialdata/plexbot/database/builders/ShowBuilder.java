@@ -3,12 +3,12 @@ package net.celestialdata.plexbot.database.builders;
 import net.celestialdata.plexbot.database.models.Show;
 
 public class ShowBuilder {
-    private String imdbCode;
+    private String tvdbId;
     private String name;
     private String foldername;
 
-    public ShowBuilder withImdbCode(String imdbCode) {
-        this.imdbCode = imdbCode;
+    public ShowBuilder withTvdbId(String imdbCode) {
+        this.tvdbId = imdbCode;
         return this;
     }
 
@@ -23,6 +23,6 @@ public class ShowBuilder {
     }
 
     public Show build() {
-        return new Show(imdbCode, name, foldername);
+        return new Show(tvdbId, name, foldername);
     }
 }

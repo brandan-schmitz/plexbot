@@ -1,11 +1,11 @@
 package net.celestialdata.plexbot.commands;
 
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.commandhandler.Command;
 import net.celestialdata.plexbot.commandhandler.CommandExecutor;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.utils.PagedEmbed;

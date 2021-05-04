@@ -11,8 +11,8 @@ import javax.persistence.Table;
 public class Show implements BaseModel {
 
     @Id
-    @Column(name = "show_imdb")
-    private String imdbCode;
+    @Column(name = "show_id")
+    private String tvdbId;
 
     @Column(name = "show_name")
     private String name;
@@ -20,20 +20,21 @@ public class Show implements BaseModel {
     @Column(name = "show_foldername")
     private String foldername;
 
-    public Show() {}
+    public Show() {
+    }
 
-    public Show(String imdbCode, String name, String foldername) {
-        this.imdbCode = imdbCode;
+    public Show(String tvdbId, String name, String foldername) {
+        this.tvdbId = tvdbId;
         this.name = name;
         this.foldername = foldername;
     }
 
-    public String getImdbCode() {
-        return imdbCode;
+    public String getTvdbId() {
+        return tvdbId;
     }
 
-    public void setImdbCode(String imdbCode) {
-        this.imdbCode = imdbCode;
+    public void setTvdbId(String tvdbId) {
+        this.tvdbId = tvdbId;
     }
 
     public String getName() {

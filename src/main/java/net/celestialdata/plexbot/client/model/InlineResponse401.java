@@ -36,12 +36,12 @@ public class InlineResponse401 {
     }
 
     /**
-     * Error message
+     * Error Message
      *
      * @return error
      **/
     @javax.annotation.Nullable
-    @ApiModelProperty(value = "Error message")
+    @ApiModelProperty(value = "Error Message")
 
     public String getError() {
         return error;

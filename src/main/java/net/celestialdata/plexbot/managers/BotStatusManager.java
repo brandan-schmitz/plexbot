@@ -1,8 +1,8 @@
 package net.celestialdata.plexbot.managers;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.StringBuilderPlus;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -102,13 +102,13 @@ final public class BotStatusManager implements Runnable {
             statusColor = BotColors.WARNING;
 
             for (String process : currentProcesses) {
-                if (processNum == (BotConfig.getInstance().concurrentTasks()+1)) {
+                if (processNum == (BotConfig.getInstance().concurrentTasks() + 1)) {
                     stringBuilderPlus.appendLine("```");
                     stringBuilderPlus.appendLine("**Queued Tasks:**");
                     stringBuilderPlus.appendLine("```");
                 }
 
-                if (processNum >= (BotConfig.getInstance().concurrentTasks()+1)) {
+                if (processNum >= (BotConfig.getInstance().concurrentTasks() + 1)) {
                     stringBuilderPlus.appendLine(processNum - BotConfig.getInstance().concurrentTasks() + ") " + process);
                 } else {
                     stringBuilderPlus.appendLine(processNum + ") " + process);

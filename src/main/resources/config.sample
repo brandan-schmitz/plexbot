@@ -30,7 +30,6 @@ BotSettings:
 ### Channel ID Settings ###
 ###########################
 ChannelSettings:
-
   # The ID of the channel for listing movies that can be upgraded to a better resolution
   upgradableMoviesChannelId: 012345678901234567
 
@@ -54,7 +53,6 @@ ChannelSettings:
 ### Folder Settings ###
 #######################
 FolderSettings:
-
   # The folder that the movies are stored in
   movieFolder: /path/to/movie/folder
 
@@ -62,6 +60,11 @@ FolderSettings:
   tvFolder: /path/to/tv/folder
 
   # The folder where media to be imported into the libraries is stored in
+  # The import folder should be empty except two folders inside:
+  #   - movies
+  #   - episodes
+  # Place movies that need to get imported into the movies folder and episodes
+  # that need to get imported within the episodes folder.
   importFolder: /path/to/import/folder
 
   # The folder that is used for temporary file operations
@@ -71,6 +74,44 @@ FolderSettings:
   # This can be used to make sure that remote filesystems are mounted and the files
   # are accessible to the bot.
   checkMount: true
+
+  # A list a characters that should not be allowed to be used within file or folder names
+  # along with a character that should replace the blacklisted one if applicable.
+  blacklistedCharacters:
+    - original: ">"
+      replacement: ""
+    - original: "<"
+      replacement: ""
+    - original: ":"
+      replacement: ""
+    - original: "\""
+      replacement: ""
+    - original: "/"
+      replacement: ""
+    - original: "\\"
+      replacement: ""
+    - original: "|"
+      replacement: ""
+    - original: "?"
+      replacement: ""
+    - original: "*"
+      replacement: ""
+    - original: "."
+      replacement: ""
+    - original: "·"
+      replacement: "-"
+    - original: "–"
+      replacement: "-"
+    - original: "Æ"
+      replacement: "Ae"
+    - original: "Я"
+      replacement: "R"
+    - original: "’"
+      replacement: ""
+    - original: "…"
+      replacement: ""
+    - original: "æ"
+      replacement: "ae"
 
 
 ###############################
@@ -82,11 +123,12 @@ ImportSettings:
     - 012345678901234567
     - 012345678901234567
 
-  # List of files to ignore in the import folder during the import process
+  # List of files to ignore in the import folders
   ignoredFiles:
     - "mount.pb"
     - ".DS_Store"
     - ".stignore"
+    - "._.DS_Store"
 
 
 #########################
@@ -112,25 +154,54 @@ DatabaseSettings:
 ##################################
 ### Plex Media Server Settings ###
 ##################################
-PlexServerSettings:
-  # The IP address of the Plex Media Server. If the bot is on the same network as the Plex server,
-  # this can be the private/local IP address, otherwise this should be the public IP address of the server
-  plexConnectionAddress: 127.0.0.1
-
-  # The port of the Plex Media Server. Plex defaults to 32400 unless it is manually changed
-  plexPort: 32400
-
-  # The username to your plex.tv account
-  plexUsername: username
-
-  # The password to your plex.tv account.
-  plexPassword: Password1234
-
+PlexSettings:
   # The Client Identifier used to identify individual devices on a Plex account. This needs to be a unique
   # UUID. You can generate one with the following commands:
   #   Windows (Powershell): [guid]::NewGuid()
   #   macOS and Linux: uuidgen
-  clientIdentifier: 8A3029AF-05EC-488B-91F5-FBA66706000F
+  clientIdentifier: 034CFB4E-F1C6-4518-A162-C4DB9E00E363
+
+  # The list of Plex servers you want the bot to automatically refresh the media libraries on when new media is added.
+  # Each server needs to define the following:
+  # address: The IP address of the Plex Media Server. If the bot is on the same network as the Plex server,
+  #     this can be the private/local IP address, otherwise this should be the public IP address of the server
+  # port: The port of the Plex Media Server. Plex defaults to 32400 unless it is manually changed
+  # username: The username to your plex.tv account
+  # password: The password to your plex.tv account
+  plexServers:
+    - address: 127.0.0.1
+      port: 32400
+      username: username
+      password: password
+
+
+######################################
+### SyncThing Integration Settings ###
+######################################
+SyncthingSettings:
+  # Should the SyncThing integration be enabled? This prevents the bot from modifying media
+  # if the system is syncing data between folders. Currently this is only used to prevent the
+  # bot from importing media from the import folder if a sync is in progress.
+  enabled: true
+
+  # The protocol (http/https), IP/DNS address, and port number of the SyncThing server to use as
+  # an entrance to the SyncThing cluster. This can be any SyncThing node in the cluster.
+  # Example address: http://127.0.0.1:8384
+  address: "http://127.0.0.1:8384"
+
+  # The ID of the import folder as displayed on SyncThing
+  importFolderId: plexbot-import
+
+  # The ID of the movies folder as displayed on SyncThing
+  movieFolderId: plex-movies
+
+  # The ID of the TV folder as displayed on SyncThing
+  tvFolderId: plex-tv
+
+  # The ID's of the devices that the bot should monitor for sync progress
+  devices:
+    - "0123456-0123456-0123456-0123456-0123456-0123456-0123456-0123456"
+    - "9876543-9876543-9876543-9876543-9876543-9876543-9876543-9876543"
 
 
 ################
@@ -140,7 +211,7 @@ ApiKeys:
   # The API key for all requests to the OMDb API for getting IMDB OmdbMovie ID's.
   # You can get an API ket for this at http://www.omdbapi.com/ however it is recommended to purchase
   # at least the Basic plan through https://www.patreon.com/join/omdb to avoid API key limits.
-  omdbApiKey: somekey
+  omdbApiKey: somerandomeapikeygoeshereotherwiseitwontwork
 
   # Private API key for real-debrid which is where the movies get downloaded from
   # In order to get an API key, you will need to register an account at https://real-debrid.com
@@ -148,3 +219,15 @@ ApiKeys:
   # to https://real-debrid.com/apitoken to retrieve your token. You will need to purchase more time
   # before your plan expires otherwise the bot will not function.
   realDebridKey: somerandomeapikeygoeshereotherwiseitwontwork
+
+  # The API key to access the SyncThing server defined in the SyncThing settings block. This API key
+  # can be found on your SyncThing server UI under the Advanced Settings menu (Actions -> Advanced -> API Key).
+  syncthingApiKey: somerandomeapikeygoeshereotherwiseitwontwork
+
+  # The API key for all requests to TheTVDB API. You can get this key from https://thetvdb.com and will
+  # need to register to get a v4 API key. This is done once for the application.
+  tvdbApiKey: somerandomeapikeygoeshereotherwiseitwontwork
+
+  # The unique subscriber PIN code for TheTVDB API. This is retrieved from a users dashboard on https://thetvdb.com
+  # and is required in addition to the API key above.
+  tvdbSubscriberPin: somepin

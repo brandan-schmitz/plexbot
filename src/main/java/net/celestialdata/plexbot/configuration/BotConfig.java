@@ -1,6 +1,8 @@
-package net.celestialdata.plexbot;
+package net.celestialdata.plexbot.configuration;
 
 
+import org.apache.commons.configuration2.ConfigurationUtils;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -8,6 +10,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,8 +24,8 @@ public class BotConfig {
     // Stores the active instance of BotConfig
     private static BotConfig instance = null;
 
-    // Stores the configuration file of the active TrawlerConfiguration
-    private static YAMLConfiguration config = null;
+    // Stores the configuration file
+    private static HierarchicalConfiguration<?> config = null;
 
     /**
      * Sole constructor of BotConfig.
@@ -33,7 +36,7 @@ public class BotConfig {
 
         // Attempt to load the configuration file. If missing, display an error message and exit
         try {
-            config = new Configurations().fileBased(YAMLConfiguration.class, yamlFile);
+            config = ConfigurationUtils.convertToHierarchical(new Configurations().fileBased(YAMLConfiguration.class, yamlFile));
         } catch (ConfigurationException e) {
             try {
                 // Copy the sample file over to the new file
@@ -79,6 +82,7 @@ public class BotConfig {
 
     /**
      * Return the Discord bot token used to authenticate the bot with the Discord API.
+     *
      * @return discord bot token
      */
     public String token() {
@@ -87,6 +91,7 @@ public class BotConfig {
 
     /**
      * Return the name of the bot that will be displayed in Discord.
+     *
      * @return bot name
      */
     public String botName() {
@@ -95,6 +100,7 @@ public class BotConfig {
 
     /**
      * Return the prefix the bot will use to listen for commands.
+     *
      * @return bot prefix
      */
     public String botPrefix() {
@@ -104,6 +110,7 @@ public class BotConfig {
     /**
      * Return the ID of the user that will be the bot administrator. This is where error messages
      * are sent for download errors and other issues.
+     *
      * @return admin user id
      */
     public long adminUserId() {
@@ -112,6 +119,7 @@ public class BotConfig {
 
     /**
      * Return the default URL to use for a image if there is no image returned in the queries to IMDB
+     *
      * @return default image url
      */
     public String noPosterImageUrl() {
@@ -121,6 +129,7 @@ public class BotConfig {
 
     /**
      * Return the current domain to access YTS through.
+     *
      * @return yts domain
      */
     public String currentYtsDomain() {
@@ -129,6 +138,7 @@ public class BotConfig {
 
     /**
      * Return the number of tasks that should be allowed to run concurrently
+     *
      * @return maximum concurrent tasks
      */
     public int concurrentTasks() {
@@ -137,6 +147,7 @@ public class BotConfig {
 
     /**
      * Return the ID of the channel used for messages about movies that can be upgraded to a better resolution.
+     *
      * @return channel id
      */
     public long upgradableMoviesChannelId() {
@@ -146,6 +157,7 @@ public class BotConfig {
     /**
      * Return the ID of the channel used for notifications about movies that have been
      * upgraded to a better resolution by the bot.
+     *
      * @return channel id
      */
     public long upgradedMoviesChannelId() {
@@ -154,6 +166,7 @@ public class BotConfig {
 
     /**
      * Return the ID of the channel where the bot will publish and updates its status message.
+     *
      * @return channel id
      */
     public long botStatusChannelId() {
@@ -162,6 +175,7 @@ public class BotConfig {
 
     /**
      * Return the ID of the channel where notifications about movies that have been added to the library are created.
+     *
      * @return channel id
      */
     public long newMoviesChannelId() {
@@ -170,6 +184,7 @@ public class BotConfig {
 
     /**
      * Return the ID of the channel where notifications about tv episodes that have been added to the library are created.
+     *
      * @return channel id
      */
     public long newEpisodesChannelId() {
@@ -178,6 +193,7 @@ public class BotConfig {
 
     /**
      * Return the ID of the channel where notifications about movies that are in the waitinglist are located.
+     *
      * @return channel id
      */
     public long waitlistChannelId() {
@@ -186,6 +202,7 @@ public class BotConfig {
 
     /**
      * Return the folder that movies are stored in.
+     *
      * @return folder path
      */
     public String movieFolder() {
@@ -200,6 +217,7 @@ public class BotConfig {
 
     /**
      * Return the folder that TV Shows are stored in.
+     *
      * @return folder path
      */
     public String tvFolder() {
@@ -214,6 +232,7 @@ public class BotConfig {
 
     /**
      * Return the folder that files to be imported are stored in.
+     *
      * @return folder path
      */
     public String importFolder() {
@@ -228,6 +247,7 @@ public class BotConfig {
 
     /**
      * Return the folder that is used for temporary file actions by the bot.
+     *
      * @return folder path
      */
     public String tempFolder() {
@@ -243,14 +263,37 @@ public class BotConfig {
     /**
      * Return if the bot should check to see if the mount file (mount.pb) is located in the
      * movies, tv, and import folders.
+     *
      * @return should mounts be checked
      */
     public boolean checkMount() {
         return config.getBoolean("FolderSettings.checkMount");
     }
 
+
+    /**
+     * Return the list of characters that should be blacklisted from appearing in a file or folder name
+     * and the replacement for that blacklisted character.
+     *
+     * @return blacklisted characters
+     */
+    public List<BlacklistedCharacter> blacklistedCharacters() {
+        List<BlacklistedCharacter> characters = new ArrayList<>();
+
+        List<? extends HierarchicalConfiguration<?>> configurations = config.configurationsAt("FolderSettings.blacklistedCharacters");
+        for (HierarchicalConfiguration<?> configuration : configurations) {
+            characters.add(new BlacklistedCharacter(
+                    configuration.getString("original", ""),
+                    configuration.getString("replacement", "")
+            ));
+        }
+
+        return characters;
+    }
+
     /**
      * Return the list of users authorized to use the import command.
+     *
      * @return user list
      */
     public List<Long> authorizedImportUsers() {
@@ -259,6 +302,7 @@ public class BotConfig {
 
     /**
      * Return the list of files to ignore during the import command.
+     *
      * @return file list
      */
     public List<String> ignoredImportFiles() {
@@ -267,6 +311,7 @@ public class BotConfig {
 
     /**
      * Return the IP or hostname of the database server.
+     *
      * @return database connection address
      */
     public String dbConnectionAddress() {
@@ -275,6 +320,7 @@ public class BotConfig {
 
     /**
      * Return the port to connect to the database one.
+     *
      * @return database port
      */
     public int dbPort() {
@@ -283,6 +329,7 @@ public class BotConfig {
 
     /**
      * Return the name of the database to use.
+     *
      * @return database name
      */
     public String dbName() {
@@ -291,6 +338,7 @@ public class BotConfig {
 
     /**
      * Return the username to connect to the database with.
+     *
      * @return database username
      */
     public String dbUsername() {
@@ -299,6 +347,7 @@ public class BotConfig {
 
     /**
      * Return the password to connect to the database with.
+     *
      * @return database password
      */
     public String dbPassword() {
@@ -306,50 +355,96 @@ public class BotConfig {
     }
 
     /**
-     * Return the IP address or hostname of the plex server the bot is managing media for.
-     * @return plex connection address
-     */
-    public String plexConnectionAddress() {
-        return config.getString("PlexServerSettings.plexConnectionAddress", "127.0.0.1");
-    }
-
-    /**
-     * Return the port the plex server is running on.
-     * @return plex port
-     */
-    public int plexPort() {
-        return config.getInt("PlexServerSettings.plexPort", 32400);
-    }
-
-    /**
-     * Return the username for the plex server. This should be an administrator user.
-     * @return plex username
-     */
-    public String plexUsername() {
-        return config.getString("PlexServerSettings.plexUsername", "");
-    }
-
-    /**
-     * Return the password for the plex server. This should be an administrator user.
-     * @return plex password
-     */
-    public String plexPassword() {
-        return config.getString("PlexServerSettings.plexPassword", "");
-    }
-
-    /**
      * Return the client identifier used to identify individual devices on a plex account. This needs to be a unique
      * UUID. This can be generated by with one of the following commands:
-     *    Windows (Powershell): [guid]::NewGuid()
-     *    macOS and Linux: uuidgen
+     * Windows (Powershell): [guid]::NewGuid()
+     * macOS and Linux: uuidgen
+     *
      * @return client identifier
      */
     public String clientIdentifier() {
-        return config.getString("PlexServerSettings.clientIdentifier", "");
+        return config.getString("PlexSettings.clientIdentifier", "");
+    }
+
+    /**
+     * Return the list of Plex servers and the configuration for each server.
+     *
+     * @return PlexServer list
+     */
+    public List<PlexServer> plexServers() {
+        List<PlexServer> servers = new ArrayList<>();
+
+        // Get the configuration for the servers defined in the config
+        List<? extends HierarchicalConfiguration<?>> serverConfigurations = config.configurationsAt("PlexSettings.plexServers");
+        for (HierarchicalConfiguration<?> c : serverConfigurations) {
+            servers.add(new PlexServer(
+                    c.getString("address"),
+                    c.getInt("port"),
+                    c.getString("username"),
+                    c.getString("password")
+            ));
+        }
+
+        return servers;
+    }
+
+    /**
+     * Return if the SyncThing integration should be enabled.
+     *
+     * @return integration is enabled
+     */
+    public boolean syncthingEnabled() {
+        return config.getBoolean("SyncthingSettings.enabled", false);
+    }
+
+    /**
+     * Return the connection URL address of the SyncThing server.
+     *
+     * @return connection address
+     */
+    public String syncthingAddress() {
+        return config.getString("SyncthingSettings.address", "127.0.0.1");
+    }
+
+    /**
+     * Return the SyncThing folder ID to the import folder.
+     *
+     * @return folder id
+     */
+    public String syncthingImportFolderId() {
+        return config.getString("SyncthingSettings.importFolderId", "plexbot-import");
+    }
+
+    /**
+     * Return the SyncThing folder ID to the movie folder.
+     *
+     * @return folder id
+     */
+    public String syncthingMovieFolderId() {
+        return config.getString("SyncthingSettings.movieFolderId", "plex-movies");
+    }
+
+    /**
+     * Return the SyncThing folder ID to the tv folder.
+     *
+     * @return folder id
+     */
+    public String syncthingTvFolderId() {
+        return config.getString("SyncthingSettings.tvFolderId", "plex-tv");
+    }
+
+    /**
+     * Return the list of SyncThing devices to monitor.
+     *
+     * @return list of devices
+     */
+    public List<String> syncthingDevices() {
+        return config.getList(String.class, "SyncthingSettings.devices");
     }
 
     /**
      * Return the API key for the OMDB API.
+     *
      * @return api key
      */
     public String omdbApiKey() {
@@ -358,9 +453,27 @@ public class BotConfig {
 
     /**
      * Return the API key for the Real-Debrid API.
+     *
      * @return api key
      */
     public String realDebridKey() {
         return config.getString("ApiKeys.realDebridKey", "");
+    }
+
+    /**
+     * Return the API key for the SyncThing server.
+     *
+     * @return api key
+     */
+    public String syncthingApiKey() {
+        return config.getString("ApiKeys.syncthingApiKey", "");
+    }
+
+    public String tvdbApiKey() {
+        return config.getString("ApiKeys.tvdbApiKey", "");
+    }
+
+    public String tvdbSubscriberPin() {
+        return config.getString("ApiKeys.tvdbSubscriberPin", "");
     }
 }

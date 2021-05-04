@@ -1,9 +1,9 @@
 package net.celestialdata.plexbot.commands;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.commandhandler.Command;
 import net.celestialdata.plexbot.commandhandler.CommandExecutor;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.managers.ImportManager;
 import net.celestialdata.plexbot.utils.BotColors;
 import org.javacord.api.entity.message.Message;
@@ -45,17 +45,22 @@ public class ImportCommand implements CommandExecutor {
             // Send the message
             message.getChannel().sendMessage(embed).thenAccept(sentMessage -> {
                 boolean overwrite = false;
+                boolean skipSync = false;
 
                 if (args.length > 0) {
                     for (String a : args) {
                         if (a.equalsIgnoreCase("--overwrite")) {
                             overwrite = true;
-                            break;
+                            continue;
+                        }
+
+                        if (a.equalsIgnoreCase("--skip-sync")) {
+                            skipSync = true;
                         }
                     }
                 }
 
-                BotWorkPool.getInstance().submitProcess(new ImportManager(sentMessage, overwrite));
+                BotWorkPool.getInstance().submitProcess(new ImportManager(sentMessage, overwrite, skipSync));
             }).exceptionally(ExceptionLogger.get());
         } else {
             message.getChannel().sendMessage(new EmbedBuilder()

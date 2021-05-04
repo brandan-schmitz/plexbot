@@ -1,7 +1,7 @@
 package net.celestialdata.plexbot.utils;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.managers.BotStatusManager;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.javacord.api.entity.message.MessageBuilder;

@@ -1,7 +1,7 @@
 package net.celestialdata.plexbot.managers;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.client.model.OmdbItem;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import net.celestialdata.plexbot.utils.FilenameSanitizer;
 
@@ -25,6 +25,8 @@ public class DownloadManager implements CustomRunnable {
     public final Object lock = new Object();
     private final DecimalFormat decimalFormat = new DecimalFormat("#0.0");
     private final String downloadLink;
+    private final String filename;
+    private final String fileExtension;
     private boolean isDownloading = true;
     private boolean didDownloadFail = false;
     private boolean isProcessing = false;
@@ -33,8 +35,6 @@ public class DownloadManager implements CustomRunnable {
     private boolean didUnknownErrorOccur = false;
     private long progress = 0;
     private long size = 0;
-    private final String filename;
-    private final String fileExtension;
     private String errorMessage = "";
 
     public DownloadManager(String downloadLink, OmdbItem movieInfo, String fileExtension) {
@@ -139,7 +139,8 @@ public class DownloadManager implements CustomRunnable {
         Path tempFile = Paths.get(BotConfig.getInstance().tempFolder() + filename + ".pbdownload");
         Path destination = Paths.get(BotConfig.getInstance().movieFolder() + filename + "/" + filename + fileExtension);
         try {
-            Files.move(tempFile, destination, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(tempFile, destination, StandardCopyOption.REPLACE_EXISTING);
+            Files.delete(tempFile);
         } catch (IOException e) {
             synchronized (lock) {
                 isProcessing = false;

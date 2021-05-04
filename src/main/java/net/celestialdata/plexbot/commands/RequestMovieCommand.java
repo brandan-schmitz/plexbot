@@ -1,12 +1,12 @@
 package net.celestialdata.plexbot.commands;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.commandhandler.Command;
 import net.celestialdata.plexbot.commandhandler.CommandExecutor;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.utils.BotColors;
 import net.celestialdata.plexbot.utils.BotEmojis;
-import net.celestialdata.plexbot.workhandlers.RequestHandler;
+import net.celestialdata.plexbot.workhandlers.MovieRequestHandler;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
@@ -24,7 +24,7 @@ public class RequestMovieCommand implements CommandExecutor {
      * @param message the title or command of the movie
      * @param args    any arguments for the command such as requesting a movie by its ID
      */
-    @Command(aliases = {"request", "r"}, description = "Request a movie be added to the server", async = true, category = "request", usage = "# request <movie name>\n//Request a movie.\n# r <movie name>\n//Request a movie.")
+    @Command(aliases = {"rm"}, description = "Request a movie be added to the server", async = true, category = "request", usage = "# request <movie name>\n//Request a movie.\n# r <movie name>\n//Request a movie.")
     public void onRequestMovieCommand(Message message, String[] args) {
         year = "";
         id = "";
@@ -78,7 +78,7 @@ public class RequestMovieCommand implements CommandExecutor {
                                 + BotWorkPool.getInstance().getNumTasksInQueue() + " task(s) ahead of yours." +
                                 "\n\n**Please wait until this message has been updated.**")
                         .setColor(BotColors.WARNING)
-                ).thenAccept(message1 -> BotWorkPool.getInstance().submitProcess(new RequestHandler(
+                ).thenAccept(message1 -> BotWorkPool.getInstance().submitProcess(new MovieRequestHandler(
                         processName, movieTitle.toString(), year, id, message1, message.getUserAuthor().map(User::getId).orElseThrow()
                 ))).exceptionally(ExceptionLogger.get());
             } else {
@@ -86,7 +86,7 @@ public class RequestMovieCommand implements CommandExecutor {
                         .setTitle("Searching IMDB...")
                         .setDescription("I am searching the Internet Movie Database for your movie. This may take a few seconds.")
                         .setColor(BotColors.INFO)
-                ).thenAccept(message1 -> BotWorkPool.getInstance().submitProcess(new RequestHandler(
+                ).thenAccept(message1 -> BotWorkPool.getInstance().submitProcess(new MovieRequestHandler(
                         processName, movieTitle.toString(), year, id, message1, message.getUserAuthor().map(User::getId).orElseThrow()
                 ))).exceptionally(ExceptionLogger.get());
             }

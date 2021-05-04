@@ -1,8 +1,8 @@
 package net.celestialdata.plexbot.managers.resolution;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.model.OmdbItem;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.UpgradeItemBuilder;
 import net.celestialdata.plexbot.database.models.Movie;

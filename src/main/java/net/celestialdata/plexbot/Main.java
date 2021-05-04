@@ -1,13 +1,20 @@
 package net.celestialdata.plexbot;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.commandhandler.CommandHandler;
 import net.celestialdata.plexbot.commandhandler.JavacordHandler;
 import net.celestialdata.plexbot.commands.*;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.HibernateUtil;
 import net.celestialdata.plexbot.database.builders.UserBuilder;
+import net.celestialdata.plexbot.database.models.Episode;
+import net.celestialdata.plexbot.database.models.Movie;
+import net.celestialdata.plexbot.database.models.Season;
+import net.celestialdata.plexbot.database.models.Show;
 import net.celestialdata.plexbot.managers.BotStatusManager;
+import net.celestialdata.plexbot.managers.SyncthingMonitor;
 import net.celestialdata.plexbot.managers.resolution.ResolutionChecker;
 import net.celestialdata.plexbot.managers.waitlist.WaitlistChecker;
 import org.javacord.api.DiscordApi;
@@ -18,15 +25,17 @@ import org.javacord.api.entity.permission.PermissionsBuilder;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.listener.server.member.ServerMemberJoinListener;
 import org.javacord.api.util.logging.FallbackLoggerConfiguration;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
     private static final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
@@ -41,7 +50,9 @@ public class Main {
         commandHandler.registerCommand(new HelpCommand());
         commandHandler.registerCommand(new PurgeCommand());
         commandHandler.registerCommand(new ImportCommand());
+        commandHandler.registerCommand(new OldRequestCommand());
         commandHandler.registerCommand(new RequestMovieCommand());
+        commandHandler.registerCommand(new RequestEpisodeCommand());
     }
 
     // Builds the bots DiscordApi and connects the bot to Discord
@@ -99,7 +110,8 @@ public class Main {
 
             version = properties.getProperty("application-version");
             date = properties.getProperty("version-date");
-        } catch (IOException ignored) { }
+        } catch (IOException ignored) {
+        }
 
         // Display the application banner
         System.out.format("\n" +
@@ -126,6 +138,77 @@ public class Main {
         // Initialize the database connections
         System.out.print("Connecting to the database...");
         HibernateUtil.getSessionFactory();
+        System.out.println("Done");
+
+        // Verify database contents against the filesystem
+        System.out.print("Verifying database integrity");
+        List<Movie> movies = DbOperations.movieOps.getAllMovies();
+        List<Show> shows = DbOperations.showOps.getAllItems();
+        List<Season> seasons = DbOperations.seasonOps.getAllItems();
+        List<Episode> episodes = DbOperations.episodeOps.getAllItems();
+
+        AtomicInteger progress = new AtomicInteger(0);
+        int totalVerifications = movies.size() + shows.size() + seasons.size() + episodes.size();
+        int stepSize = totalVerifications / 3;
+        AtomicInteger nextMark = new AtomicInteger(stepSize);
+
+        // Verify movies
+        movies.forEach(movie -> {
+            if (Files.notExists(Path.of(BotConfig.getInstance().movieFolder() + "/" + movie.getFolderName() + "/" + movie.getFilename()))) {
+                System.out.println("  ERROR\nData inconsistency found: Movie \"" + movie.getTitle() + " (" + movie.getYear() + ") {imdb-" + movie.getId() +
+                        "}\" could not be found on the filesystem, however it is listed in the database.");
+                System.exit(1);
+            }
+            if (progress.get() == nextMark.get()) {
+                System.out.print(".");
+                nextMark.getAndAdd(stepSize);
+            }
+            progress.getAndIncrement();
+        });
+
+        // Verify TV shows
+        shows.forEach(show -> {
+            if (!Files.isDirectory(Path.of(BotConfig.getInstance().tvFolder() + "/" + show.getFolderName()))) {
+                System.out.println("  ERROR\nData inconsistency found: The TV show folder \"" + show.getFolderName() + "\" could not be found on the " +
+                        "filesystem, however it is listed in the database.");
+                System.exit(1);
+            }
+            if (progress.get() == nextMark.get()) {
+                System.out.print(".");
+                nextMark.getAndAdd(stepSize);
+            }
+            progress.getAndIncrement();
+        });
+
+        // Verify TV seasons
+        seasons.forEach(season -> {
+            if (!Files.isDirectory(Path.of(BotConfig.getInstance().tvFolder() + "/" + season.getShow().getFolderName() + "/" + season.getFoldername()))) {
+                System.out.println("  ERROR\nData inconsistency found: The season folder \"" + season.getFoldername() + "\" for the TV show \"" + season.getShow().getName()
+                        + "\" could not be found on the filesystem, however it is listed in the database.");
+                System.exit(1);
+            }
+            if (progress.get() == nextMark.get()) {
+                System.out.print(".");
+                nextMark.getAndAdd(stepSize);
+            }
+            progress.getAndIncrement();
+        });
+
+        // Verify TV episodes
+        episodes.forEach(episode -> {
+            if (Files.notExists(Path.of(BotConfig.getInstance().tvFolder() + "/" + episode.getShow().getFolderName() + "/" + episode.getSeason().getFoldername()
+                    + "/" + episode.getFilename()))) {
+                System.out.println("  ERROR\nData inconsistency found: The file \"" + episode.getFilename() + "\" for episode " + episode.getNumber() +
+                        ", season " + episode.getSeason().getNumber() + " of the TV show \"" + episode.getShow().getName() + "\" could not be found on the filesystem, however it " +
+                        "is listed in the database.");
+                System.exit(1);
+            }
+            if (progress.get() == nextMark.get()) {
+                System.out.print(".");
+                nextMark.getAndAdd(stepSize);
+            }
+            progress.getAndIncrement();
+        });
         System.out.println("Done");
 
         // Start the bot
@@ -167,7 +250,7 @@ public class Main {
         System.out.print("Configuring API resources...");
         BotClient.getInstance();
         try {
-            BotClient.getInstance().plexApi.refreshLibraries();
+            BotClient.getInstance().refreshPlexServers();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -204,6 +287,15 @@ public class Main {
         scheduledExecutorService.scheduleAtFixedRate(() ->
                 BotWorkPool.getInstance().submitProcess(new ResolutionChecker()), 0, 2, TimeUnit.HOURS);
         System.out.println("Done");
+
+        // Start the SyncThing monitor if enabled
+        if (BotConfig.getInstance().syncthingEnabled()) {
+            System.out.print("Configuring SyncThing Monitor...");
+            SyncthingMonitor syncthingMonitor = new SyncthingMonitor();
+            scheduledExecutorService.scheduleAtFixedRate(() ->
+                    BotWorkPool.getInstance().submitProcess(syncthingMonitor), 0, 30, TimeUnit.SECONDS);
+            System.out.println("Done");
+        }
 
         // Register the bot commands
         System.out.print("Registering Bot Commands...");

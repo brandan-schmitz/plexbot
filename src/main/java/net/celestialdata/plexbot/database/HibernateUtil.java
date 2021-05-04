@@ -1,17 +1,13 @@
 package net.celestialdata.plexbot.database;
 
-import net.celestialdata.plexbot.BotConfig;
-import net.celestialdata.plexbot.Main;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.database.models.*;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
-import org.javacord.api.entity.message.MessageBuilder;
-import org.javacord.api.entity.message.MessageDecoration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,12 +60,7 @@ public class HibernateUtil {
                 if (registry != null) {
                     StandardServiceRegistryBuilder.destroy(registry);
                 }
-                new MessageBuilder()
-                        .append("An error has occurred while performing the following task:", MessageDecoration.BOLD)
-                        .appendCode("", "Database Connection Pool")
-                        .appendCode("java", ExceptionUtils.getMessage(e))
-                        .appendCode("java", ExceptionUtils.getStackTrace(e))
-                        .send(Main.getBotApi().getUserById(BotConfig.getInstance().adminUserId()).join());
+                e.printStackTrace();
             }
         }
         return sessionFactory;

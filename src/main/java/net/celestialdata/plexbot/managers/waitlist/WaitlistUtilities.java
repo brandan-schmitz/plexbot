@@ -1,8 +1,8 @@
 package net.celestialdata.plexbot.managers.waitlist;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.model.OmdbItem;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.utils.BotColors;
 import org.hibernate.ObjectNotFoundException;
@@ -25,7 +25,7 @@ public class WaitlistUtilities {
      * @param movieInfo the OmdbMovie to update the message for
      * @see OmdbItem
      */
-    static void updateMessage(OmdbItem movieInfo) throws ObjectNotFoundException,CompletionException {
+    static void updateMessage(OmdbItem movieInfo) throws ObjectNotFoundException, CompletionException {
         // Get the channel the waitlist messages are in then fetch the message for the movie and update it with
         // the current date and time.
         Main.getBotApi().getTextChannelById(BotConfig.getInstance().waitlistChannelId()).ifPresent(textChannel ->

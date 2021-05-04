@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.commandhandler;
 
-import net.celestialdata.plexbot.BotConfig;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.*;

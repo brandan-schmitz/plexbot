@@ -1,27 +1,22 @@
 package net.celestialdata.plexbot.managers.resolution;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.*;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
 import net.celestialdata.plexbot.database.models.Movie;
 import net.celestialdata.plexbot.database.models.UpgradeItem;
 import net.celestialdata.plexbot.managers.DownloadManager;
 import net.celestialdata.plexbot.utils.BotColors;
-import net.celestialdata.plexbot.utils.BotEmojis;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import net.celestialdata.plexbot.utils.MediaInfoHelper;
 import net.celestialdata.plexbot.workhandlers.TorrentHandler;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.util.logging.ExceptionLogger;
 
 import java.io.File;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 
 public class ResolutionUpgrader implements CustomRunnable {
     private final OmdbItem movieInfo;
@@ -279,7 +274,7 @@ public class ResolutionUpgrader implements CustomRunnable {
                                 .addField("Process Commands:", "```bash\n" +
                                         "mv " + BotConfig.getInstance().tempFolder() + "'" + downloadManager.getFilename() + ".pbdownload' " +
                                         BotConfig.getInstance().movieFolder() + "'" + downloadManager.getFilename() + fileExtension + "'\n\n" +
-                                        "rm " + BotConfig.getInstance().movieFolder() + "'" + DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename() +"'\n```")
+                                        "rm " + BotConfig.getInstance().movieFolder() + "'" + DbOperations.movieOps.getMovieById(movieInfo.getImdbID()).getFilename() + "'\n```")
                                 .addField("SQL Scripts:", "```sql\n" +
                                         "UPDATE `Movies` SET `movie_filename` = '" + downloadManager.getFilename() + fileExtension + "', " +
                                         "`movie_resolution` = '" + movieInfo.getYear() + "', " +
@@ -334,7 +329,7 @@ public class ResolutionUpgrader implements CustomRunnable {
 
         // Trigger a refresh of the media libraries on the plex server
         try {
-            BotClient.getInstance().plexApi.refreshLibraries();
+            BotClient.getInstance().refreshPlexServers();
         } catch (Exception e) {
             reportError(e);
         }

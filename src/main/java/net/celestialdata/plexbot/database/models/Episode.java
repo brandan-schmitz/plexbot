@@ -8,11 +8,11 @@ import javax.persistence.*;
 public class Episode implements BaseModel {
 
     @Id
-    @Column(name = "episode_imdb")
-    private String imdbCode;
+    @Column(name = "episode_id")
+    private String tvdbId;
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "episode_show", referencedColumnName = "show_imdb", nullable = false)
+    @JoinColumn(name = "episode_show", referencedColumnName = "show_id", nullable = false)
     private Show show;
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
@@ -25,8 +25,8 @@ public class Episode implements BaseModel {
     @Column(name = "episode_number")
     private int number;
 
-    @Column(name = "episode_year")
-    private String year;
+    @Column(name = "episode_date")
+    private String date;
 
     @Column(name = "episode_width")
     private int width;
@@ -43,15 +43,16 @@ public class Episode implements BaseModel {
     @Column(name = "episode_filename")
     private String filename;
 
-    public Episode() {}
+    public Episode() {
+    }
 
-    public Episode(String imdbCode, Show show, Season season, String title, int number, String year, int width, int height, int resolution, String filetype, String filename) {
-        this.imdbCode = imdbCode;
+    public Episode(String tvdbId, Show show, Season season, String title, int number, String date, int width, int height, int resolution, String filetype, String filename) {
+        this.tvdbId = tvdbId;
         this.show = show;
         this.season = season;
         this.title = title;
         this.number = number;
-        this.year = year;
+        this.date = date;
         this.width = width;
         this.height = height;
         this.resolution = resolution;
@@ -59,12 +60,12 @@ public class Episode implements BaseModel {
         this.filename = filename;
     }
 
-    public String getImdbCode() {
-        return imdbCode;
+    public String getTvdbId() {
+        return tvdbId;
     }
 
-    public void setImdbCode(String imdbCode) {
-        this.imdbCode = imdbCode;
+    public void setTvdbId(String tvdbId) {
+        this.tvdbId = tvdbId;
     }
 
     public Show getShow() {
@@ -99,12 +100,12 @@ public class Episode implements BaseModel {
         this.number = number;
     }
 
-    public String getYear() {
-        return year;
+    public String getDate() {
+        return date;
     }
 
-    public void setYear(String year) {
-        this.year = year;
+    public void setDate(String date) {
+        this.date = date;
     }
 
     public int getWidth() {

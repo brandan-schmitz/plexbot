@@ -1,10 +1,10 @@
 package net.celestialdata.plexbot.managers.resolution;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.models.Movie;
 import net.celestialdata.plexbot.database.models.UpgradeItem;
@@ -74,7 +74,6 @@ public class ResolutionChecker implements CustomRunnable {
             try {
                 torrentHandler.searchYts();
             } catch (Exception e) {
-                reportError(e, m.id);
                 continue;
             }
 
@@ -103,18 +102,21 @@ public class ResolutionChecker implements CustomRunnable {
             }
 
             // Add the movie to the list of upgradable movies if the torrent has a higher resolution available
-            if (m.oldResolution != 0 && torrentHandler.getTorrentQuality() > m.oldResolution) {
-                m.newResolution = torrentHandler.getTorrentQuality();
-                try {
-                    ResolutionUtilities.addUpgradableMovie(
-                            BotClient.getInstance().omdbApi.getById(m.id),
-                            m.oldResolution,
-                            m.newResolution,
-                            torrentHandler.getTorrentSize()
-                    );
-                } catch (ApiException e) {
-                    reportError(e, m.id);
+            try {
+                if (m.oldResolution != 0 && torrentHandler.getTorrentQuality() > m.oldResolution) {
+                    m.newResolution = torrentHandler.getTorrentQuality();
+                    try {
+                        ResolutionUtilities.addUpgradableMovie(
+                                BotClient.getInstance().omdbApi.getById(m.id),
+                                m.oldResolution,
+                                m.newResolution,
+                                torrentHandler.getTorrentSize()
+                        );
+                    } catch (ApiException e) {
+                        reportError(e, m.id);
+                    }
                 }
+            } catch (NullPointerException ignored) {
             }
         }
 

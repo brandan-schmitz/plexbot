@@ -19,7 +19,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import net.celestialdata.plexbot.BotConfig;
+import net.celestialdata.plexbot.configuration.BotConfig;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;

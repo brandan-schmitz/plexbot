@@ -1,9 +1,9 @@
 package net.celestialdata.plexbot.commands;
 
 import com.vdurmont.emoji.EmojiParser;
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.commandhandler.Command;
 import net.celestialdata.plexbot.commandhandler.CommandExecutor;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;

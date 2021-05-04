@@ -1,10 +1,10 @@
 package net.celestialdata.plexbot.managers.waitlist;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.*;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
 import net.celestialdata.plexbot.database.models.WaitlistItem;
@@ -371,7 +371,7 @@ public class WaitlistDownloader implements CustomRunnable {
 
         // Trigger a refresh of the media libraries on the plex server
         try {
-            BotClient.getInstance().plexApi.refreshLibraries();
+            BotClient.getInstance().refreshPlexServers();
         } catch (Exception e) {
             reportError(e);
         }

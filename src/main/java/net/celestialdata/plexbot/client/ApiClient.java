@@ -91,6 +91,9 @@ public class ApiClient {
         authentications.put("plexClientIdentifier",
                 new ApiKeyAuth("header", "X-Plex-Client-Identifier"));
         authentications.put("rdbApiKey", new HttpBearerAuth("bearer"));
+        authentications.put("syncthingApiKey",
+                new ApiKeyAuth("header", "X-API-Key"));
+        authentications.put("tvdbToken", new HttpBearerAuth("bearer"));
         // Prevent the authentications from being modified.
         authentications = Collections.unmodifiableMap(authentications);
     }
@@ -112,6 +115,9 @@ public class ApiClient {
         authentications.put("plexClientIdentifier",
                 new ApiKeyAuth("header", "X-Plex-Client-Identifier"));
         authentications.put("rdbApiKey", new HttpBearerAuth("bearer"));
+        authentications.put("syncthingApiKey",
+                new ApiKeyAuth("header", "X-API-Key"));
+        authentications.put("tvdbToken", new HttpBearerAuth("bearer"));
         // Prevent the authentications from being modified.
         authentications = Collections.unmodifiableMap(authentications);
     }
@@ -483,6 +489,30 @@ public class ApiClient {
         var auth = authentications.get("plexClientIdentifier");
         if (auth instanceof ApiKeyAuth) {
             ((ApiKeyAuth) auth).setApiKey(clientIdentifier);
+        } else throw new RuntimeException("Invalid Auth Type");
+    }
+
+    /**
+     * Helper method to set the SyncThing API key.
+     *
+     * @param apiKey api key
+     */
+    public void setSyncthingApiKey(String apiKey) {
+        var auth = authentications.get("syncthingApiKey");
+        if (auth instanceof ApiKeyAuth) {
+            ((ApiKeyAuth) auth).setApiKey(apiKey);
+        } else throw new RuntimeException("Invalid Auth Type");
+    }
+
+    /**
+     * Helper method to set TheTVDB Bearer Token.
+     *
+     * @param token bearer token
+     */
+    public void setTvdbToken(String token) {
+        var auth = authentications.get("tvdbToken");
+        if (auth instanceof HttpBearerAuth) {
+            ((HttpBearerAuth) auth).setBearerToken(token);
         } else throw new RuntimeException("Invalid Auth Type");
     }
 

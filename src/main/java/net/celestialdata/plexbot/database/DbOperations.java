@@ -1,7 +1,7 @@
 package net.celestialdata.plexbot.database;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.database.models.*;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hibernate.ObjectNotFoundException;
@@ -421,7 +421,8 @@ public class DbOperations {
 
         /**
          * Fetch a specific season for a show
-         * @param show Show to get a season for
+         *
+         * @param show         Show to get a season for
          * @param seasonNumber season number to get
          * @return {@link Season} stored in database
          * @throws NoResultException thrown when a season could not be found matching required parameters
@@ -438,7 +439,7 @@ public class DbOperations {
         /**
          * Check if a Show exists in the database
          *
-         * @param show show the season is for
+         * @param show         show the season is for
          * @param seasonNumber number of the season
          * @return true if the Show was found in the database
          */

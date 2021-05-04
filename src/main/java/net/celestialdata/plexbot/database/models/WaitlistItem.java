@@ -1,10 +1,10 @@
 package net.celestialdata.plexbot.database.models;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.OmdbItem;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.utils.BotColors;
 import org.hibernate.annotations.Proxy;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -120,6 +120,7 @@ public class WaitlistItem implements BaseModel {
                             .thenAccept(sentMessage -> this.messageId = sentMessage.getId())
                             .join()
             );
-        } catch (ApiException | CompletionException ignored) {}
+        } catch (ApiException | CompletionException ignored) {
+        }
     }
 }

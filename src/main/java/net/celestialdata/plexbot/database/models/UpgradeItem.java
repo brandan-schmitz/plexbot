@@ -1,7 +1,7 @@
 package net.celestialdata.plexbot.database.models;
 
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Proxy;

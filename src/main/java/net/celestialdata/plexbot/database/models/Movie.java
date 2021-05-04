@@ -50,14 +50,14 @@ public class Movie implements BaseModel {
     /**
      * Create a new movie object directly
      *
-     * @param id movie IMDB code
-     * @param title movie title
-     * @param year movie release year
+     * @param id         movie IMDB code
+     * @param title      movie title
+     * @param year       movie release year
      * @param resolution movie resolution
-     * @param height movie height in pixels
-     * @param width movie width in pixels
-     * @param filename filename of the movie file
-     * @param extension file extension type of the movie file
+     * @param height     movie height in pixels
+     * @param width      movie width in pixels
+     * @param filename   filename of the movie file
+     * @param extension  file extension type of the movie file
      * @param folderName folder name for the movie's files
      */
     public Movie(String id, String title, String year, int resolution, int height, int width, String filename, String extension, String folderName) {
@@ -74,6 +74,7 @@ public class Movie implements BaseModel {
 
     /**
      * Return the IMDB code of the movie
+     *
      * @return IMDB code
      */
     public String getId() {
@@ -82,6 +83,7 @@ public class Movie implements BaseModel {
 
     /**
      * Set the IMDB code of the movie
+     *
      * @param id IMDB code
      */
     public void setId(String id) {
@@ -90,6 +92,7 @@ public class Movie implements BaseModel {
 
     /**
      * Return the title of the movie
+     *
      * @return movie title
      */
     public String getTitle() {
@@ -98,6 +101,7 @@ public class Movie implements BaseModel {
 
     /**
      * Set the title of the movie
+     *
      * @param title movie title
      */
     public void setTitle(String title) {
@@ -106,6 +110,7 @@ public class Movie implements BaseModel {
 
     /**
      * Return the release year of the movie
+     *
      * @return movie release year
      */
     public String getYear() {
@@ -114,6 +119,7 @@ public class Movie implements BaseModel {
 
     /**
      * Set the release year of the movie
+     *
      * @param year movie release year
      */
     public void setYear(String year) {
@@ -122,6 +128,7 @@ public class Movie implements BaseModel {
 
     /**
      * Return the resolution of the movie
+     *
      * @return movie resolution
      */
     public int getResolution() {
@@ -130,6 +137,7 @@ public class Movie implements BaseModel {
 
     /**
      * Set the resolution of the movie
+     *
      * @param resolution movie resolution
      */
     public void setResolution(int resolution) {
@@ -138,6 +146,7 @@ public class Movie implements BaseModel {
 
     /**
      * Return the height of the movie in pixels
+     *
      * @return movie height
      */
     public int getHeight() {
@@ -146,6 +155,7 @@ public class Movie implements BaseModel {
 
     /**
      * Set the height of the movie in pixels
+     *
      * @param height movie height
      */
     public void setHeight(int height) {
@@ -154,6 +164,7 @@ public class Movie implements BaseModel {
 
     /**
      * Get the width of the movie in pixels
+     *
      * @return movie width
      */
     public int getWidth() {
@@ -162,6 +173,7 @@ public class Movie implements BaseModel {
 
     /**
      * Set the width of the movie in pixels
+     *
      * @param width movie width
      */
     public void setWidth(int width) {
@@ -170,6 +182,7 @@ public class Movie implements BaseModel {
 
     /**
      * Return the filename of the movie as stored on the filesystem
+     *
      * @return movie filename
      */
     public String getFilename() {
@@ -178,6 +191,7 @@ public class Movie implements BaseModel {
 
     /**
      * Set the filename of the movie as stored on the filesystem
+     *
      * @param filename movie filename
      */
     public void setFilename(String filename) {
@@ -186,6 +200,7 @@ public class Movie implements BaseModel {
 
     /**
      * Return the file extension type of the movie as stored on the filesystem
+     *
      * @return file extension
      */
     public String getExtension() {
@@ -194,6 +209,7 @@ public class Movie implements BaseModel {
 
     /**
      * Set the file extension type of the movie as stored on the filesystem
+     *
      * @param extension file extension
      */
     public void setExtension(String extension) {
@@ -202,6 +218,7 @@ public class Movie implements BaseModel {
 
     /**
      * Return the folder name of the movie's folder as stored on the filesystem
+     *
      * @return folder name
      */
     public String getFolderName() {
@@ -210,6 +227,7 @@ public class Movie implements BaseModel {
 
     /**
      * Set the folder name of the movie's folder as stored on the filesystem
+     *
      * @param folderName folder name
      */
     public void setFolderName(String folderName) {
@@ -218,6 +236,7 @@ public class Movie implements BaseModel {
 
     /**
      * Return a string representation of the movie
+     *
      * @return movie string representation
      */
     @Override

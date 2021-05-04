@@ -13,11 +13,11 @@
 package net.celestialdata.plexbot.client.api;
 
 import com.google.gson.reflect.TypeToken;
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.*;
 import net.celestialdata.plexbot.client.auth.CloudflareAuthorizer;
 import net.celestialdata.plexbot.client.model.YtsBaseResponse;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.HttpClients;

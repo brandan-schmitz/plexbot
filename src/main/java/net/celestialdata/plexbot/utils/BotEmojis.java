@@ -96,4 +96,6 @@ public interface BotEmojis {
     String ARROW_LEFT = EmojiParser.parseToUnicode(":arrow_left:");
 
     String X = EmojiParser.parseToUnicode(":x:");
+
+    String STOP = EmojiParser.parseToUnicode(":octagonal_sign:");
 }

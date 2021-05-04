@@ -15,11 +15,11 @@ public class CustomInterceptor extends EmptyInterceptor {
      * to create the database object models. This allows custom actions to be performed per-object when
      * that object is deleted.
      *
-     * @param entity the class of the entity to delete
-     * @param id the id of the object to delete
-     * @param state the state of the object
+     * @param entity        the class of the entity to delete
+     * @param id            the id of the object to delete
+     * @param state         the state of the object
      * @param propertyNames the property names of the object
-     * @param types the types of the object
+     * @param types         the types of the object
      */
     @Override
     public void onDelete(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
@@ -33,11 +33,11 @@ public class CustomInterceptor extends EmptyInterceptor {
      * to create the database object models. This allows custom actions to be performed per-object when
      * that object is deleted.
      *
-     * @param entity the class of the entity to delete
-     * @param id the id of the object to delete
-     * @param state the state of the object
+     * @param entity        the class of the entity to delete
+     * @param id            the id of the object to delete
+     * @param state         the state of the object
      * @param propertyNames the property names of the object
-     * @param types the types of the object
+     * @param types         the types of the object
      * @return true if the object was saved or updated successfully
      */
     @Override

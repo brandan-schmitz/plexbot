@@ -13,7 +13,7 @@ public class EpisodeSubtitle implements BaseModel {
     private int id;
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "subtitle_episode", referencedColumnName = "episode_imdb", nullable = false)
+    @JoinColumn(name = "subtitle_episode", referencedColumnName = "episode_id", nullable = false)
     private Episode episode;
 
     @Column(name = "subtitle_language")
@@ -28,7 +28,8 @@ public class EpisodeSubtitle implements BaseModel {
     @Column(name = "subtitle_forced")
     private boolean forced;
 
-    public EpisodeSubtitle() {}
+    public EpisodeSubtitle() {
+    }
 
     public EpisodeSubtitle(Episode episode, String languageCode, String filetype, String filename, boolean forced) {
         this.episode = episode;

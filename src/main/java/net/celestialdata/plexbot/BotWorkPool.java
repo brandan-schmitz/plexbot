@@ -1,5 +1,6 @@
 package net.celestialdata.plexbot;
 
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.managers.BotStatusManager;
 import net.celestialdata.plexbot.utils.CustomRunnable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -16,7 +17,7 @@ public class BotWorkPool {
 
     private BotWorkPool() {
         // Configure the executor
-        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(BotConfig.getInstance().concurrentTasks()+1);
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(BotConfig.getInstance().concurrentTasks() + 1);
 
         // If the queue is full, wait 1 second and try again
         executor.setRejectedExecutionHandler((r, executor) -> {

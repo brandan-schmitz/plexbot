@@ -1,12 +1,12 @@
 package net.celestialdata.plexbot.workhandlers;
 
 import com.google.common.collect.Lists;
-import net.celestialdata.plexbot.BotConfig;
 import net.celestialdata.plexbot.BotWorkPool;
 import net.celestialdata.plexbot.Main;
 import net.celestialdata.plexbot.client.ApiException;
 import net.celestialdata.plexbot.client.BotClient;
 import net.celestialdata.plexbot.client.model.*;
+import net.celestialdata.plexbot.configuration.BotConfig;
 import net.celestialdata.plexbot.database.DbOperations;
 import net.celestialdata.plexbot.database.builders.MovieBuilder;
 import net.celestialdata.plexbot.database.builders.WaitlistItemBuilder;
@@ -36,7 +36,7 @@ import java.util.List;
  * @author Celestialdeath99
  */
 @SuppressWarnings("DuplicatedCode")
-public class RequestHandler implements CustomRunnable {
+public class MovieRequestHandler implements CustomRunnable {
     private final String processName;
     private final String searchTitle;
     private final String searchYear;
@@ -53,7 +53,7 @@ public class RequestHandler implements CustomRunnable {
      * @param sentMessage The javacord message entity of the message the bot responds with.
      * @param userId      The ID of the user that requested the movie.
      */
-    public RequestHandler(String processName, String searchTitle, String searchYear, String searchId, Message sentMessage, long userId) {
+    public MovieRequestHandler(String processName, String searchTitle, String searchYear, String searchId, Message sentMessage, long userId) {
         this.processName = processName;
         this.searchTitle = searchTitle;
         this.searchYear = searchYear;
@@ -82,7 +82,7 @@ public class RequestHandler implements CustomRunnable {
         // Configure task to run the endTask method if there was an error
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> endTask(e));
 
-        MovieSelectionHandler selectionHandler;
+        MediaSelectionHandler selectionHandler;
         OmdbItem selectedMovie;
         TorrentHandler torrentHandler;
         DownloadManager downloadManager;
@@ -157,7 +157,7 @@ public class RequestHandler implements CustomRunnable {
         }
 
         // Create the selection handler
-        selectionHandler = new MovieSelectionHandler(resultList, sentMessage);
+        selectionHandler = new MediaSelectionHandler(resultList, sentMessage);
 
         // Wait for a movie to be selected in the selection handler
         synchronized (selectionHandler.lock) {
@@ -180,7 +180,7 @@ public class RequestHandler implements CustomRunnable {
 
         // Attempt to set the selected movie
         try {
-            selectedMovie = selectionHandler.getSelectedMovie();
+            selectedMovie = selectionHandler.getSelectedMedia();
         } catch (NullPointerException e) {
             displayError("Unable to get the selected movie.", "movie-select-error");
             endTask(e);
@@ -235,7 +235,7 @@ public class RequestHandler implements CustomRunnable {
                         .build()
                 )) {
                     displayError("Unable to locate the file for \"" + selectedMovie.getTitle() + "(" + selectedMovie.getYear() + ")\"" +
-                            " at this time. I tried adding it to the waiting list however an unknown error occurred. Please try your request again later.",
+                                    " at this time. I tried adding it to the waiting list however an unknown error occurred. Please try your request again later.",
                             "db-save-operation");
                 }
             }
@@ -408,7 +408,8 @@ public class RequestHandler implements CustomRunnable {
                 displayError("There was an error masking the download. Please try again later.", "rdb-load-link");
                 try {
                     BotClient.getInstance().rdbApi.deleteTorrent(rdbTorrentInfo.getId());
-                } catch (ApiException ignored) {}
+                } catch (ApiException ignored) {
+                }
                 endTask();
                 return;
             }
@@ -619,7 +620,7 @@ public class RequestHandler implements CustomRunnable {
 
         // Trigger a refresh of the media libraries on the plex server
         try {
-            BotClient.getInstance().plexApi.refreshLibraries();
+            BotClient.getInstance().refreshPlexServers();
         } catch (Exception e) {
             reportError(e);
         }
