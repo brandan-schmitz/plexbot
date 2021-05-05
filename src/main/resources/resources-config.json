@@ -12,15 +12,6 @@
       },
       {
         "pattern": ".*/*.xml"
-      },
-      {
-        "pattern": ".*/*.dll"
-      },
-      {
-        "pattern": ".*/*.so"
-      },
-      {
-        "pattern": ".*/*.dylib"
       }
     ]
   }

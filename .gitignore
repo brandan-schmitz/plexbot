@@ -12,10 +12,14 @@ release.properties
 bin/
 
 # IntelliJ
-.idea
 *.ipr
 *.iml
 *.iws
+.idea/dataSources
+.idea/dictionaries
+.idea/inspectionProfiles
+.idea/libraries
+.idea/*.xml
 
 # NetBeans
 nb-configuration.xml
