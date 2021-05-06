@@ -5,6 +5,7 @@ import net.celestialdata.plexbot.clients.models.omdb.OmdbSearchResponse;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbSearchType;
 import net.celestialdata.plexbot.clients.models.rdb.RdbMagnetLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbTorrent;
+import net.celestialdata.plexbot.clients.models.rdb.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUser;
 import net.celestialdata.plexbot.clients.services.OmdbService;
 import net.celestialdata.plexbot.clients.services.RdbService;
@@ -51,9 +52,17 @@ public class ResourceTester {
     @POST
     @Path("/rdb/torrents/addMagnet")
     @Produces("application/json")
-    @Consumes("multipart/form-data")
+    @Consumes("application/x-www-form-urlencoded")
     public RdbMagnetLink addMagnet(@FormParam("magnet") String magnet) {
-        return rdbService.addMagnet(magnet);
+
+        System.out.println("Test");
+        System.out.println(magnet);
+
+        var returnValue = rdbService.addMagnet(magnet);
+
+        System.out.println(returnValue.toString());
+
+        return returnValue;
     }
 
     @GET
@@ -66,7 +75,7 @@ public class ResourceTester {
     @POST
     @Path("/rdb/torrents/selectFiles{id}")
     @Produces("application/json")
-    @Consumes("multipart/form-data")
+    @Consumes("application/x-www-form-urlencoded")
     public void selectFiles(@PathParam("id") String id, @FormParam("files") String fileList) {
         rdbService.selectFiles(id, fileList);
     }
@@ -81,8 +90,8 @@ public class ResourceTester {
     @POST
     @Path("/rdb/unrestrict/link")
     @Produces("application/json")
-    @Consumes("multipart/form-data")
-    public void unrestrictLink(@FormParam("link") String link) {
-        rdbService.unrestrictLink(link);
+    @Consumes("application/x-www-form-urlencoded")
+    public RdbUnrestrictedLink unrestrictLink(@FormParam("link") String link) {
+        return rdbService.unrestrictLink(link);
     }
 }

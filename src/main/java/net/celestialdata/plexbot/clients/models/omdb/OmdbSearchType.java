@@ -1,5 +1,6 @@
 package net.celestialdata.plexbot.clients.models.omdb;
 
+@SuppressWarnings("unused")
 public enum OmdbSearchType {
     MOVIE("movie"),
     SERIES("series");

@@ -7,24 +7,24 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public class RdbTorrent {
-    private String id;
-    private String filename;
-    private String hash;
-    private Long bytes;
-    private String host;
-    private Integer split;
-    private Integer progress;
-    private RdbTorrentStatus status;
-    private String added;
-    private List<RdbTorrentFile> files;
-    private List<URI> links;
-    private String ended;
-    private Integer speed;
-    private Integer seeders;
+    public String id;
+    public String filename;
+    public String hash;
+    public Long bytes;
+    public String host;
+    public Integer split;
+    public Integer progress;
+    public RdbTorrentStatusEnum status;
+    public String added;
+    public List<RdbTorrentFile> files;
+    public List<URI> links;
+    public String ended;
+    public Integer speed;
+    public Integer seeders;
 
     @JsonAlias("original_filename")
-    private String originalFilename;
+    public String originalFilename;
 
     @JsonAlias(value = "original_bytes")
-    private Long originalBytes;
+    public Long originalBytes;
 }

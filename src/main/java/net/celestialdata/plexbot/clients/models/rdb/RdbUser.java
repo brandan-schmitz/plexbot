@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.net.URI;
 
+@SuppressWarnings("unused")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RdbUser {
     public Integer id;
@@ -12,7 +13,7 @@ public class RdbUser {
     public Integer points;
     public String locale;
     public URI avatar;
-    public RdbUserType type;
+    public RdbUserTypeEnum type;
     public Integer premium;
     public String expiration;
 }

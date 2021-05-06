@@ -3,7 +3,7 @@ package net.celestialdata.plexbot.clients.models.rdb;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @SuppressWarnings("unused")
-public enum RdbTorrentStatus {
+public enum RdbTorrentStatusEnum {
     @JsonProperty("magnet_error")
     MAGNET_ERROR,
 
