@@ -2,6 +2,7 @@ package net.celestialdata.plexbot.clients.models.omdb;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResponseEnum;
 
 import java.util.List;
 
@@ -11,7 +12,6 @@ public class OmdbSearchResponse {
 
     @JsonAlias(value = "Search")
     public List<OmdbResult> search;
-
     public String totalResults;
 
     @JsonAlias(value = "Response")

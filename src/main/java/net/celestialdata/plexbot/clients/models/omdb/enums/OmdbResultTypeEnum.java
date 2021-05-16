@@ -1,9 +1,9 @@
-package net.celestialdata.plexbot.clients.models.omdb;
+package net.celestialdata.plexbot.clients.models.omdb.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @SuppressWarnings("unused")
-public enum OmdbResultType {
+public enum OmdbResultTypeEnum {
     @JsonProperty("episode")
     EPISODE,
 

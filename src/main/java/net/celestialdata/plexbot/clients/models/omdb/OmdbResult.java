@@ -2,6 +2,8 @@ package net.celestialdata.plexbot.clients.models.omdb;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResponseEnum;
+import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResultTypeEnum;
 
 @SuppressWarnings("unused")
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -56,7 +58,7 @@ public class OmdbResult {
     public String seriesID;
 
     @JsonAlias(value = "Type")
-    public OmdbResultType type;
+    public OmdbResultTypeEnum type;
 
     @JsonAlias(value = "Response")
     public OmdbResponseEnum response;

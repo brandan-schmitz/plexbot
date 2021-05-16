@@ -1,12 +1,12 @@
-package net.celestialdata.plexbot.clients.models.omdb;
+package net.celestialdata.plexbot.clients.models.omdb.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @SuppressWarnings("unused")
 public enum OmdbResponseEnum {
-    @JsonProperty("True")
+    @JsonProperty(value = "True")
     TRUE,
 
-    @JsonProperty("False")
+    @JsonProperty(value = "False")
     FALSE
 }

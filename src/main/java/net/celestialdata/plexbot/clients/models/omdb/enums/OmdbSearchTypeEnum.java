@@ -1,15 +1,14 @@
-package net.celestialdata.plexbot.clients.models.omdb;
+package net.celestialdata.plexbot.clients.models.omdb.enums;
 
 @SuppressWarnings("unused")
-public enum OmdbSearchType {
+public enum OmdbSearchTypeEnum {
     MOVIE("movie"),
     SERIES("series");
-
 
     public final String label;
 
     @SuppressWarnings("CdiInjectionPointsInspection")
-    OmdbSearchType(String label) {
+    OmdbSearchTypeEnum(String label) {
         this.label = label;
     }
 }

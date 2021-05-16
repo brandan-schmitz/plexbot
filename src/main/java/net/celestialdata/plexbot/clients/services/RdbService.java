@@ -11,27 +11,28 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import javax.inject.Singleton;
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 
 @Singleton
 @RegisterRestClient(baseUri = "https://api.real-debrid.com/rest/1.0")
 @RegisterClientHeaders(RDBAuthorizationHeaderFactory.class)
 public interface RdbService {
-    
+
     @POST
     @Retry
     @Path("/torrents/addMagnet")
-    @Produces("application/json")
-    @Consumes("application/x-www-form-urlencoded")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     RdbMagnetLink addMagnet(@FormParam("magnet") String magnet);
 
     @POST
     @Path("/torrents/selectFiles/{id}")
-    @Consumes("application/x-www-form-urlencoded")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     void selectFiles(@PathParam("id") String id, @FormParam("files") String fileList);
 
     @GET
     @Path("/torrents/info/{id}")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     RdbTorrent getTorrentInfo(@PathParam("id") String id);
 
     @DELETE
@@ -40,10 +41,12 @@ public interface RdbService {
 
     @POST
     @Path("/unrestrict/link")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     RdbUnrestrictedLink unrestrictLink(@FormParam("link") String link);
 
     @GET
     @Path("/user")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     RdbUser getUser();
 }

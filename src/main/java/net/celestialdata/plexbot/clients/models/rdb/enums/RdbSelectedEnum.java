@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.clients.models.rdb;
+package net.celestialdata.plexbot.clients.models.rdb.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

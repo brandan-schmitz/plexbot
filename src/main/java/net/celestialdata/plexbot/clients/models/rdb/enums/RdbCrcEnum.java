@@ -1,9 +1,9 @@
-package net.celestialdata.plexbot.clients.models.rdb;
+package net.celestialdata.plexbot.clients.models.rdb.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @SuppressWarnings("unused")
-public enum RdbStreamableEnum {
+public enum RdbCrcEnum {
     @JsonProperty(value = "0")
     TRUE,
 

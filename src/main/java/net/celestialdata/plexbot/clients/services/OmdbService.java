@@ -2,7 +2,7 @@ package net.celestialdata.plexbot.clients.services;
 
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbSearchResponse;
-import net.celestialdata.plexbot.clients.models.omdb.OmdbSearchType;
+import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbSearchTypeEnum;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
@@ -11,6 +11,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 
 @Singleton
 @RegisterRestClient(baseUri = "http://www.omdbapi.com")
@@ -19,18 +20,18 @@ public interface OmdbService {
     @GET
     @Retry
     @Path("/")
-    @Produces("application/json")
-    OmdbSearchResponse search(@QueryParam("s") String searchTerm, @QueryParam("type") OmdbSearchType omdbSearchType, @QueryParam("apiKey") String imdbApiKey);
+    @Produces(MediaType.APPLICATION_JSON)
+    OmdbSearchResponse search(@QueryParam("s") String searchTerm, @QueryParam("type") OmdbSearchTypeEnum omdbSearchTypeEnum, @QueryParam("apiKey") String imdbApiKey);
 
     @GET
     @Retry
     @Path("/")
-    @Produces("application/json")
-    OmdbSearchResponse search(@QueryParam("s") String searchTerm, @QueryParam("type") OmdbSearchType omdbSearchType, @QueryParam("y") String year, @QueryParam("apiKey") String imdbApiKey);
+    @Produces(MediaType.APPLICATION_JSON)
+    OmdbSearchResponse search(@QueryParam("s") String searchTerm, @QueryParam("type") OmdbSearchTypeEnum omdbSearchTypeEnum, @QueryParam("y") String year, @QueryParam("apiKey") String imdbApiKey);
 
     @GET
     @Retry
     @Path("/")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     OmdbResult getById(@QueryParam("i") String imdbID, @QueryParam("apiKey") String imdbApiKey);
 }
