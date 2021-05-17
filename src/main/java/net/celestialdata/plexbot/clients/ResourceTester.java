@@ -7,9 +7,11 @@ import net.celestialdata.plexbot.clients.models.rdb.RdbMagnetLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbTorrent;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUser;
+import net.celestialdata.plexbot.clients.models.syncthing.SyncthingCompletionResponse;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.*;
 import net.celestialdata.plexbot.clients.services.OmdbService;
 import net.celestialdata.plexbot.clients.services.RdbService;
+import net.celestialdata.plexbot.clients.services.SyncthingService;
 import net.celestialdata.plexbot.clients.services.TvdbService;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -17,6 +19,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 @Tag(name = "Test", description = "Endpoints available to test the API functions.")
@@ -34,6 +37,10 @@ public class ResourceTester {
     @Inject
     @RestClient
     TvdbService tvdbService;
+
+    @Inject
+    @RestClient
+    SyncthingService syncthingService;
 
     @GET
     @Path("/imdb/search")
@@ -61,15 +68,7 @@ public class ResourceTester {
     @Produces("application/json")
     @Consumes("application/x-www-form-urlencoded")
     public RdbMagnetLink addMagnet(@FormParam("magnet") String magnet) {
-
-        System.out.println("Test");
-        System.out.println(magnet);
-
-        var returnValue = rdbService.addMagnet(magnet);
-
-        System.out.println(returnValue.toString());
-
-        return returnValue;
+        return rdbService.addMagnet(magnet);
     }
 
     @GET
@@ -151,7 +150,6 @@ public class ResourceTester {
         return tvdbService.getSeries(id).series;
     }
 
-
     @GET
     @Produces("application/json")
     @Path("/tvdb/series/{id}/extended")
@@ -164,5 +162,12 @@ public class ResourceTester {
     @Path("/tvdb/series/{id}/episodes/official")
     public List<TvdbEpisode> getSeriesEpisodes(@PathParam("id") String id) {
         return tvdbService.getSeriesEpisodes(id).seriesEpisodes.episodes;
+    }
+
+    @GET
+    @Path(value = "/syncthing/db/completion")
+    @Produces(MediaType.APPLICATION_JSON)
+    public SyncthingCompletionResponse getCompletionStatus(@QueryParam(value = "folder") String folderName, @QueryParam(value = "device") String deviceID) {
+        return syncthingService.getCompletionStatus(folderName, deviceID);
     }
 }
