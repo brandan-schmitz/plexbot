@@ -12,6 +12,7 @@ import net.celestialdata.plexbot.clients.models.syncthing.SyncthingCompletionRes
 import net.celestialdata.plexbot.clients.models.tvdb.TvdbLoginRequestBody;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.*;
 import net.celestialdata.plexbot.clients.models.tvdb.responses.TvdbAuthResponse;
+import net.celestialdata.plexbot.clients.models.yts.YtsMovie;
 import net.celestialdata.plexbot.clients.services.*;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -53,6 +54,10 @@ public class ResourceTester {
     @Inject
     @RestClient
     PlexService plexService;
+
+    @Inject
+    @RestClient
+    YtsService ytsService;
 
     @GET
     @Path("/imdb/search")
@@ -205,5 +210,12 @@ public class ResourceTester {
     @Path("/plex/library/sections/all/refresh")
     public void refreshLibraries() {
         plexService.refreshLibraries();
+    }
+
+    @GET
+    @Path(value = "/yts/list_movies.json")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<YtsMovie> search(@QueryParam("query_term") String imdbID) {
+        return ytsService.search(imdbID).results.movies;
     }
 }
