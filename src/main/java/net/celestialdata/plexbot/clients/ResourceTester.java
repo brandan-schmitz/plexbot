@@ -3,16 +3,16 @@ package net.celestialdata.plexbot.clients;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbSearchResponse;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbSearchTypeEnum;
+import net.celestialdata.plexbot.clients.models.plex.PlexUser;
 import net.celestialdata.plexbot.clients.models.rdb.RdbMagnetLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbTorrent;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUser;
 import net.celestialdata.plexbot.clients.models.syncthing.SyncthingCompletionResponse;
+import net.celestialdata.plexbot.clients.models.tvdb.TvdbLoginRequestBody;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.*;
-import net.celestialdata.plexbot.clients.services.OmdbService;
-import net.celestialdata.plexbot.clients.services.RdbService;
-import net.celestialdata.plexbot.clients.services.SyncthingService;
-import net.celestialdata.plexbot.clients.services.TvdbService;
+import net.celestialdata.plexbot.clients.models.tvdb.responses.TvdbAuthResponse;
+import net.celestialdata.plexbot.clients.services.*;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -36,11 +36,23 @@ public class ResourceTester {
 
     @Inject
     @RestClient
+    TvdbAuthorizationService tvdbAuthorizationService;
+
+    @Inject
+    @RestClient
     TvdbService tvdbService;
 
     @Inject
     @RestClient
     SyncthingService syncthingService;
+
+    @Inject
+    @RestClient
+    PlexAuthorizationService plexAuthorizationService;
+
+    @Inject
+    @RestClient
+    PlexService plexService;
 
     @GET
     @Path("/imdb/search")
@@ -99,6 +111,14 @@ public class ResourceTester {
     @Consumes("application/x-www-form-urlencoded")
     public RdbUnrestrictedLink unrestrictLink(@FormParam("link") String link) {
         return rdbService.unrestrictLink(link);
+    }
+
+    @POST
+    @Path("/tvdb/login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public TvdbAuthResponse login(TvdbLoginRequestBody loginBody) {
+        return tvdbAuthorizationService.login(loginBody);
     }
 
     @GET
@@ -169,5 +189,21 @@ public class ResourceTester {
     @Produces(MediaType.APPLICATION_JSON)
     public SyncthingCompletionResponse getCompletionStatus(@QueryParam(value = "folder") String folderName, @QueryParam(value = "device") String deviceID) {
         return syncthingService.getCompletionStatus(folderName, deviceID);
+    }
+
+    @POST
+    @Path("/plex/users/sign_in.json")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public PlexUser login() {
+        return plexAuthorizationService.login();
+    }
+
+
+    @SuppressWarnings("QsUndeclaredPathMimeTypesInspection")
+    @POST
+    @Path("/plex/library/sections/all/refresh")
+    public void refreshLibraries() {
+        plexService.refreshLibraries();
     }
 }

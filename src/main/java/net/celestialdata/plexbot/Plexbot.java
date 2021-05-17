@@ -10,10 +10,10 @@ import java.util.Properties;
 
 @QuarkusMain
 public class Plexbot implements QuarkusApplication {
+    private static String version = "0.0.0";
 
     public static void main(String... args) {
         // Set the default version and date variables
-        String version = "0.0.0";
         String date = "00/00/0000";
 
         // Load the application information
@@ -45,6 +45,10 @@ public class Plexbot implements QuarkusApplication {
 
         // Run the main application
         Quarkus.run(Plexbot.class, args);
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     @Override

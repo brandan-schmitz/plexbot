@@ -1,6 +1,5 @@
 package net.celestialdata.plexbot.clients.authorizations;
 
-import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.clients.models.tvdb.TvdbLoginRequestBody;
 import net.celestialdata.plexbot.clients.services.TvdbAuthorizationService;
@@ -8,19 +7,16 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+@SuppressWarnings("unused")
 @ApplicationScoped
 public class TvdbAuthorizer {
+
     @Inject
     @RestClient
     TvdbAuthorizationService tvdbAuthorizationService;
     private String authToken;
-
-    void startup(@Observes StartupEvent event) {
-        authorize();
-    }
 
     @Scheduled(every = "12h")
     void authorize() {
