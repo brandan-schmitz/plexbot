@@ -3,12 +3,15 @@ package net.celestialdata.plexbot;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
+import org.javacord.api.util.logging.FallbackLoggerConfiguration;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 @QuarkusMain
+@ApplicationScoped
 public class Plexbot implements QuarkusApplication {
     private static String version = "0.0.0";
 
@@ -42,6 +45,9 @@ public class Plexbot implements QuarkusApplication {
                         "           proper attributes are given in the modified code.             \n" +
                         "                                                                         \n\n",
                 version, date);
+
+        // Disable debug logging for Javacord
+        FallbackLoggerConfiguration.setDebug(false);
 
         // Run the main application
         Quarkus.run(Plexbot.class, args);
