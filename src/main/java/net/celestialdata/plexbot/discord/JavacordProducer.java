@@ -2,9 +2,6 @@ package net.celestialdata.plexbot.discord;
 
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.runtime.Quarkus;
-import io.quarkus.runtime.ShutdownEvent;
-import io.quarkus.runtime.Startup;
-import io.quarkus.runtime.StartupEvent;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
@@ -15,10 +12,8 @@ import org.javacord.api.entity.permission.PermissionsBuilder;
 import org.jboss.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 
 @ApplicationScoped
 public class JavacordProducer {
