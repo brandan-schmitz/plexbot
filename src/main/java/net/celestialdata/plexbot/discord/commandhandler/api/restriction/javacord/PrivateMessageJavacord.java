@@ -25,14 +25,9 @@ import javax.enterprise.context.ApplicationScoped;
  * A restriction that allows a command for private messages and is evaluated by the Javacord command handler.
  */
 @ApplicationScoped
+@SuppressWarnings("unused")
 public class PrivateMessageJavacord implements Restriction<Message> {
-    /**
-     * Constructs a new private message restriction.
-     */
-    private PrivateMessageJavacord() {
-    }
 
-    @SuppressWarnings("unused")
     @Override
     public boolean allowCommand(Message message) {
         return message.isPrivateMessage();

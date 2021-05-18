@@ -262,7 +262,7 @@ public abstract class CommandHandler<M> {
      * Shuts down the executor service used for asynchronous command execution if one was used actually.
      */
     @PreDestroy
-    void shutdownExecutorService() {
+    public void shutdownExecutorService() {
         if (executorService.isSet()) {
             executorService.get().shutdown();
         }

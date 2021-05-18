@@ -82,12 +82,6 @@ public class UsagePatternBuilder extends UsageBaseVisitor<String> {
             new ConcurrentHashMap<>();
 
     /**
-     * Constructs a new usage pattern builder.
-     */
-    private UsagePatternBuilder() {
-    }
-
-    /**
      * Constructs a regular expression pattern from the given usage tree. To get a mapping of group names by token name
      * to extract the specified values from a match result, use {@link #getGroupNamesByTokenName(UsageContext)} after
      * using this method for the respective usage tree.

@@ -26,11 +26,6 @@ import static org.javacord.api.util.DiscordRegexPattern.CHANNEL_MENTION;
 @ParameterType("channel_mention")
 @ParameterType("channelMention")
 class ChannelMentionConverterJavacord implements ParameterConverter<Message, Channel> {
-    /**
-     * Constructs a new channel mention converter for Javacord.
-     */
-    private ChannelMentionConverterJavacord() {
-    }
 
     @Override
     public Channel convert(String parameter, String type, Command<?> command, Message message,

@@ -10,11 +10,6 @@ import java.util.concurrent.ExecutionException;
  */
 @ApplicationScoped
 public class ExceptionUtil {
-    /**
-     * Creates a new exception utility.
-     */
-    private ExceptionUtil() {
-    }
 
     /**
      * Allows to throw an unchecked exception without declaring it in a throws clause.

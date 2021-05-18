@@ -28,14 +28,9 @@ import static java.lang.Boolean.FALSE;
  * If a message is not sent on a server, this restriction always denies.
  */
 @ApplicationScoped
+@SuppressWarnings("unused")
 public class ServerOwnerJavacord implements Restriction<Message> {
-    /**
-     * Constructs a new server owner restriction.
-     */
-    private ServerOwnerJavacord() {
-    }
 
-    @SuppressWarnings("unused")
     @Override
     public boolean allowCommand(Message message) {
         return message.getServer()

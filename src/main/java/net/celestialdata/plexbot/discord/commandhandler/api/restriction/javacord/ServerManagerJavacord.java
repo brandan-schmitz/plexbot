@@ -26,14 +26,9 @@ import javax.enterprise.context.ApplicationScoped;
  * If a message is not sent on a server, this restriction always denies.
  */
 @ApplicationScoped
+@SuppressWarnings("unused")
 public class ServerManagerJavacord implements Restriction<Message> {
-    /**
-     * Constructs a new server manager restriction.
-     */
-    private ServerManagerJavacord() {
-    }
 
-    @SuppressWarnings("unused")
     @Override
     public boolean allowCommand(Message message) {
         return message.getAuthor().canManageServer();

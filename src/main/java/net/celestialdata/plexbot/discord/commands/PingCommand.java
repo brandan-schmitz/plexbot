@@ -29,7 +29,7 @@ public class PingCommand implements Command<Message> {
         Instant sentTime = incomingMessage.getCreationTimestamp();
 
         // Calculate the difference between the command time and now
-        long timeDiff = ChronoUnit.MILLIS.between(receivedTime, sentTime);
+        long timeDiff = ChronoUnit.MILLIS.between(sentTime, receivedTime);
 
         incomingMessage.reply(new EmbedBuilder()
                 .setTitle(EmojiParser.parseToUnicode(":tools:") + "  Plexbot Ping")

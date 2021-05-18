@@ -14,11 +14,6 @@ import java.util.*;
 @SuppressWarnings("unused")
 @ApplicationScoped
 public class UntypedParameterParser extends BaseParameterParser {
-    /**
-     * Constructs a new untyped parameter parser.
-     */
-    private UntypedParameterParser() {
-    }
 
     @Override
     public <V> Parameters<V> parse(Command<?> command, Object message, String prefix, String usedAlias, String parameterString) {

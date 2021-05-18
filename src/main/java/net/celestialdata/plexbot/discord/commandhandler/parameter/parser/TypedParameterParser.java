@@ -52,12 +52,6 @@ public class TypedParameterParser extends BaseParameterParser {
     private LazyReferenceBySupplier<Map<Class<?>, TypeLiteral<ParameterConverter<?, ?>>>> parameterConverterTypeLiteralsByMessageType;
 
     /**
-     * Constructs a new typed parameter parser.
-     */
-    private TypedParameterParser() {
-    }
-
-    /**
      * Sets the available command handlers which are used to determine the message type to parameter converter type
      * literal mappings.
      *

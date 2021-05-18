@@ -28,14 +28,9 @@ import static java.lang.Boolean.FALSE;
  * Regular users means no bots, and no webhooks.
  */
 @ApplicationScoped
+@SuppressWarnings("unused")
 public class RegularUserJavacord implements Restriction<Message> {
-    /**
-     * Constructs a new regular user restriction.
-     */
-    private RegularUserJavacord() {
-    }
 
-    @SuppressWarnings("unused")
     @Override
     public boolean allowCommand(Message message) {
         return message.getUserAuthor().map(user -> !user.isBot()).orElse(FALSE);

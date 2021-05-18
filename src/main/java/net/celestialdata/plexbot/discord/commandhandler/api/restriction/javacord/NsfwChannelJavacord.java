@@ -29,14 +29,9 @@ import static java.lang.Boolean.FALSE;
  * If a message is not sent on a server, this restriction always denies.
  */
 @ApplicationScoped
+@SuppressWarnings("unused")
 public class NsfwChannelJavacord implements Restriction<Message> {
-    /**
-     * Constructs a new NSFW channel restriction.
-     */
-    private NsfwChannelJavacord() {
-    }
 
-    @SuppressWarnings("unused")
     @Override
     public boolean allowCommand(Message message) {
         return message

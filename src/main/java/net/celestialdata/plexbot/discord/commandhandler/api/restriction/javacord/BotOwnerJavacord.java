@@ -25,14 +25,9 @@ import javax.enterprise.context.ApplicationScoped;
  * A restriction that allows a command for the bot owner and is evaluated by the Javacord command handler.
  */
 @ApplicationScoped
+@SuppressWarnings("unused")
 public class BotOwnerJavacord implements Restriction<Message> {
-    /**
-     * Constructs a new bot owner restriction.
-     */
-    private BotOwnerJavacord() {
-    }
 
-    @SuppressWarnings("unused")
     @Override
     public boolean allowCommand(Message message) {
         return message.getAuthor().isBotOwner();

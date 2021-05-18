@@ -20,11 +20,6 @@ import static java.lang.String.format;
 @Internal
 @ParameterType("decimal")
 class DecimalConverter implements ParameterConverter<Object, BigDecimal> {
-    /**
-     * Constructs a new decimal converter.
-     */
-    private DecimalConverter() {
-    }
 
     @Override
     public BigDecimal convert(String parameter, String type, Command<?> command, Object message,

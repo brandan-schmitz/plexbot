@@ -25,14 +25,9 @@ import javax.enterprise.context.ApplicationScoped;
  */
 @ApplicationScoped
 @Internal
+@SuppressWarnings("unused")
 class DefaultPrefixProvider implements PrefixProvider<Object> {
-    /**
-     * Constructs a new default prefix provider.
-     */
-    private DefaultPrefixProvider() {
-    }
 
-    @SuppressWarnings("unused")
     @Override
     public String getCommandPrefix(Object message) {
         return "!";
