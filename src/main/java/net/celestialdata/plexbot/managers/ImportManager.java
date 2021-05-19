@@ -239,20 +239,23 @@ public class ImportManager implements CustomRunnable {
 
         // If the SyncThing integration is enabled, make sure the import folder is done syncing
         if (BotConfig.getInstance().syncthingEnabled() && !skipSync) {
-            boolean isSyncing = false;
+            List<Boolean> deviceSyncList = new ArrayList<>();
+            boolean isSyncing;
 
             // Check all SyncThing servers listed to make sure it is not syncing media
             for (String device : BotConfig.getInstance().syncthingDevices()) {
                 try {
-                    isSyncing = BotClient.getInstance()
+                    var status = BotClient.getInstance()
                             .syncthingApi.getCompletionStatus(BotConfig.getInstance().syncthingImportFolderId(), device)
                             .getCompletion() != 100;
+                    deviceSyncList.add(status);
                 } catch (ApiException e) {
                     displayError("An unknown error has occurred. Brandan has been notified.", e.getMessage());
                     endTask(e);
                     return;
                 }
             }
+            isSyncing = deviceSyncList.contains(true);
 
             // If SyncThing is syncing, wait until it is not
             if (isSyncing) {
@@ -277,17 +280,20 @@ public class ImportManager implements CustomRunnable {
                         return;
                     }
 
+                    deviceSyncList.clear();
                     for (String device : BotConfig.getInstance().syncthingDevices()) {
                         try {
-                            isSyncing = BotClient.getInstance()
+                            var status = BotClient.getInstance()
                                     .syncthingApi.getCompletionStatus(BotConfig.getInstance().syncthingImportFolderId(), device)
                                     .getCompletion() != 100;
+                            deviceSyncList.add(status);
                         } catch (ApiException e) {
                             displayError("An unknown error has occurred. Brandan has been notified.", e.getMessage());
                             endTask(e);
                             return;
                         }
                     }
+                    isSyncing = deviceSyncList.contains(true);
                 }
             }
         }

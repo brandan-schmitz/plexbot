@@ -52,4 +52,4 @@ buildNumber.properties
 **/.DS_STORE
 
 config.yaml
-/src/main/resources/application.yml
+/src/main/resources/application.yaml
