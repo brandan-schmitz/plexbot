@@ -41,7 +41,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-graalvm</artifactId>
-            <version>5.4.29.Final</version>
+            <version>5.4.32.Final</version>
         </dependency>
 
         <!-- Javacord -->
