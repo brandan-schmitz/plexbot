@@ -6,7 +6,7 @@
   <artifactId>plexbot</artifactId>
   <version>2.0.0</version>
   <properties>
-    <version-date>05/04/2021</version-date>
+    <version-date>06/03/2021</version-date>
     <quarkus.application.version>${project.version}</quarkus.application.version>
     <quarkus.application.name>${project.artifactId}</quarkus.application.name>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
@@ -15,17 +15,16 @@
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <quarkus-plugin.version>1.13.3.Final</quarkus-plugin.version>
+    <quarkus-plugin.version>1.13.6.Final</quarkus-plugin.version>
     <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-    <quarkus.platform.version>1.13.3.Final</quarkus.platform.version>
+    <quarkus.platform.version>1.13.6.Final</quarkus.platform.version>
+    <quarkus.ssl.native>true</quarkus.ssl.native>
+    <quarkus.native.enable-jni>true</quarkus.native.enable-jni>
+    <quarkus.hibernate-orm.database.generation>update</quarkus.hibernate-orm.database.generation>
+    <quarkus.banner.enabled>false</quarkus.banner.enabled>
+    <quarkus.log.level>INFO</quarkus.log.level>
   </properties>
-  <repositories>
-    <repository>
-      <id>jitpack.io</id>
-      <url>https://jitpack.io</url>
-    </repository>
-  </repositories>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -45,10 +44,6 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-config-yaml</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-fault-tolerance</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -121,6 +116,11 @@
       <artifactId>vlcj-info</artifactId>
       <version>2.0.1</version>
     </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-tcnative</artifactId>
+      <version>2.0.31.Final</version>
+    </dependency>
   </dependencies>
   <build>
     <finalName>plexbot</finalName>
@@ -166,7 +166,7 @@
       <id>uber</id>
       <activation>
         <property>
-          <name>build</name>
+          <name>uber</name>
         </property>
       </activation>
       <properties>
@@ -182,11 +182,14 @@
       </activation>
       <properties>
         <quarkus.package.type>native</quarkus.package.type>
-        <quarkus.native.native-image-xmx>5G</quarkus.native.native-image-xmx>
+        <quarkus.native.native-image-xmx>7G</quarkus.native.native-image-xmx>
         <quarkus.native.debug.enabled>false</quarkus.native.debug.enabled>
         <quarkus.native.additional-build-args>-H:ResourceConfigurationFiles=resources-config.json,\
           -H:ReflectionConfigurationFiles=reflection-config.json,\
-          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman
+          -H:JNIConfigurationFiles=jni-config.json,\
+          -H:DynamicProxyConfigurationFiles=proxy-config.json,\
+          --allow-incomplete-classpath,\
+          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.proxy.$Proxy300\,com.sun.proxy.$Proxy301\,com.sun.jna\,com.sun.proxy.$Proxy302\,com.sun.proxy.$Proxy303
         </quarkus.native.additional-build-args>
       </properties>
     </profile>

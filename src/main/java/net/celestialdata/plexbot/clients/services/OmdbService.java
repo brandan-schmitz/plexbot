@@ -3,7 +3,6 @@ package net.celestialdata.plexbot.clients.services;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbSearchResponse;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbSearchTypeEnum;
-import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import javax.inject.Singleton;
@@ -18,19 +17,16 @@ import javax.ws.rs.core.MediaType;
 public interface OmdbService {
 
     @GET
-    @Retry
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     OmdbSearchResponse search(@QueryParam("s") String searchTerm, @QueryParam("type") OmdbSearchTypeEnum omdbSearchTypeEnum, @QueryParam("apiKey") String imdbApiKey);
 
     @GET
-    @Retry
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     OmdbSearchResponse search(@QueryParam("s") String searchTerm, @QueryParam("type") OmdbSearchTypeEnum omdbSearchTypeEnum, @QueryParam("y") String year, @QueryParam("apiKey") String imdbApiKey);
 
     @GET
-    @Retry
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     OmdbResult getById(@QueryParam("i") String imdbID, @QueryParam("apiKey") String imdbApiKey);

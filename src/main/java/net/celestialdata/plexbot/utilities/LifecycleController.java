@@ -26,6 +26,7 @@ public class LifecycleController {
     Instance<String> inviteLink;
 
     void start(@Observes StartupEvent event) {
+        // Display an link to invite the bot to a server with
         logger.info("Invite the bot to servers with this link: " + inviteLink.get());
     }
 

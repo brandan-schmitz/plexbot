@@ -10,11 +10,10 @@
           </option>
           <option name="goals">
             <list>
-              <option value="-Puber" />
               <option value="clean" />
               <option value="generate-resources" />
-              <option value="compile" />
-              <option value="quarkus:build" />
+              <option value="package" />
+              <option value="-Puber" />
             </list>
           </option>
           <option name="pomFileName" />

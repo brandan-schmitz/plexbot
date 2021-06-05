@@ -2,7 +2,6 @@ package net.celestialdata.plexbot.clients.services;
 
 import net.celestialdata.plexbot.clients.authorizations.SyncthingAuthorizationHeaderFactory;
 import net.celestialdata.plexbot.clients.models.syncthing.SyncthingCompletionResponse;
-import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
@@ -19,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 public interface SyncthingService {
 
     @GET
-    @Retry
     @Path(value = "/rest/db/completion")
     @Produces(MediaType.APPLICATION_JSON)
     SyncthingCompletionResponse getCompletionStatus(@QueryParam(value = "folder") String folderName, @QueryParam(value = "device") String deviceID);

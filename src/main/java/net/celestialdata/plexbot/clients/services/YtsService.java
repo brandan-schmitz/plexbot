@@ -1,7 +1,6 @@
 package net.celestialdata.plexbot.clients.services;
 
 import net.celestialdata.plexbot.clients.models.yts.YtsResponse;
-import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import javax.inject.Singleton;
@@ -16,7 +15,6 @@ import javax.ws.rs.core.MediaType;
 public interface YtsService {
 
     @GET
-    @Retry
     @Path(value = "/list_movies.json")
     @Produces(MediaType.APPLICATION_JSON)
     YtsResponse search(@QueryParam("query_term") String imdbID);

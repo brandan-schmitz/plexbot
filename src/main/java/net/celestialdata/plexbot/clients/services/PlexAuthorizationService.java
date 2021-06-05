@@ -3,7 +3,6 @@ package net.celestialdata.plexbot.clients.services;
 import net.celestialdata.plexbot.clients.authorizations.PlexAuthorizationHeaderFactory;
 import net.celestialdata.plexbot.clients.models.plex.PlexUser;
 import net.celestialdata.plexbot.utilities.UnwrappingObjectMapper;
-import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders;
 import org.eclipse.microprofile.rest.client.annotation.RegisterProvider;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
@@ -22,7 +21,6 @@ import javax.ws.rs.core.MediaType;
 public interface PlexAuthorizationService {
 
     @POST
-    @Retry
     @Path("/users/sign_in.json")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)

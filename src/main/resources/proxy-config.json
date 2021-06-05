@@ -1,0 +1,5 @@
+[
+  ["com.sun.jna.Library"],
+  ["com.sun.jna.Callback"],
+  ["uk.co.caprica.vlcjinfo.binding.LibMediaInfo"]
+]

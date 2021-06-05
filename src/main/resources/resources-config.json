@@ -2,16 +2,28 @@
   "resources": {
     "includes": [
       {
-        "pattern": ".*/*.yml"
-      },
-      {
-        "pattern": ".*/*.sample"
+        "pattern": ".*/*.yaml"
       },
       {
         "pattern": ".*/*.properties"
       },
       {
+        "pattern": ".*/*.sample"
+      },
+      {
+        "pattern": ".*/*.json"
+      },
+      {
         "pattern": ".*/*.xml"
+      },
+      {
+        "pattern": ".*/*.dylib"
+      },
+      {
+        "pattern": ".*/*.so"
+      },
+      {
+        "pattern": ".*/libjnidispatch.*"
       }
     ]
   }
