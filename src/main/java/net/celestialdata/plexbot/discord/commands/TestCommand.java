@@ -1,7 +1,6 @@
 package net.celestialdata.plexbot.discord.commands;
 
 import io.quarkus.arc.log.LoggerName;
-import io.smallrye.common.annotation.Blocking;
 import net.celestialdata.plexbot.discord.commandhandler.api.Command;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.javacord.api.entity.message.Message;
@@ -21,12 +20,11 @@ public class TestCommand implements Command<Message> {
     FileUtilities fileUtilities;
 
     @Override
-    @Blocking
     public void execute(Message incomingMessage, String prefix, String usedAlias, String parameterString) {
         var args = parameterString.split("\\s+");
 
         fileUtilities.downloadFile(args[0], args[1]).subscribe().with(
-                item -> logger.info("Download Progress: " + item + "%"),
+                item -> {},
                 failure -> logger.error(failure),
                 () -> logger.info("Download Finished")
         );

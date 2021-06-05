@@ -5,20 +5,18 @@ import io.quarkus.runtime.StartupEvent;
 import net.celestialdata.plexbot.discord.commandhandler.Internal;
 import net.celestialdata.plexbot.discord.commandhandler.api.event.javacord.CommandNotAllowedEventJavacord;
 import net.celestialdata.plexbot.discord.commandhandler.api.event.javacord.CommandNotFoundEventJavacord;
-import net.celestialdata.plexbot.discord.commandhandler.api.parameter.ParameterConverter;
 import net.celestialdata.plexbot.discord.commandhandler.api.prefix.PrefixProvider;
 import net.celestialdata.plexbot.discord.commandhandler.api.restriction.Restriction;
 import net.celestialdata.plexbot.discord.commandhandler.restriction.RestrictionLookup;
 import net.celestialdata.plexbot.discord.commandhandler.util.lazy.LazyReferenceBySupplier;
+import org.eclipse.microprofile.context.ManagedExecutor;
 import org.jboss.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
 import javax.enterprise.inject.Instance;
-import javax.enterprise.util.TypeLiteral;
 import javax.inject.Inject;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
@@ -26,13 +24,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.*;
 import static net.celestialdata.plexbot.discord.commandhandler.api.Command.PARAMETER_SEPARATOR_CHARACTER;
 import static net.celestialdata.plexbot.discord.commandhandler.api.Command.getParameters;
@@ -54,15 +49,15 @@ import static net.celestialdata.plexbot.discord.commandhandler.api.Command.getPa
  */
 public abstract class CommandHandler<M> {
     /**
-     * An executor service for asynchronous command execution.
-     */
-    private final LazyReferenceBySupplier<ExecutorService> executorService =
-            new LazyReferenceBySupplier<>(Executors::newCachedThreadPool);
-    /**
      * The logger for this command handler.
      */
     @LoggerName("net.celestialdata.plexbot.discord.commandhandler.CommandHandlerDiscord")
     Logger logger;
+
+    @SuppressWarnings("CdiInjectionPointsInspection")
+    @Inject
+    ManagedExecutor executor;
+
     /**
      * The default prefix provider that is used if no custom prefix provider was provided.
      */
@@ -259,16 +254,6 @@ public abstract class CommandHandler<M> {
     }
 
     /**
-     * Shuts down the executor service used for asynchronous command execution if one was used actually.
-     */
-    @PreDestroy
-    public void shutdownExecutorService() {
-        if (executorService.isSet()) {
-            executorService.get().shutdown();
-        }
-    }
-
-    /**
      * Handles the given message with the given textual content. The textual content needs to be given separately as
      * this generic method does not know now to get the content from the message.
      *
@@ -403,18 +388,10 @@ public abstract class CommandHandler<M> {
      * @param commandExecutor the executor that runs the actual command implementation
      */
     protected void executeAsync(M message, Runnable commandExecutor) {
-        runAsync(commandExecutor, executorService.get())
-                .whenComplete((nothing, throwable) -> {
-                    if (throwable != null) {
-                        logger.error("Exception while executing command asynchronously", throwable);
-                    }
-                });
+        executor.runAsync(commandExecutor).whenComplete((nothing, throwable) -> {
+            if (throwable != null) {
+                logger.error("Exception while executing command asynchronously", throwable);
+            }
+        });
     }
-
-    /**
-     * Returns the map entry for mapping the message class to a parameter converter type literal.
-     *
-     * @return the map entry for mapping the message class to a parameter converter type literal
-     */
-    public abstract Entry<Class<M>, TypeLiteral<ParameterConverter<? super M, ?>>> getParameterConverterTypeLiteralByMessageType();
 }

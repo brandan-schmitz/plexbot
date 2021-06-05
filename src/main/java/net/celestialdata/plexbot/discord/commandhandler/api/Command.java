@@ -2,7 +2,6 @@ package net.celestialdata.plexbot.discord.commandhandler.api;
 
 import net.celestialdata.plexbot.discord.commandhandler.InvalidAnnotationCombinationException;
 import net.celestialdata.plexbot.discord.commandhandler.api.annotation.*;
-import net.celestialdata.plexbot.discord.commandhandler.api.parameter.ParameterParser;
 import net.celestialdata.plexbot.discord.commandhandler.api.restriction.*;
 import net.celestialdata.plexbot.discord.commandhandler.api.restriction.javacord.ChannelJavacord;
 import net.celestialdata.plexbot.discord.commandhandler.api.restriction.javacord.RoleJavacord;
@@ -41,14 +40,9 @@ public interface Command<M> {
      * whitespace characters. If you expect three parameters, you should set {@code maxParameters} to four,
      * so you can easily test the length of the returned array whether too many parameters were given to the command.
      *
-     * <p>For a syntactically and semantically parsing of the parameter string, you can have a look at the
-     * {@link ParameterParser} for which you can define the command syntax as pattern which is then parsed and returned
-     * accordingly.
-     *
      * @param parameterString the parameter string to split into single parameters
      * @param maxParameters   the maximum amount of parameters to return, the last will hold all remaining text
      * @return an array of parameters from the given parameter string
-     * @see ParameterParser
      */
     static String[] getParameters(String parameterString, int maxParameters) {
         if (parameterString.chars().allMatch(Character::isWhitespace)) {
@@ -109,28 +103,6 @@ public interface Command<M> {
         return Optional
                 .ofNullable(getClass().getAnnotation(Description.class))
                 .map(Description::value);
-    }
-
-    /**
-     * Returns the usage of this command.
-     * This usage can for example be displayed in an own help command.
-     *
-     * <p>When using the {@link ParameterParser}, the usage string has to follow
-     * a pre-defined format that is described there.
-     *
-     * <p>The default implementation of this method returns the usage configured using the {@link Usage @Usage}
-     * annotation. If no usage is configured by annotation, an empty {@code Optional} is used as default.
-     *
-     * <p>If this method is overwritten and the annotation is present, the method overwrite takes precedence.
-     *
-     * @return the usage of this command
-     * @see Usage @Usage
-     * @see ParameterParser
-     */
-    default Optional<String> getUsage() {
-        return Optional
-                .ofNullable(getClass().getAnnotation(Usage.class))
-                .map(Usage::value);
     }
 
     /**
@@ -223,28 +195,19 @@ public interface Command<M> {
      * happen without the command being configured asynchronously if the underlying message framework dispatches message
      * events on different threads.
      *
-     * <p>The default implementation of this method returns whether the {@link Asynchronous @Asynchronous} annotation is
-     * present on this command.
-     *
-     * <p>If this method is overwritten and the annotation is present, the method overwrite takes precedence.
-     *
      * @return whether this command should be executed asynchronously
-     * @see Asynchronous @Asynchronous
      */
     default boolean isAsynchronous() {
-        return getClass().getAnnotation(Asynchronous.class) != null;
+        return true;
     }
 
     /**
-     * Executes this command. The given parameter string can be split into single parameters using
-     * {@link #getParameters(String, int)} or semantically parsed into parameters using the {@link ParameterParser}.
+     * Executes this command.
      *
      * @param incomingMessage the incoming message that caused this command to be executed
      * @param prefix          the command prefix that was used to trigger this command
      * @param usedAlias       the alias that was used to trigger this command
      * @param parameterString the remaining text after the command prefix and alias
-     * @see #getParameters(String, int)
-     * @see ParameterParser
      */
     @SuppressWarnings("unused")
     void execute(M incomingMessage, String prefix, String usedAlias, String parameterString);

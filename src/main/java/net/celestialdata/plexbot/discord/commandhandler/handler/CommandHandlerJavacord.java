@@ -6,9 +6,9 @@ import net.celestialdata.plexbot.discord.commandhandler.api.Command;
 import net.celestialdata.plexbot.discord.commandhandler.api.CommandHandler;
 import net.celestialdata.plexbot.discord.commandhandler.api.event.javacord.CommandNotAllowedEventJavacord;
 import net.celestialdata.plexbot.discord.commandhandler.api.event.javacord.CommandNotFoundEventJavacord;
-import net.celestialdata.plexbot.discord.commandhandler.api.parameter.ParameterConverter;
 import net.celestialdata.plexbot.discord.commandhandler.api.prefix.PrefixProvider;
 import net.celestialdata.plexbot.discord.commandhandler.api.restriction.Restriction;
+import org.eclipse.microprofile.context.ManagedExecutor;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -21,16 +21,12 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
-import javax.enterprise.util.TypeLiteral;
 import javax.inject.Inject;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
-import java.util.Map.Entry;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -43,6 +39,10 @@ class CommandHandlerJavacord extends CommandHandler<Message> {
      */
     @LoggerName("net.celestialdata.plexbot.discord.commandhandler.CommandHandlerDiscord")
     Logger logger;
+
+    @SuppressWarnings("CdiInjectionPointsInspection")
+    @Inject
+    ManagedExecutor executor;
 
     /**
      * A {@code DiscordApi} {@link Produces produced} by the framework user if Javacord support should be used.
@@ -172,17 +172,11 @@ class CommandHandlerJavacord extends CommandHandler<Message> {
 
     @Override
     protected void executeAsync(Message message, Runnable commandExecutor) {
-        runAsync(commandExecutor, message.getApi().getThreadPool().getExecutorService())
-                .whenComplete((nothing, throwable) -> {
-                    if (throwable != null) {
-                        logger.error("Exception while executing command asynchronously", throwable);
-                    }
-                });
-    }
-
-    @Override
-    public Entry<Class<Message>, TypeLiteral<ParameterConverter<? super Message, ?>>> getParameterConverterTypeLiteralByMessageType() {
-        return new SimpleEntry<>(Message.class, new JavacordParameterConverterTypeLiteral());
+        executor.runAsync(commandExecutor).whenComplete((nothing, throwable) -> {
+            if (throwable != null) {
+                logger.error("Exception while executing command asynchronously", throwable);
+            }
+        });
     }
 
     @Override
@@ -190,15 +184,5 @@ class CommandHandlerJavacord extends CommandHandler<Message> {
         return new StringJoiner(", ", CommandHandlerJavacord.class.getSimpleName() + "[", "]")
                 .add("listenerManagers=" + listenerManagers)
                 .toString();
-    }
-
-    /**
-     * A parameter converter type literal for Javacord.
-     */
-    private static class JavacordParameterConverterTypeLiteral extends TypeLiteral<ParameterConverter<? super Message, ?>> {
-        /**
-         * The serial version UID of this class.
-         */
-        private static final long serialVersionUID = 1;
     }
 }
