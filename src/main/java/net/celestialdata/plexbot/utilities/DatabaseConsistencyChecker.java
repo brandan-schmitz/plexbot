@@ -20,13 +20,14 @@ import javax.transaction.Transactional;
 import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("unused")
 @ApplicationScoped
-public class DatabaseConsistencyChecker {
+public class DatabaseConsistencyChecker extends BotProcess {
 
     @LoggerName("net.celestialdata.plexbot.utilities.DatabaseConsistencyChecker")
     Logger logger;
@@ -53,18 +54,26 @@ public class DatabaseConsistencyChecker {
 
     //@Scheduled(every = "168h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void verifyDatabase() {
+        // Configure the process
+        configureProcess("Database Consistency Checker: na%");
+
         // Get the lists of media in the database
         List<Show> shows = Show.listAll();
         List<Season> seasons = Season.listAll();
         List<Episode> episodes = Episode.listAll();
         List<Movie> movies = Movie.listAll();
 
-        // Create an AtomicInteger to track progress for logging reasons
+        // Create items to track progress for logging reasons
         AtomicInteger progress = new AtomicInteger(1);
+        AtomicInteger overallProgress = new AtomicInteger(1);
+        var totalSize = shows.size() + seasons.size() + episodes.size() + movies.size();
+        DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
 
         // Verify that all the folders for the shows in the DB exist
         shows.forEach(show -> {
             logger.trace("Verifying show (" + progress + "/" + shows.size() + "): " + show.name + " {tvdb-" + show.id + "}");
+            updateProcessString("Database Consistency Checker: " +
+                    decimalFormatter.format(((double) overallProgress.get() / totalSize) * 100) + "%");
 
             if (!Files.isDirectory(Path.of(tvFolder + "/" + show.foldername))) {
                 logger.warn("Data inconsistency found: Show \"" + show.name + " {tvdb-" + show.id +
@@ -82,12 +91,15 @@ public class DatabaseConsistencyChecker {
             }
 
             progress.getAndIncrement();
+            overallProgress.getAndIncrement();
         });
 
         // Reset the progress counter and verify that all season folders exist
         progress.set(1);
         seasons.forEach(season -> {
             logger.trace("Verifying season (" + progress + "/" + seasons.size() + "): Season " + season.number + " - " + season.show.name);
+            updateProcessString("Database Consistency Checker: " +
+                    decimalFormatter.format(((double) overallProgress.get() / totalSize) * 100) + "%");
 
             if (!Files.isDirectory(Path.of(tvFolder + "/" + season.show.foldername + "/" + season.foldername))) {
                 logger.warn("Data inconsistency found: Season " + season.number + " of " + season.show.name +
@@ -106,6 +118,7 @@ public class DatabaseConsistencyChecker {
             }
 
             progress.getAndIncrement();
+            overallProgress.getAndIncrement();
         });
 
         // Reset the progress counter and verify that all episodes exist
@@ -113,8 +126,11 @@ public class DatabaseConsistencyChecker {
         episodes.forEach(episode -> {
             logger.trace("Verifying episode (" + progress + "/" + episodes.size() + "): s" + episode.season.number +
                     "e" + episode.number + " - " + episode.show.name);
+            updateProcessString("Database Consistency Checker: " +
+                    decimalFormatter.format(((double) overallProgress.get() / totalSize) * 100) + "%");
             verifyEpisode(episode);
             progress.getAndIncrement();
+            overallProgress.getAndIncrement();
         });
 
 
@@ -122,9 +138,14 @@ public class DatabaseConsistencyChecker {
         progress.set(1);
         movies.forEach(movie -> {
             logger.trace("Verifying movie (" + progress + "/" + movies.size() + "): " + movie.title + " (" + movie.year + ") {imdb-" + movie.id + "}");
+            updateProcessString("Database Consistency Checker: " +
+                    decimalFormatter.format(((double) overallProgress.get() / totalSize) * 100) + "%");
             verifyMovie(movie);
             progress.getAndIncrement();
+            overallProgress.getAndIncrement();
         });
+
+        endProcess();
     }
 
     @SuppressWarnings("DuplicatedCode")

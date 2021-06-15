@@ -19,6 +19,11 @@ public class ShutdownCommand implements Command<Message> {
     Logger logger;
 
     @Override
+    public void handleFailure(Throwable error) {
+        logger.error(error);
+    }
+
+    @Override
     public void execute(Message incomingMessage, String prefix, String usedAlias, String parameterString) {
         incomingMessage.reply(new EmbedBuilder()
                 .setTitle("Shutting Down")

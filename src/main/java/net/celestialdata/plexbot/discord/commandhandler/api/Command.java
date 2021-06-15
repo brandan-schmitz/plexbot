@@ -201,6 +201,8 @@ public interface Command<M> {
         return true;
     }
 
+    void handleFailure(Throwable error);
+
     /**
      * Executes this command.
      *

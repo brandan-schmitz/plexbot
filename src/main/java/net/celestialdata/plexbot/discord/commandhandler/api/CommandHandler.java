@@ -304,7 +304,7 @@ public abstract class CommandHandler<M> {
                 String parameterString = aliasAndParameterString.getParameterString();
                 Runnable commandExecutor = () -> command.execute(message, prefix, usedAlias, parameterString);
                 if (command.isAsynchronous()) {
-                    executeAsync(message, commandExecutor);
+                    executeAsync(message, commandExecutor, command);
                 } else {
                     commandExecutor.run();
                 }
@@ -387,10 +387,11 @@ public abstract class CommandHandler<M> {
      * @param message         the message that caused the given command executor
      * @param commandExecutor the executor that runs the actual command implementation
      */
-    protected void executeAsync(M message, Runnable commandExecutor) {
+    protected void executeAsync(M message, Runnable commandExecutor, Command<? super M> command) {
         executor.runAsync(commandExecutor).whenComplete((nothing, throwable) -> {
             if (throwable != null) {
                 logger.error("Exception while executing command asynchronously", throwable);
+                command.handleFailure(throwable);
             }
         });
     }

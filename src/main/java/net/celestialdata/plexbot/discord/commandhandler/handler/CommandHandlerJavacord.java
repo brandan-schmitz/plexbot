@@ -171,10 +171,11 @@ class CommandHandlerJavacord extends CommandHandler<Message> {
     }
 
     @Override
-    protected void executeAsync(Message message, Runnable commandExecutor) {
+    protected void executeAsync(Message message, Runnable commandExecutor, Command<? super Message> command) {
         executor.runAsync(commandExecutor).whenComplete((nothing, throwable) -> {
             if (throwable != null) {
                 logger.error("Exception while executing command asynchronously", throwable);
+                command.handleFailure(throwable);
             }
         });
     }

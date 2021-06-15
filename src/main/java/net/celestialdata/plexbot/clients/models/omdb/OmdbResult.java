@@ -4,10 +4,14 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResponseEnum;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResultTypeEnum;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @SuppressWarnings("unused")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OmdbResult {
+
+    @ConfigProperty(name = "BotSettings.noPosterImageUrl")
+    String defaultPosterUrl;
 
     @JsonAlias(value = "Title")
     public String title;
@@ -52,7 +56,7 @@ public class OmdbResult {
     public String awards;
 
     @JsonAlias(value = "Poster")
-    public String poster;
+    public String poster = defaultPosterUrl;
 
     public String imdbID;
     public String seriesID;

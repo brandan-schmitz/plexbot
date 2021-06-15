@@ -2,7 +2,7 @@ package net.celestialdata.plexbot.clients.services;
 
 import net.celestialdata.plexbot.clients.authorizations.PlexAuthorizationHeaderFactory;
 import net.celestialdata.plexbot.clients.models.plex.PlexUser;
-import net.celestialdata.plexbot.utilities.UnwrappingObjectMapper;
+import net.celestialdata.plexbot.clients.utilities.UnwrappingObjectMapper;
 import org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders;
 import org.eclipse.microprofile.rest.client.annotation.RegisterProvider;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;

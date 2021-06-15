@@ -21,6 +21,11 @@ public class PingCommand implements Command<Message> {
     Logger logger;
 
     @Override
+    public void handleFailure(Throwable error) {
+        logger.error(error);
+    }
+
+    @Override
     public void execute(Message incomingMessage, String prefix, String usedAlias, String parameterString) {
         // Get the time when the command was received
         Instant receivedTime = Instant.now();

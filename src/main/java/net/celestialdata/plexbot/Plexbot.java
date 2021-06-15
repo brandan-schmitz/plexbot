@@ -6,10 +6,13 @@ import io.quarkus.runtime.annotations.QuarkusMain;
 import org.javacord.api.util.logging.FallbackLoggerConfiguration;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
+import javax.ws.rs.Produces;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+@Named
 @QuarkusMain
 @ApplicationScoped
 public class Plexbot implements QuarkusApplication {
@@ -53,7 +56,9 @@ public class Plexbot implements QuarkusApplication {
         Quarkus.run(Plexbot.class, args);
     }
 
-    public String getVersion() {
+    @Produces
+    @Named("botVersion")
+    public String produceVersion() {
         return version;
     }
 

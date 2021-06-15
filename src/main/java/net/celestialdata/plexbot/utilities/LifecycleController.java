@@ -3,6 +3,7 @@ package net.celestialdata.plexbot.utilities;
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
+import net.celestialdata.plexbot.BotStatusManager;
 import org.javacord.api.DiscordApi;
 import org.jboss.logging.Logger;
 
@@ -22,6 +23,9 @@ public class LifecycleController {
     DiscordApi discordApi;
 
     @Inject
+    BotStatusManager botStatusManager;
+
+    @Inject
     @Named("inviteLink")
     Instance<String> inviteLink;
 
@@ -31,6 +35,7 @@ public class LifecycleController {
     }
 
     void stop(@Observes ShutdownEvent event) {
+        botStatusManager.stopManager();
         discordApi.disconnect();
     }
 }
