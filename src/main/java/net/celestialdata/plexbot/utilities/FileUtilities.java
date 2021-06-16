@@ -1,9 +1,16 @@
 package net.celestialdata.plexbot.utilities;
 
 import io.smallrye.mutiny.Multi;
+import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbEpisode;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
+import uk.co.caprica.vlcjinfo.MediaInfoFile;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -11,39 +18,152 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.text.DecimalFormat;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @ApplicationScoped
 public class FileUtilities {
-    private final DecimalFormat decimalFormat = new DecimalFormat("#0.00");
+
+    @Inject
+    BlacklistedCharacters blacklistedCharacters;
 
     @ConfigProperty(name = "FolderSettings.tempFolder")
     String tempFolder;
 
-    public Multi<String> downloadFile(String url, String outputFilename) {
+    @ConfigProperty(name = "FolderSettings.movieFolder")
+    String movieFolder;
+
+    @ConfigProperty(name = "FolderSettings.tvFolder")
+    String tvFolder;
+
+    public Multi<Long> downloadFile(String url, String outputFilename) {
         return Multi.createFrom().emitter(multiEmitter -> {
             long progress = 0;
             try {
                 // Open a connection to the file being downloaded
                 URLConnection connection = new URL(url).openConnection();
-                ReadableByteChannel readableByteChannel = Channels.newChannel(connection.getInputStream());
-                FileChannel fileOutputStream = new FileOutputStream(tempFolder + outputFilename + ".pbdownload").getChannel();
+                var tempPath = Paths.get(tempFolder + outputFilename + ".pbdownload");
 
-                // Get the size of the file in bytes used in calculating the progress of the download
-                long size = connection.getContentLengthLong();
+                // If the file has started being downloaded, start the download where it left off
+                if (Files.exists(tempPath)) {
+                    connection.setRequestProperty("Range", "bytes=" + Files.size(tempPath) + "-");
+                    progress = Files.size(tempPath);
+                }
+                ReadableByteChannel readableByteChannel = Channels.newChannel(connection.getInputStream());
+                FileChannel fileOutputStream = new FileOutputStream(String.valueOf(tempPath), Files.exists(tempPath)).getChannel();
 
                 // Download the file
+                var lastEmitted = LocalDateTime.now();
                 while (!multiEmitter.isCancelled() && fileOutputStream.transferFrom(readableByteChannel, fileOutputStream.size(), 1024) > 0) {
                     progress += 1024;
-                    multiEmitter.emit(decimalFormat.format(((double) progress / size) * 100));
+
+                    // Send the progress every 3 seconds
+                    if (lastEmitted.plus(3, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
+                        multiEmitter.emit(progress);
+                        lastEmitted = LocalDateTime.now();
+                    }
                 }
 
                 // Close the connection to the server
                 fileOutputStream.close();
+
+                // Rename the file to specified name
+                if (!multiEmitter.isCancelled()) {
+                    moveMedia(String.valueOf(tempPath), tempFolder + outputFilename, true);
+                }
+
                 multiEmitter.complete();
             } catch (IOException e) {
                 multiEmitter.fail(e);
             }
         });
+    }
+
+    public boolean moveMedia(String source, String destination, boolean overwrite) {
+        boolean success = true;
+
+        try {
+            // Copy the file to the destination
+            if (overwrite) {
+                Files.copy(
+                        Paths.get(source),
+                        Paths.get(destination),
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+            } else {
+                Files.copy(
+                        Paths.get(source),
+                        Paths.get(destination)
+                );
+            }
+
+            // Delete the source file if the copy was successful
+            Files.delete(Paths.get(source));
+        } catch (Exception e) {
+            success = false;
+        }
+
+        return success;
+    }
+
+    public boolean createFolder(OmdbResult mediaItem) {
+        boolean success = true;
+
+        try {
+            Files.createDirectory(Paths.get(movieFolder + generateFilename(mediaItem)));
+        } catch (IOException e) {
+            if (!(e instanceof FileAlreadyExistsException)) {
+                success = false;
+            }
+        }
+
+        return success;
+    }
+
+    public String generateFilename(OmdbResult mediaItem, FileTypes fileType) {
+        return generateFilename(mediaItem) + fileType.getExtension();
+    }
+
+    public String generateFilename(OmdbResult mediaItem) {
+        return sanitizeFilesystemNames(mediaItem.title + " (" + mediaItem.year + ") {imdb-" + mediaItem.imdbID + "}");
+    }
+
+    public String sanitizeFilesystemNames(String input) {
+        // Remove any characters listed by the removal section
+        for (String removalCharacter : blacklistedCharacters.remove) {
+            input = input.replace(removalCharacter, "");
+        }
+
+        // Replace and characters listed by the replacement policy
+        for (BlacklistedCharacters.Replacements replacement : blacklistedCharacters.replace) {
+            input = input.replace(replacement.original, replacement.replacement);
+        }
+
+        // Strip accents and return the sanitized string
+        return StringUtils.stripAccents(input);
+    }
+
+    public MediaInfoData getMediaInfo(String pathToVideo) {
+        MediaInfoFile file = new MediaInfoFile(pathToVideo);
+        MediaInfoData mediaInfoData = new MediaInfoData();
+
+        if (file.open()) {
+            // Get the unparsed duration
+            var durationString = file.info("General;%Duration/String3%");
+
+            // Set the media info information
+            mediaInfoData.codec = file.info("Video;%Encoded_Library_Name%");
+            mediaInfoData.width = Integer.parseInt(file.info("Video;%Width%"));
+            mediaInfoData.height = Integer.parseInt(file.info("Video;%Height%"));
+            mediaInfoData.duration = (Integer.parseInt(durationString.substring(0, 2)) * 60) +
+                    Integer.parseInt(durationString.substring(3, 5)) +
+                    ((Integer.parseInt(durationString.substring(6, 8)) >= 30) ? 1 : 0);
+        }
+
+        return mediaInfoData;
     }
 }

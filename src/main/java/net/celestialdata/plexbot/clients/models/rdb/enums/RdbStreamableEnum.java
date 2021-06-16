@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @SuppressWarnings("unused")
 public enum RdbStreamableEnum {
-    @JsonProperty(value = "0")
+    @JsonProperty(value = "1")
     TRUE,
 
-    @JsonProperty(value = "1")
+    @JsonProperty(value = "0")
     FALSE
 }

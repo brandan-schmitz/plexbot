@@ -13,7 +13,9 @@ import net.celestialdata.plexbot.processors.MovieDownloadProcessor;
 import net.celestialdata.plexbot.utilities.*;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.jboss.logging.Logger;
@@ -54,6 +56,9 @@ public class RequestMovieCommand extends BotProcess implements Command<Message> 
     @ConfigProperty(name = "ApiKeys.omdbApiKey")
     String omdbApiKey;
 
+    @ConfigProperty(name = "ChannelSettings.newMoviesChannelId")
+    String newMoviesChannel;
+
     @Inject
     @RestClient
     OmdbService omdbService;
@@ -66,6 +71,9 @@ public class RequestMovieCommand extends BotProcess implements Command<Message> 
 
     @Inject
     MovieDownloadProcessor movieDownloadProcessor;
+
+    @Inject
+    DiscordApi discordApi;
 
     @Override
     public void handleFailure(Throwable error) {
@@ -135,12 +143,13 @@ public class RequestMovieCommand extends BotProcess implements Command<Message> 
         // Assemble the movie title from the title builder
         titleArgument = titleBuilder.toString();
 
+
         /*
         Search for the movie on OMDB. Search priority:
             1. IMDb ID
             2. Title with year
             3. Title
-         */
+        */
         if (!idArgument.isEmpty()) {
             // Search by the ID given
             var result = omdbService.getById(idArgument, omdbApiKey);
@@ -248,6 +257,7 @@ public class RequestMovieCommand extends BotProcess implements Command<Message> 
         }
 
         // Process the download of this movie using the movie download processor
+        OmdbResult finalSelectedMovie = selectedMovie;
         movieDownloadProcessor.processDownload(selectedMovie, replyMessage).subscribe().with(
                 progress -> {
                     for (Map.Entry<MovieDownloadSteps, EmbedBuilder> entry : progress.entrySet()) {
@@ -256,11 +266,7 @@ public class RequestMovieCommand extends BotProcess implements Command<Message> 
                 },
                 failure -> {
                     if (failure.getClass() == InterruptedException.class) {
-                        if (failure.getMessage().contains("Failure to query YTS API")) {
-                            replyMessage.edit(messageFormatter.formatErrorMessage(
-                                    "An error occurred while processing this movie. Please try again later.", failure.getMessage()
-                            ));
-                        } else if (failure.getMessage().equals("No match found on yts")) {
+                        if (failure.getMessage().equals("No match found on yts")) {
                             replyMessage.edit(messageFormatter.formatWarningMessage("Unable to locate a copy of this movie to download. " +
                                     "It has been added to the waiting list and will be downloaded automatically when it becomes available."));
                         } else {
@@ -272,7 +278,12 @@ public class RequestMovieCommand extends BotProcess implements Command<Message> 
                             "Please try again later.", failure.getMessage()));
                 },
                 () -> {
-
+                    replyMessage.edit(messageFormatter.formatDownloadFinishedMessage(finalSelectedMovie)).exceptionally(ExceptionLogger.get());
+                    //discordApi.getUserById(incomingMessage.getAuthor().getId()).join().sendMessage(messageFormatter.formatMovieAddedDirectMessage(finalSelectedMovie));
+                    //new MessageBuilder()
+                    //        .setEmbed(messageFormatter.formatNewMovieNotification(finalSelectedMovie))
+                    //        .send(discordApi.getTextChannelById(newMoviesChannel).orElseThrow()).exceptionally(ExceptionLogger.get()
+                    //).exceptionally(ExceptionLogger.get()).join();
                 }
         );
 

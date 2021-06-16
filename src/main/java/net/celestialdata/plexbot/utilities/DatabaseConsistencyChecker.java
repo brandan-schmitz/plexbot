@@ -11,7 +11,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.jboss.logging.Logger;
-import uk.co.caprica.vlcjinfo.MediaInfoFile;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -22,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("unused")
@@ -46,6 +44,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
     @Inject
     EntityManager entityManager;
+
+    @Inject
+    FileUtilities fileUtilities;
 
     // Helper method to send a warning message to the bot owner
     private void sendWarning(EmbedBuilder message) {
@@ -169,40 +170,19 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     .setColor(Color.YELLOW)
             );
         } else {
-            MediaInfoFile file = new MediaInfoFile(tvFolder + "/" + episode.show.foldername + "/" + episode.season.foldername + "/" + episode.filename);
-            if (file.open()) {
-                var codec = file.info("Video;%Encoded_Library_Name%");
-                var durationString = file.info("General;%Duration/String3%");
+            // Ensure information about the media file is up to date
+            var mediaFileData = fileUtilities.getMediaInfo(tvFolder + "/" + episode.show.foldername + "/" + episode.season.foldername + "/" + episode.filename);
 
-                episode.codec = codec;
-                episode.isOptimized = codec.equals("x265");
-                episode.width = Integer.parseInt(file.info("Video;%Width%"));
-                episode.height = Integer.parseInt(file.info("Video;%Height%"));
-                try {
-                    episode.duration = (Integer.parseInt(durationString.substring(0, 2)) * 60) +
-                            Integer.parseInt(durationString.substring(3, 5)) +
-                            ((Integer.parseInt(durationString.substring(6, 8)) >= 30) ? 1 : 0);
-                } catch (StringIndexOutOfBoundsException e) {
-                    logger.error("Unable to get information about this media file - " + episode.filename, e);
-
-                    sendWarning(new EmbedBuilder()
-                            .setTitle("Error fetching media information")
-                            .setDescription("An error occurred while fetching information about the following media during the " +
-                                    "database consistency verifier. Please make sure this media file is not corrupted.")
-                            .addInlineField("Media type:", "Episode")
-                            .addInlineField("Episode ID:", episode.id)
-                            .addInlineField("Episode #:", String.valueOf(episode.number))
-                            .addInlineField("Season #:", String.valueOf(episode.season.number))
-                            .addField("Episode title:", episode.title)
-                            .addField("Associated show:", episode.show.name)
-                            .setColor(Color.YELLOW)
-                    );
-                }
-
-                file.close();
-                entityManager.merge(episode).persist();
-            } else {
-                logger.warn("Unable to verify information about episode " + episode.number + " of season " + episode.season.number + " of " + episode.show.name);
+            // Update movie data
+            episode.codec = mediaFileData.codec;
+            episode.isOptimized = mediaFileData.isOptimized();
+            episode.width = mediaFileData.width;
+            episode.height = mediaFileData.height;
+            episode.resolution = mediaFileData.resolution();
+            try {
+                episode.duration = mediaFileData.duration;
+            } catch (StringIndexOutOfBoundsException e) {
+                logger.error("Unable to get information about this media file - " + episode.filename, e);
 
                 sendWarning(new EmbedBuilder()
                         .setTitle("Error fetching media information")
@@ -217,6 +197,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
                         .setColor(Color.YELLOW)
                 );
             }
+
+            // Update the episode in the database
+            entityManager.merge(episode).persist();
         }
     }
 
@@ -239,37 +222,18 @@ public class DatabaseConsistencyChecker extends BotProcess {
             );
         } else {
             // Ensure information about the media file is up to date
-            MediaInfoFile file = new MediaInfoFile(movieFolder + "/" + movie.folderName + "/" + movie.filename);
-            if (file.open()) {
-                var codec = file.info("Video;%Encoded_Library_Name%");
-                var durationString = file.info("General;%Duration/String3%");
+            var mediaFileData = fileUtilities.getMediaInfo(movieFolder + "/" + movie.folderName + "/" + movie.filename);
 
-                movie.codec = codec;
-                movie.isOptimized = codec.equals("x265");
-                movie.width = Integer.parseInt(file.info("Video;%Width%"));
-                movie.height = Integer.parseInt(file.info("Video;%Height%"));
-                try {
-                    movie.duration = (Integer.parseInt(durationString.substring(0, 2)) * 60) +
-                            Integer.parseInt(durationString.substring(3, 5)) +
-                            ((Integer.parseInt(durationString.substring(6, 8)) >= 30) ? 1 : 0);
-                } catch (StringIndexOutOfBoundsException e) {
-                    logger.error("Unable to get information about this media file - " + movie.filename, e);
-
-                    sendWarning(new EmbedBuilder()
-                            .setTitle("Error fetching media information")
-                            .setDescription("An error occurred while fetching information about the following media during the " +
-                                    "database consistency verifier. Please make sure this media file is not corrupted.")
-                            .addInlineField("Media type:", "Movie")
-                            .addInlineField("Media ID:", movie.id)
-                            .addField("Media name:", movie.title)
-                            .setColor(Color.YELLOW)
-                    );
-                }
-
-                file.close();
-                entityManager.merge(movie).persist();
-            } else {
-                logger.warn("Unable to verify information about " + movie.title + " (" + movie.year + ") {imdb-" + movie.id + "}");
+            // Update movie data
+            movie.codec = mediaFileData.codec;
+            movie.isOptimized = mediaFileData.isOptimized();
+            movie.width = mediaFileData.width;
+            movie.height = mediaFileData.height;
+            movie.resolution = mediaFileData.resolution();
+            try {
+                movie.duration = mediaFileData.duration;
+            } catch (StringIndexOutOfBoundsException e) {
+                logger.error("Unable to get information about this media file - " + movie.filename, e);
 
                 sendWarning(new EmbedBuilder()
                         .setTitle("Error fetching media information")
@@ -281,6 +245,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
                         .setColor(Color.YELLOW)
                 );
             }
+
+            // Update the movie in the database
+            entityManager.merge(movie).persist();
         }
     }
 }

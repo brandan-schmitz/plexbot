@@ -1,6 +1,7 @@
 package net.celestialdata.plexbot.entities;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
