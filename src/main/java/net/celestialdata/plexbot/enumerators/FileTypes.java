@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.utilities;
+package net.celestialdata.plexbot.enumerators;
 
 @SuppressWarnings("CdiInjectionPointsInspection")
 public enum FileTypes {

@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.utilities;
+package net.celestialdata.plexbot.enumerators;
 
 public enum MovieDownloadSteps {
     SELECT_MOVIE,

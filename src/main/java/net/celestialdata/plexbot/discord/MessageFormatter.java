@@ -1,8 +1,8 @@
 package net.celestialdata.plexbot.discord;
 
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
-import net.celestialdata.plexbot.utilities.BotEmojis;
-import net.celestialdata.plexbot.utilities.MovieDownloadSteps;
+import net.celestialdata.plexbot.dataobjects.BotEmojis;
+import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 import javax.enterprise.context.ApplicationScoped;

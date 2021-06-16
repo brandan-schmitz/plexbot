@@ -2,6 +2,7 @@ package net.celestialdata.plexbot.utilities;
 
 import io.smallrye.mutiny.Uni;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
+import net.celestialdata.plexbot.dataobjects.BotEmojis;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;

@@ -2,15 +2,15 @@ package net.celestialdata.plexbot.utilities;
 
 import io.smallrye.mutiny.Multi;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
-import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbEpisode;
+import net.celestialdata.plexbot.dataobjects.BlacklistedCharacters;
+import net.celestialdata.plexbot.dataobjects.MediaInfoData;
+import net.celestialdata.plexbot.enumerators.FileTypes;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
 import uk.co.caprica.vlcjinfo.MediaInfoFile;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;

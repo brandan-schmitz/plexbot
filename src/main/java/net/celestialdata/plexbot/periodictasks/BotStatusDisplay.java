@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot;
+package net.celestialdata.plexbot.periodictasks;
 
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.runtime.Quarkus;
@@ -27,11 +27,11 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
-public class BotStatusManager {
+public class BotStatusDisplay {
     HashMap<UUID, String> currentProcesses = new HashMap<>();
     Message statusMessage;
 
-    @LoggerName("net.celestialdata.plexbot.BotStatusManager")
+    @LoggerName("net.celestialdata.plexbot.periodictasks.BotStatusDisplay")
     Logger logger;
 
     @ConfigProperty(name = "ChannelSettings.botStatusChannelId")

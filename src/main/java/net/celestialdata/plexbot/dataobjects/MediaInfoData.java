@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.utilities;
+package net.celestialdata.plexbot.dataobjects;
 
 public class MediaInfoData {
     public String codec;

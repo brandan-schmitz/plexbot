@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.utilities;
 
-import net.celestialdata.plexbot.BotStatusManager;
+import net.celestialdata.plexbot.periodictasks.BotStatusDisplay;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -18,7 +18,7 @@ public abstract class BotProcess {
     Thread.UncaughtExceptionHandler previousUncaughtExceptionHandler;
 
     @Inject
-    BotStatusManager botStatusManager;
+    BotStatusDisplay botStatusDisplay;
 
     @Inject
     DiscordApi discordApi;
@@ -37,9 +37,9 @@ public abstract class BotProcess {
             Thread.currentThread().setUncaughtExceptionHandler(previousUncaughtExceptionHandler);
         });
 
-        // Configure the process string and submit the process to the BotStatusManager
+        // Configure the process string and submit the process to the BotStatusDisplay
         this.processString = processString;
-        processId = botStatusManager.submitProcess(processString);
+        processId = botStatusDisplay.submitProcess(processString);
     }
 
     public void configureProcess(String processString, Message replyMessage) {
@@ -51,14 +51,14 @@ public abstract class BotProcess {
             Thread.currentThread().setUncaughtExceptionHandler(previousUncaughtExceptionHandler);
         });
 
-        // Configure the process string and submit the process to the BotStatusManager
+        // Configure the process string and submit the process to the BotStatusDisplay
         this.processString = processString;
-        processId = botStatusManager.submitProcess(processString);
+        processId = botStatusDisplay.submitProcess(processString);
     }
 
     public void updateProcessString(String newProcessString) {
         this.processString = newProcessString;
-        botStatusManager.updateProcess(processId, processString);
+        botStatusDisplay.updateProcess(processId, processString);
     }
 
     public void reportError(Throwable error) {
@@ -80,11 +80,11 @@ public abstract class BotProcess {
     }
 
     public void endProcess() {
-        botStatusManager.removeProcess(processId);
+        botStatusDisplay.removeProcess(processId);
     }
 
     public void endProcess(Throwable error) {
-        botStatusManager.removeProcess(processId);
+        botStatusDisplay.removeProcess(processId);
         reportError(error);
     }
 }

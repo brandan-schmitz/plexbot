@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.utilities;
+package net.celestialdata.plexbot.periodictasks;
 
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
@@ -7,6 +7,8 @@ import net.celestialdata.plexbot.entities.Episode;
 import net.celestialdata.plexbot.entities.Movie;
 import net.celestialdata.plexbot.entities.Season;
 import net.celestialdata.plexbot.entities.Show;
+import net.celestialdata.plexbot.utilities.BotProcess;
+import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -27,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @ApplicationScoped
 public class DatabaseConsistencyChecker extends BotProcess {
 
-    @LoggerName("net.celestialdata.plexbot.utilities.DatabaseConsistencyChecker")
+    @LoggerName("net.celestialdata.plexbot.periodictasks.DatabaseConsistencyChecker")
     Logger logger;
 
     @ConfigProperty(name = "FolderSettings.movieFolder")

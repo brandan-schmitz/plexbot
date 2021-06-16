@@ -1,7 +1,9 @@
 package net.celestialdata.plexbot.discord.commands;
 
 import io.quarkus.arc.log.LoggerName;
-import net.celestialdata.plexbot.BotStatusManager;
+import net.celestialdata.plexbot.dataobjects.BotEmojis;
+import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
+import net.celestialdata.plexbot.periodictasks.BotStatusDisplay;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResponseEnum;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbSearchTypeEnum;
@@ -15,7 +17,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
-import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.jboss.logging.Logger;
@@ -42,7 +43,7 @@ public class RequestMovieCommand extends BotProcess implements Command<Message> 
     Logger logger;
 
     @Inject
-    BotStatusManager botStatusManager;
+    BotStatusDisplay botStatusDisplay;
 
     @Inject
     SelectionUtilities selectionUtilities;

@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.utilities;
+package net.celestialdata.plexbot.dataobjects;
 
 import io.quarkus.arc.config.ConfigProperties;
 
