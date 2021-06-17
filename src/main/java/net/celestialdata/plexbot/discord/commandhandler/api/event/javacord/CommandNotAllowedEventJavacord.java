@@ -29,6 +29,7 @@ import javax.enterprise.event.ObservesAsync;
  * @see ObservesAsync @ObservesAsync
  * @see RestrictedTo @RestrictedTo
  */
+@SuppressWarnings("unused")
 public class CommandNotAllowedEventJavacord extends MessageEvent<Message> {
     /**
      * Constructs a new command not allowed event with the given Javacord message, prefix, and used alias as payload.

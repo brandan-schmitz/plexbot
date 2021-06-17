@@ -9,6 +9,7 @@ public class BlacklistedCharacters {
     public List<String> remove;
     public List<Replacements> replace;
 
+    @SuppressWarnings("unused")
     public static class Replacements {
         public String original;
         public String replacement;

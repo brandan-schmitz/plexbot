@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.enumerators;
 
-@SuppressWarnings("CdiInjectionPointsInspection")
+@SuppressWarnings({"CdiInjectionPointsInspection", "unused"})
 public enum FileTypes {
     AVI(".avi"),
     DIVX(".divx"),
@@ -17,11 +17,11 @@ public enum FileTypes {
     ASS(".ass"),
     VTT(".vtt");
 
+    private final String extension;
+
     FileTypes(String extension) {
         this.extension = extension;
     }
-
-    private final String extension;
 
     public String getExtension() {
         return this.extension;

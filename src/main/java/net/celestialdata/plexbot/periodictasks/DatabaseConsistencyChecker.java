@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("unused")
@@ -55,7 +56,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
         discordApi.getUserById(ownerId).join().sendMessage(message);
     }
 
-    //@Scheduled(every = "168h", delay = 10, delayUnit = TimeUnit.SECONDS)
+    @Scheduled(every = "168h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void verifyDatabase() {
         // Configure the process
         configureProcess("Database Consistency Checker: na%");
@@ -151,7 +152,6 @@ public class DatabaseConsistencyChecker extends BotProcess {
         endProcess();
     }
 
-    @SuppressWarnings("DuplicatedCode")
     @Transactional
     @TransactionConfiguration(timeout = 120)
     public void verifyEpisode(Episode episode) {
@@ -205,7 +205,6 @@ public class DatabaseConsistencyChecker extends BotProcess {
         }
     }
 
-    @SuppressWarnings("DuplicatedCode")
     @Transactional
     @TransactionConfiguration(timeout = 120)
     public void verifyMovie(Movie movie) {

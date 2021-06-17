@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
  * A utility class with helper methods for handling exceptions.
  */
 @ApplicationScoped
+@SuppressWarnings("unused")
 public class ExceptionUtil {
 
     /**

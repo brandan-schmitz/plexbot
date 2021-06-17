@@ -15,6 +15,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @param <T> the class of the value object
  */
+@SuppressWarnings("unused")
 class LazyReference<T> {
     /**
      * A read lock for lazy initialization of the value.

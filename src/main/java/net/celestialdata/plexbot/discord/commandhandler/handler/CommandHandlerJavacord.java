@@ -33,6 +33,7 @@ import static java.util.stream.Collectors.toList;
  * A command handler that handles Javacord messages.
  */
 @ApplicationScoped
+@SuppressWarnings("unused")
 class CommandHandlerJavacord extends CommandHandler<Message> {
     /**
      * The logger for this command handler.
@@ -40,9 +41,8 @@ class CommandHandlerJavacord extends CommandHandler<Message> {
     @LoggerName("net.celestialdata.plexbot.discord.commandhandler.CommandHandlerDiscord")
     Logger logger;
 
-    @SuppressWarnings("CdiInjectionPointsInspection")
     @Inject
-    ManagedExecutor executor;
+    Instance<ManagedExecutor> executor;
 
     /**
      * A {@code DiscordApi} {@link Produces produced} by the framework user if Javacord support should be used.
@@ -172,7 +172,7 @@ class CommandHandlerJavacord extends CommandHandler<Message> {
 
     @Override
     protected void executeAsync(Message message, Runnable commandExecutor, Command<? super Message> command) {
-        executor.runAsync(commandExecutor).whenComplete((nothing, throwable) -> {
+        executor.get().runAsync(commandExecutor).whenComplete((nothing, throwable) -> {
             if (throwable != null) {
                 logger.error("Exception while executing command asynchronously", throwable);
                 command.handleFailure(throwable);

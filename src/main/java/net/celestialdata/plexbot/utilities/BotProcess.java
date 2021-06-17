@@ -1,7 +1,7 @@
 package net.celestialdata.plexbot.utilities;
 
-import net.celestialdata.plexbot.periodictasks.BotStatusDisplay;
 import net.celestialdata.plexbot.discord.MessageFormatter;
+import net.celestialdata.plexbot.periodictasks.BotStatusDisplay;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
@@ -10,11 +10,12 @@ import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageDecoration;
 
 import javax.inject.Inject;
-import java.util.UUID;
 
+
+@SuppressWarnings("unused")
 public abstract class BotProcess {
-    public UUID processId;
-    private String processString;
+    public String processId;
+    public String processString;
     Thread.UncaughtExceptionHandler previousUncaughtExceptionHandler;
 
     @Inject
@@ -39,7 +40,7 @@ public abstract class BotProcess {
 
         // Configure the process string and submit the process to the BotStatusDisplay
         this.processString = processString;
-        processId = botStatusDisplay.submitProcess(processString);
+        this.processId = botStatusDisplay.submitProcess(processString);
     }
 
     public void configureProcess(String processString, Message replyMessage) {
@@ -53,7 +54,7 @@ public abstract class BotProcess {
 
         // Configure the process string and submit the process to the BotStatusDisplay
         this.processString = processString;
-        processId = botStatusDisplay.submitProcess(processString);
+        this.processId = botStatusDisplay.submitProcess(processString);
     }
 
     public void updateProcessString(String newProcessString) {

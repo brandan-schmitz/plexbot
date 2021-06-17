@@ -21,10 +21,6 @@
     <quarkus.platform.version>1.13.6.Final</quarkus.platform.version>
     <quarkus.ssl.native>true</quarkus.ssl.native>
     <quarkus.native.enable-jni>true</quarkus.native.enable-jni>
-    <quarkus.hibernate-orm.database.generation>update</quarkus.hibernate-orm.database.generation>
-    <quarkus.banner.enabled>false</quarkus.banner.enabled>
-    <quarkus.log.level>INFO</quarkus.log.level>
-    <quarkus.datasource.db-kind>mariadb</quarkus.datasource.db-kind>
   </properties>
   <dependencyManagement>
     <dependencies>

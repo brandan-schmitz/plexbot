@@ -2,7 +2,6 @@ package net.celestialdata.plexbot.periodictasks;
 
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.runtime.Quarkus;
-import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -23,12 +22,13 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class BotStatusDisplay {
-    HashMap<UUID, String> currentProcesses = new HashMap<>();
+    final HashMap<String, String> currentProcesses = new HashMap<>();
     Message statusMessage;
 
     @LoggerName("net.celestialdata.plexbot.periodictasks.BotStatusDisplay")
@@ -60,7 +60,7 @@ public class BotStatusDisplay {
                         .setDescription("The bot is currently starting up. This message will be updated once the bot is online.")
                         .setColor(Color.YELLOW)
                 ).send(discordApi.getTextChannelById(statusChannelId).orElseThrow()).exceptionally(ExceptionLogger.get())
-        .join();
+                .join();
     }
 
     public void stopManager() {
@@ -104,20 +104,27 @@ public class BotStatusDisplay {
      * @param processString process name/progress if applicable
      * @return process uuid
      */
-    public UUID submitProcess(String processString) {
+    public String submitProcess(String processString) {
         var processId = UUID.randomUUID();
-        currentProcesses.put(processId, processString);
-        return processId;
+
+        for (Map.Entry<String, String> entry : currentProcesses.entrySet()) {
+            while (entry.getKey().equals(processId.toString())) {
+                processId = UUID.randomUUID();
+            }
+        }
+
+        currentProcesses.put(processId.toString(), processString);
+        return processId.toString();
     }
 
     /**
      * Update an existing process in the status manager. This will update the string displayed and can
      * be used to update the current status of a process if it is tracking its progress.
      *
-     * @param processId uuid of the process
+     * @param processId            uuid of the process
      * @param updatedProcessString updated process name/progress if applicable
      */
-    public void updateProcess(UUID processId, String updatedProcessString) {
+    public void updateProcess(String processId, String updatedProcessString) {
         currentProcesses.put(processId, updatedProcessString);
     }
 
@@ -126,7 +133,7 @@ public class BotStatusDisplay {
      *
      * @param processId uuid of the process
      */
-    public void removeProcess(UUID processId) {
+    public void removeProcess(String processId) {
         currentProcesses.remove(processId);
     }
 }

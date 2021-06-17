@@ -1,7 +1,10 @@
 package net.celestialdata.plexbot.discord.commandhandler.api;
 
 import net.celestialdata.plexbot.discord.commandhandler.InvalidAnnotationCombinationException;
-import net.celestialdata.plexbot.discord.commandhandler.api.annotation.*;
+import net.celestialdata.plexbot.discord.commandhandler.api.annotation.Alias;
+import net.celestialdata.plexbot.discord.commandhandler.api.annotation.Description;
+import net.celestialdata.plexbot.discord.commandhandler.api.annotation.RestrictedTo;
+import net.celestialdata.plexbot.discord.commandhandler.api.annotation.RestrictionPolicy;
 import net.celestialdata.plexbot.discord.commandhandler.api.restriction.*;
 import net.celestialdata.plexbot.discord.commandhandler.api.restriction.javacord.ChannelJavacord;
 import net.celestialdata.plexbot.discord.commandhandler.api.restriction.javacord.RoleJavacord;
@@ -197,6 +200,7 @@ public interface Command<M> {
      *
      * @return whether this command should be executed asynchronously
      */
+    @SuppressWarnings("SameReturnValue")
     default boolean isAsynchronous() {
         return true;
     }

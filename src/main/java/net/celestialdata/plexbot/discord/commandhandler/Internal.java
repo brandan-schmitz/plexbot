@@ -21,6 +21,7 @@ public @interface Internal {
     /**
      * An annotation literal for programmatic CDI lookup.
      */
+    @SuppressWarnings("unused")
     class Literal extends AnnotationLiteral<Internal> implements Internal {
         /**
          * The annotation literal instance.

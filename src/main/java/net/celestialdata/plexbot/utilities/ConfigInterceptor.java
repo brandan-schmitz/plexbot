@@ -8,7 +8,7 @@ import io.smallrye.config.Priorities;
 import javax.annotation.Priority;
 
 @Priority(Priorities.LIBRARY + 1000)
-public class DatabaseConfigInterceptor implements ConfigSourceInterceptor {
+public class ConfigInterceptor implements ConfigSourceInterceptor {
 
     @Override
     public ConfigValue getValue(final ConfigSourceInterceptorContext context, final String name) {

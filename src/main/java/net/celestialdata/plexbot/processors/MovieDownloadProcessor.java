@@ -1,6 +1,5 @@
 package net.celestialdata.plexbot.processors;
 
-import io.quarkus.arc.log.LoggerName;
 import io.smallrye.mutiny.Multi;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 import net.celestialdata.plexbot.clients.models.rdb.RdbTorrent;
@@ -12,30 +11,35 @@ import net.celestialdata.plexbot.clients.models.yts.YtsMovieTorrent;
 import net.celestialdata.plexbot.clients.services.RdbService;
 import net.celestialdata.plexbot.clients.services.YtsService;
 import net.celestialdata.plexbot.discord.MessageFormatter;
+import net.celestialdata.plexbot.entities.EntityUtilities;
 import net.celestialdata.plexbot.entities.Movie;
-import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.enumerators.FileTypes;
-import net.celestialdata.plexbot.utilities.FileUtilities;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
+import net.celestialdata.plexbot.utilities.BotProcess;
+import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.jboss.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@ApplicationScoped
+@Dependent
 public class MovieDownloadProcessor extends BotProcess {
-
-    @LoggerName(value = "net.celestialdata.plexbot.processors.MovieDownloadProcessor")
-    Logger logger;
+    @ConfigProperty(name = "BotSettings.ownerID")
+    String botOwner;
 
     @ConfigProperty(name = "FolderSettings.movieFolder")
     String movieFolder;
@@ -57,14 +61,23 @@ public class MovieDownloadProcessor extends BotProcess {
     @Inject
     FileUtilities fileUtilities;
 
-    public Multi<Map<MovieDownloadSteps, EmbedBuilder>> processDownload(OmdbResult movieToDownload, Message statusMessage) {
+    @Inject
+    EntityUtilities entityUtilities;
+
+    @Inject
+    DiscordApi discordApi;
+
+    private long requestedBy = 0;
+
+    public Multi<Map<MovieDownloadSteps, EmbedBuilder>> processDownload(OmdbResult movieToDownload, Message statusMessage, Long requestedBy) {
         configureProcess("Download " + movieToDownload.title + " (" + movieToDownload.year + ")", statusMessage);
+        this.requestedBy = requestedBy;
         return processDownload(movieToDownload);
     }
 
     public Multi<Map<MovieDownloadSteps, EmbedBuilder>> processDownload(OmdbResult movieToDownload) {
         // Configure the process if it is now already configured
-        if (processId == null) {
+        if (processString == null) {
             configureProcess("Download " + movieToDownload.title + " (" + movieToDownload.year + ")");
         }
 
@@ -93,7 +106,11 @@ public class MovieDownloadProcessor extends BotProcess {
 
                 // Verify that the search returned results, otherwise add movie to the waiting list and then fail
                 if (ytsResponse.results.resultCount == 0) {
-                    // TODO: Add movie to waiting list
+                    if (requestedBy != 0) {
+                        entityUtilities.addWaitlistMovie(movieToDownload, requestedBy);
+                    }
+
+                    // Fail the process
                     processEmitter.fail(new InterruptedException("No match found on yts"));
                     endProcess();
                     return;
@@ -283,7 +300,7 @@ public class MovieDownloadProcessor extends BotProcess {
                         }
                     }
                 }
-                
+
                 processEmitter.emit(Map.of(
                         MovieDownloadSteps.MASK_DOWNLOAD_PROCESSING,
                         messageFormatter.formatDownloadProgressMessage(
@@ -397,18 +414,31 @@ public class MovieDownloadProcessor extends BotProcess {
                 // Move files into their proper place
                 var moveSucceeded = false;
                 for (Map.Entry<String, FileTypes> entry : filenames.entrySet()) {
-                    // Move the media
-                    moveSucceeded = fileUtilities.moveMedia(
-                            tempFolder + entry.getKey(),
-                            movieFolder + fileUtilities.generateFilename(movieToDownload) + "/" + entry.getKey(),
-                            false
-                    );
+                    if (entry.getValue().isVideo()) {
+                        // Move the media
+                        moveSucceeded = fileUtilities.moveMedia(
+                                tempFolder + entry.getKey(),
+                                movieFolder + fileUtilities.generateFilename(movieToDownload) + "/" + entry.getKey(),
+                                false
+                        );
 
-                    // Fail if the move failed for some reason
-                    if (!moveSucceeded) {
-                        processEmitter.fail(new InterruptedException("Failed to move media file: " + entry.getKey()));
-                        endProcess();
-                        return;
+                        // Fail if the move failed for some reason
+                        if (!moveSucceeded) {
+                            processEmitter.fail(new InterruptedException("Failed to move media file: " + entry.getKey()));
+                            endProcess();
+                            return;
+                        }
+                    } else {
+                        new MessageBuilder().setEmbed(new EmbedBuilder()
+                                .setTitle("New subtitle Available")
+                                .setDescription("A movie was recently downloaded to the server and was accompanied by the following " +
+                                        "subtitle file. The file has been left in the temp folder and will require manual importing.")
+                                .addInlineField("Movie:", movieToDownload.title + " (" + movieToDownload.year + ")")
+                                .addInlineField("IMDb: ", movieToDownload.imdbID)
+                                .addField("Subtitle Filename:", "```" + entry.getKey() + "```")
+                                .setFooter("Added by: " + (requestedBy != 0 ? discordApi.getUserById(requestedBy).join().getDiscriminatedName() : "NA"))
+                                .setColor(Color.GREEN)
+                        ).send(discordApi.getUserById(botOwner).join()).join();
                     }
                 }
 

@@ -146,4 +146,16 @@ public class MessageFormatter {
                 .setColor(Color.GREEN)
                 .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.");
     }
+
+    public EmbedBuilder waitlistNotification(OmdbResult movie) {
+        return new EmbedBuilder()
+                .setTitle(movie.title)
+                .setDescription("**Year:** " + movie.year + "\n" +
+                        "**Director(s):** " + movie.director + "\n" +
+                        "**Plot:** " + movie.plot)
+                .setImage(movie.poster)
+                .setColor(Color.BLUE)
+                .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                        .format(ZonedDateTime.now()) + " CST");
+    }
 }

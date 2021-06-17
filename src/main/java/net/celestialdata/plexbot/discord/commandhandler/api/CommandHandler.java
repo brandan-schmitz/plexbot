@@ -47,6 +47,7 @@ import static net.celestialdata.plexbot.discord.commandhandler.api.Command.getPa
  *
  * @param <M> the class of the messages this command handler processes
  */
+@SuppressWarnings("unused")
 public abstract class CommandHandler<M> {
     /**
      * The logger for this command handler.
@@ -54,9 +55,8 @@ public abstract class CommandHandler<M> {
     @LoggerName("net.celestialdata.plexbot.discord.commandhandler.CommandHandlerDiscord")
     Logger logger;
 
-    @SuppressWarnings("CdiInjectionPointsInspection")
     @Inject
-    ManagedExecutor executor;
+    Instance<ManagedExecutor> executor;
 
     /**
      * The default prefix provider that is used if no custom prefix provider was provided.
@@ -388,7 +388,7 @@ public abstract class CommandHandler<M> {
      * @param commandExecutor the executor that runs the actual command implementation
      */
     protected void executeAsync(M message, Runnable commandExecutor, Command<? super M> command) {
-        executor.runAsync(commandExecutor).whenComplete((nothing, throwable) -> {
+        executor.get().runAsync(commandExecutor).whenComplete((nothing, throwable) -> {
             if (throwable != null) {
                 logger.error("Exception while executing command asynchronously", throwable);
                 command.handleFailure(throwable);
