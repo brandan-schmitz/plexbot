@@ -1,5 +1,6 @@
 package net.celestialdata.plexbot.utilities;
 
+import io.quarkus.arc.log.LoggerName;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.periodictasks.BotStatusDisplay;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -8,15 +9,17 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageDecoration;
+import org.jboss.logging.Logger;
 
 import javax.inject.Inject;
-
 
 @SuppressWarnings("unused")
 public abstract class BotProcess {
     public String processId;
     public String processString;
-    Thread.UncaughtExceptionHandler previousUncaughtExceptionHandler;
+
+    @LoggerName("net.celestialdata.plexbot.utilities.BotProcess")
+    Logger logger;
 
     @Inject
     BotStatusDisplay botStatusDisplay;
@@ -32,10 +35,9 @@ public abstract class BotProcess {
 
     public void configureProcess(String processString) {
         // Configure the UncaughtExceptionHandler
-        previousUncaughtExceptionHandler = Thread.currentThread().getUncaughtExceptionHandler();
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
+            logger.error(e);
             endProcess(e);
-            Thread.currentThread().setUncaughtExceptionHandler(previousUncaughtExceptionHandler);
         });
 
         // Configure the process string and submit the process to the BotStatusDisplay
@@ -45,11 +47,10 @@ public abstract class BotProcess {
 
     public void configureProcess(String processString, Message replyMessage) {
         // Configure the UncaughtExceptionHandler
-        previousUncaughtExceptionHandler = Thread.currentThread().getUncaughtExceptionHandler();
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
-            replyMessage.edit(messageFormatter.formatErrorMessage("An unknown error occurred. Brandan has been notified of the error.", e.getMessage()));
+            logger.error(e);
+            replyMessage.edit(messageFormatter.errorMessage("An unknown error occurred. Brandan has been notified of the error.", e.getMessage()));
             endProcess(e);
-            Thread.currentThread().setUncaughtExceptionHandler(previousUncaughtExceptionHandler);
         });
 
         // Configure the process string and submit the process to the BotStatusDisplay

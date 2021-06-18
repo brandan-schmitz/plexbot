@@ -103,7 +103,7 @@ public class SelectionUtilities {
                                 "**Year:** " + movieList.get(0).year + "\n" +
                                         "**Director(s):** " + movieList.get(0).director + "\n" +
                                         "**Plot:** " + movieList.get(0).plot)
-                        .setImage(movieList.get(0).poster)
+                        .setImage(movieList.get(0).getPoster())
                         .setColor(Color.BLUE)
                 ).exceptionally(ExceptionLogger.get());
 
@@ -123,7 +123,7 @@ public class SelectionUtilities {
                                     "**Year:** " + m.year + "\n" +
                                             "**Director(s):** " + m.director + "\n" +
                                             "**Plot:** " + m.plot)
-                            .setImage(m.poster)
+                            .setImage(m.getPoster())
                             .setColor(Color.BLUE)
                     );
                     posCounter++;

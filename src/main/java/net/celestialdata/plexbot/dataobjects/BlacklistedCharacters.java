@@ -1,17 +1,17 @@
 package net.celestialdata.plexbot.dataobjects;
 
-import io.quarkus.arc.config.ConfigProperties;
+import io.smallrye.config.ConfigMapping;
 
 import java.util.List;
 
-@ConfigProperties(prefix = "FolderSettings.blacklistedCharacters")
-public class BlacklistedCharacters {
-    public List<String> remove;
-    public List<Replacements> replace;
+@ConfigMapping(prefix = "FolderSettings.blacklistedCharacters")
+public interface BlacklistedCharacters {
+    List<String> remove();
+    List<Replacements> replace();
 
     @SuppressWarnings("unused")
-    public static class Replacements {
-        public String original;
-        public String replacement;
+    interface Replacements {
+        String original();
+        String replacement();
     }
 }

@@ -1,9 +1,8 @@
 package net.celestialdata.plexbot.discord.commands;
 
 import io.quarkus.arc.log.LoggerName;
-import net.celestialdata.plexbot.discord.RequestMovieCommandRunner;
 import net.celestialdata.plexbot.discord.commandhandler.api.Command;
-import net.celestialdata.plexbot.utilities.BotProcess;
+import net.celestialdata.plexbot.discord.commandrunners.RequestMovieCommandRunner;
 import org.javacord.api.entity.message.Message;
 import org.jboss.logging.Logger;
 
@@ -15,7 +14,7 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 @Dependent
-public class RequestMovieCommand extends BotProcess implements Command<Message> {
+public class RequestMovieCommand implements Command<Message> {
 
     @LoggerName("net.celestialdata.plexbot.discord.commands.RequestMovieCommand")
     Logger logger;
@@ -25,7 +24,6 @@ public class RequestMovieCommand extends BotProcess implements Command<Message> 
 
     @Override
     public void handleFailure(Throwable error) {
-        endProcess(error);
         logger.error(error);
     }
 

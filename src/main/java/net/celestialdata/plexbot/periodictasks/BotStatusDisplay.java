@@ -34,7 +34,7 @@ public class BotStatusDisplay {
     @LoggerName("net.celestialdata.plexbot.periodictasks.BotStatusDisplay")
     Logger logger;
 
-    @ConfigProperty(name = "ChannelSettings.botStatusChannelId")
+    @ConfigProperty(name = "ChannelSettings.botStatusChannel")
     Long statusChannelId;
 
     @Inject

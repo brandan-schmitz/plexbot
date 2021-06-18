@@ -24,6 +24,9 @@
       },
       {
         "pattern": ".*/libjnidispatch.*"
+      },
+      {
+        "pattern": ".*/io.smallrye.config.*"
       }
     ]
   }

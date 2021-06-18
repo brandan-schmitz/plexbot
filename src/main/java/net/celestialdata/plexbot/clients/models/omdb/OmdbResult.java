@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResponseEnum;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResultTypeEnum;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 @SuppressWarnings("unused")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OmdbResult {
-
     @JsonAlias(value = "Title")
     public String title;
     @JsonAlias(value = "Year")
@@ -46,8 +45,13 @@ public class OmdbResult {
     public OmdbResponseEnum response;
     @JsonAlias(value = "Error")
     public String error;
-    @ConfigProperty(name = "BotSettings.noPosterImageUrl")
-    String defaultPosterUrl;
     @JsonAlias(value = "Poster")
-    public String poster = defaultPosterUrl;
+    public String poster;
+
+    public String getPoster() {
+        var noPosterImageUrl = ConfigProvider.getConfig().getValue("BotSettings.noPosterImageUrl", String.class);
+        if (this.poster.equalsIgnoreCase("N/A")) {
+            return noPosterImageUrl;
+        } else return this.poster;
+    }
 }

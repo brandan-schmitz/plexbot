@@ -125,6 +125,18 @@ public class FileUtilities {
         return success;
     }
 
+    public boolean deleteFile(String file) {
+        boolean success = true;
+
+        try {
+            Files.deleteIfExists(Paths.get(file));
+        } catch (IOException e) {
+            success = false;
+        }
+
+        return success;
+    }
+
     public String generateFilename(OmdbResult mediaItem, FileTypes fileType) {
         return generateFilename(mediaItem) + fileType.getExtension();
     }
@@ -135,13 +147,13 @@ public class FileUtilities {
 
     public String sanitizeFilesystemNames(String input) {
         // Remove any characters listed by the removal section
-        for (String removalCharacter : blacklistedCharacters.remove) {
+        for (String removalCharacter : blacklistedCharacters.remove()) {
             input = input.replace(removalCharacter, "");
         }
 
         // Replace and characters listed by the replacement policy
-        for (BlacklistedCharacters.Replacements replacement : blacklistedCharacters.replace) {
-            input = input.replace(replacement.original, replacement.replacement);
+        for (BlacklistedCharacters.Replacements replacement : blacklistedCharacters.replace()) {
+            input = input.replace(replacement.original(), replacement.replacement());
         }
 
         // Strip accents and return the sanitized string

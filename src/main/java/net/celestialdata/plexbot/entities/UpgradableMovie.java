@@ -9,8 +9,8 @@ import javax.persistence.Table;
 
 @SuppressWarnings({"unused", "JpaDataSourceORMInspection"})
 @Entity
-@Table(name = "Movies")
-public class Movie extends PanacheEntityBase {
+@Table(name = "Upgradable_Movies")
+public class UpgradableMovie extends PanacheEntityBase {
 
     @Id
     @Column(name = "movie_id", nullable = false)
@@ -25,27 +25,9 @@ public class Movie extends PanacheEntityBase {
     @Column(name = "movie_resolution", nullable = false)
     public int resolution;
 
-    @Column(name = "movie_height")
-    public int height;
+    @Column(name = "movie_new_resolution", nullable = false)
+    public int newResolution;
 
-    @Column(name = "movie_width")
-    public int width;
-
-    @Column(name = "movie_duration")
-    public int duration;
-
-    @Column(name = "movie_codec")
-    public String codec;
-
-    @Column(name = "movie_filename")
-    public String filename;
-
-    @Column(name = "movie_filetype")
-    public String filetype;
-
-    @Column(name = "movie_foldername")
-    public String folderName;
-
-    @Column(name = "movie_optimized")
-    public boolean isOptimized;
+    @Column(name = "movie_message_id", nullable = false)
+    public Long messageId;
 }

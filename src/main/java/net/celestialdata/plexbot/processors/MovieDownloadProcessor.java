@@ -8,11 +8,11 @@ import net.celestialdata.plexbot.clients.models.rdb.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.clients.models.rdb.enums.RdbTorrentStatusEnum;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovie;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovieTorrent;
+import net.celestialdata.plexbot.clients.services.PlexService;
 import net.celestialdata.plexbot.clients.services.RdbService;
 import net.celestialdata.plexbot.clients.services.YtsService;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.entities.EntityUtilities;
-import net.celestialdata.plexbot.entities.Movie;
 import net.celestialdata.plexbot.enumerators.FileTypes;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
 import net.celestialdata.plexbot.utilities.BotProcess;
@@ -26,7 +26,6 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings("unused")
 @Dependent
 public class MovieDownloadProcessor extends BotProcess {
     @ConfigProperty(name = "BotSettings.ownerID")
@@ -57,6 +57,10 @@ public class MovieDownloadProcessor extends BotProcess {
     @Inject
     @RestClient
     RdbService rdbService;
+
+    @Inject
+    @RestClient
+    PlexService plexService;
 
     @Inject
     FileUtilities fileUtilities;
@@ -90,7 +94,7 @@ public class MovieDownloadProcessor extends BotProcess {
                 // Show that the process is attempting to locate the movie
                 processEmitter.emit(Map.of(
                         MovieDownloadSteps.LOCATE_MOVIE,
-                        messageFormatter.formatDownloadProgressMessage(
+                        messageFormatter.downloadProgressMessage(
                                 movieToDownload, MovieDownloadSteps.LOCATE_MOVIE)
                 ));
 
@@ -106,6 +110,14 @@ public class MovieDownloadProcessor extends BotProcess {
 
                 // Verify that the search returned results, otherwise add movie to the waiting list and then fail
                 if (ytsResponse.results.resultCount == 0) {
+                    // If the movie is already in the waitlist, fail with a message stating that
+                    if (entityUtilities.waitlistMovieExists(movieToDownload.imdbID)) {
+                        processEmitter.fail(new InterruptedException("Already in waitlist"));
+                        endProcess();
+                        return;
+                    }
+
+                    // Add the movie to the waitlist
                     if (requestedBy != 0) {
                         entityUtilities.addWaitlistMovie(movieToDownload, requestedBy);
                     }
@@ -142,7 +154,7 @@ public class MovieDownloadProcessor extends BotProcess {
                 // Emit the updated status
                 processEmitter.emit(Map.of(
                         MovieDownloadSteps.MASK_DOWNLOAD_INIT,
-                        messageFormatter.formatDownloadProgressMessage(
+                        messageFormatter.downloadProgressMessage(
                                 movieToDownload, MovieDownloadSteps.MASK_DOWNLOAD_INIT)
                 ));
 
@@ -247,7 +259,7 @@ public class MovieDownloadProcessor extends BotProcess {
                             if (updatedTorrentInfo.status == RdbTorrentStatusEnum.WAITING_FILES_SELECTION || updatedTorrentInfo.status == RdbTorrentStatusEnum.QUEUED) {
                                 processEmitter.emit(Map.of(
                                         MovieDownloadSteps.MASK_DOWNLOAD_INIT,
-                                        messageFormatter.formatDownloadProgressMessage(
+                                        messageFormatter.downloadProgressMessage(
                                                 movieToDownload,
                                                 MovieDownloadSteps.MASK_DOWNLOAD_INIT
                                         )
@@ -255,7 +267,7 @@ public class MovieDownloadProcessor extends BotProcess {
                             } else if (updatedTorrentInfo.status == RdbTorrentStatusEnum.DOWNLOADING) {
                                 processEmitter.emit(Map.of(
                                         MovieDownloadSteps.MASK_DOWNLOAD_DOWNLOADING,
-                                        messageFormatter.formatDownloadProgressMessage(
+                                        messageFormatter.downloadProgressMessage(
                                                 movieToDownload,
                                                 MovieDownloadSteps.MASK_DOWNLOAD_DOWNLOADING,
                                                 updatedTorrentInfo.progress
@@ -271,7 +283,7 @@ public class MovieDownloadProcessor extends BotProcess {
                             } else {
                                 processEmitter.emit(Map.of(
                                         MovieDownloadSteps.MASK_DOWNLOAD_PROCESSING,
-                                        messageFormatter.formatDownloadProgressMessage(
+                                        messageFormatter.downloadProgressMessage(
                                                 movieToDownload,
                                                 MovieDownloadSteps.MASK_DOWNLOAD_PROCESSING
                                         )
@@ -303,7 +315,7 @@ public class MovieDownloadProcessor extends BotProcess {
 
                 processEmitter.emit(Map.of(
                         MovieDownloadSteps.MASK_DOWNLOAD_PROCESSING,
-                        messageFormatter.formatDownloadProgressMessage(
+                        messageFormatter.downloadProgressMessage(
                                 movieToDownload,
                                 MovieDownloadSteps.MASK_DOWNLOAD_PROCESSING
                         )
@@ -375,7 +387,7 @@ public class MovieDownloadProcessor extends BotProcess {
                                 var percentage = (((double) progress / finalTotalDownloadSize) * 100);
                                 processEmitter.emit(Map.of(
                                         MovieDownloadSteps.DOWNLOAD_MOVIE,
-                                        messageFormatter.formatDownloadProgressMessage(
+                                        messageFormatter.downloadProgressMessage(
                                                 movieToDownload,
                                                 MovieDownloadSteps.DOWNLOAD_MOVIE,
                                                 percentage
@@ -405,7 +417,7 @@ public class MovieDownloadProcessor extends BotProcess {
 
                 processEmitter.emit(Map.of(
                         MovieDownloadSteps.IMPORT_MOVIE,
-                        messageFormatter.formatDownloadProgressMessage(
+                        messageFormatter.downloadProgressMessage(
                                 movieToDownload,
                                 MovieDownloadSteps.IMPORT_MOVIE
                         )
@@ -430,7 +442,7 @@ public class MovieDownloadProcessor extends BotProcess {
                         }
                     } else {
                         new MessageBuilder().setEmbed(new EmbedBuilder()
-                                .setTitle("New subtitle Available")
+                                .setTitle("New Subtitle Downloaded")
                                 .setDescription("A movie was recently downloaded to the server and was accompanied by the following " +
                                         "subtitle file. The file has been left in the temp folder and will require manual importing.")
                                 .addInlineField("Movie:", movieToDownload.title + " (" + movieToDownload.year + ")")
@@ -446,14 +458,20 @@ public class MovieDownloadProcessor extends BotProcess {
                 for (Map.Entry<String, FileTypes> entry : filenames.entrySet()) {
                     if (entry.getValue().isVideo()) {
                         try {
-                            addMovie(movieToDownload, entry);
+                            entityUtilities.addOrUpdateMovie(movieToDownload, entry.getKey(), entry.getValue());
                         } catch (StringIndexOutOfBoundsException e) {
                             processEmitter.fail(new InterruptedException("File is corrupted: " + entry.getKey()));
                             endProcess();
                             return;
+                        } catch (Exception e) {
+                            endProcess(e);
+                            return;
                         }
                     }
                 }
+
+                // Trigger a refresh of the libraries on the Plex server
+                plexService.refreshLibraries();
 
                 endProcess();
                 processEmitter.complete();
@@ -473,30 +491,7 @@ public class MovieDownloadProcessor extends BotProcess {
         });
     }
 
-    @Transactional
-    public void addMovie(OmdbResult movieToAdd, Map.Entry<String, FileTypes> entry) {
-        var movieFileData = fileUtilities.getMediaInfo(movieFolder + fileUtilities.generateFilename(movieToAdd) + "/" + entry.getKey());
-        Movie movie = new Movie();
-
-        // Configure the new movie items
-        movie.id = movieToAdd.imdbID;
-        movie.title = movieToAdd.title;
-        movie.year = movieToAdd.year;
-        movie.resolution = movieFileData.resolution();
-        movie.height = movieFileData.resolution();
-        movie.width = movieFileData.width;
-        movie.duration = movieFileData.duration;
-        movie.codec = movieFileData.codec;
-        movie.filename = entry.getKey();
-        movie.filetype = entry.getValue().getExtension().replace(".", "");
-        movie.folderName = fileUtilities.generateFilename(movieToAdd);
-        movie.isOptimized = movieFileData.isOptimized();
-
-        // Save movie to the database
-        movie.persist();
-    }
-
-    private YtsMovieTorrent selectTorrent(List<YtsMovieTorrent> availableTorrents) {
+    public YtsMovieTorrent selectTorrent(List<YtsMovieTorrent> availableTorrents) {
         var selectedTorrent = new YtsMovieTorrent();
 
         for (YtsMovieTorrent torrent : availableTorrents) {
