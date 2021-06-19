@@ -17,6 +17,7 @@ import net.celestialdata.plexbot.enumerators.FileTypes;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.javacord.api.DiscordApi;
@@ -27,6 +28,8 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -330,6 +333,14 @@ public class MovieDownloadProcessor extends BotProcess {
                     totalDownloadSize = totalDownloadSize + link.filesize;
                 }
 
+                // Create the temporary download folder
+                var createTempFolderSuccess = fileUtilities.createFolder(tempFolder + fileUtilities.generateFilename(movieToDownload));
+                if (!createTempFolderSuccess) {
+                    processEmitter.fail(new InterruptedException("Unable to create a temporary folder for the downloaded media"));
+                    endProcess();
+                    return;
+                }
+
                 // Download the files
                 var filenames = new HashMap<String, FileTypes>();
                 AtomicBoolean downloadFailed = new AtomicBoolean(false);
@@ -382,26 +393,37 @@ public class MovieDownloadProcessor extends BotProcess {
                     filenames.put(filename, fileType);
 
                     long finalTotalDownloadSize = totalDownloadSize;
-                    fileUtilities.downloadFile(String.valueOf(entry.getValue().download), filename).subscribe().with(
-                            progress -> {
-                                var percentage = (((double) progress / finalTotalDownloadSize) * 100);
-                                processEmitter.emit(Map.of(
-                                        MovieDownloadSteps.DOWNLOAD_MOVIE,
-                                        messageFormatter.downloadProgressMessage(
-                                                movieToDownload,
+                    fileUtilities.downloadFile(
+                            String.valueOf(entry.getValue().download),
+                            filename,
+                            fileUtilities.generateFilename(movieToDownload))
+                            .subscribe().with(
+                                    progress -> {
+                                        var percentage = (((double) progress / finalTotalDownloadSize) * 100);
+                                        processEmitter.emit(Map.of(
                                                 MovieDownloadSteps.DOWNLOAD_MOVIE,
-                                                percentage
-                                        )
-                                ));
-                            },
-                            failure -> {
-                                processEmitter.fail(new InterruptedException("Failed to download file: " + entry.getValue().filename));
-                                downloadFailed.set(true);
-                            },
-                            () -> rdbService.deleteTorrent(entry.getKey().id)
+                                                messageFormatter.downloadProgressMessage(
+                                                        movieToDownload,
+                                                        MovieDownloadSteps.DOWNLOAD_MOVIE,
+                                                        percentage
+                                                )
+                                        ));
+                                    },
+                                    failure -> {
+                                        processEmitter.fail(new InterruptedException("Failed to download file: " + entry.getValue().filename));
+                                        downloadFailed.set(true);
+                                    },
+                                    () -> rdbService.deleteTorrent(entry.getKey().id)
                     );
 
                     if (downloadFailed.get()) {
+                        // Delete torrents from real-debrid if there was an error
+                        if (!finalTorrentList.isEmpty()) {
+                            for (RdbTorrent torrent : finalTorrentList) {
+                                rdbService.deleteTorrent(torrent.id);
+                            }
+                        }
+
                         endProcess();
                         return;
                     }
@@ -429,7 +451,7 @@ public class MovieDownloadProcessor extends BotProcess {
                     if (entry.getValue().isVideo()) {
                         // Move the media
                         moveSucceeded = fileUtilities.moveMedia(
-                                tempFolder + entry.getKey(),
+                                tempFolder + fileUtilities.generateFilename(movieToDownload) + "/" + entry.getKey(),
                                 movieFolder + fileUtilities.generateFilename(movieToDownload) + "/" + entry.getKey(),
                                 false
                         );
@@ -468,6 +490,15 @@ public class MovieDownloadProcessor extends BotProcess {
                             return;
                         }
                     }
+                }
+
+                // Delete the temporary download folder if it is empty
+                try {
+                    if (fileUtilities.isFolderEmpty(tempFolder + fileUtilities.generateFilename(movieToDownload))) {
+                        FileUtils.deleteDirectory(new File(tempFolder + fileUtilities.generateFilename(movieToDownload)));
+                    }
+                } catch (IOException e) {
+                    reportError(e);
                 }
 
                 // Trigger a refresh of the libraries on the Plex server

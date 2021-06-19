@@ -18,12 +18,10 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 @ApplicationScoped
@@ -41,13 +39,16 @@ public class FileUtilities {
     @ConfigProperty(name = "FolderSettings.tvFolder")
     String tvFolder;
 
-    public Multi<Long> downloadFile(String url, String outputFilename) {
+    public Multi<Long> downloadFile(String url, String outputFilename, String outputFoldername) {
         return Multi.createFrom().emitter(multiEmitter -> {
             long progress = 0;
             try {
                 // Open a connection to the file being downloaded
                 URLConnection connection = new URL(url).openConnection();
-                var tempPath = Paths.get(tempFolder + outputFilename + ".pbdownload");
+                var tempPath = Paths.get(tempFolder +
+                        (outputFoldername != null ? (outputFoldername + "/" + outputFilename) : outputFilename) +
+                        ".pbdownload"
+                );
 
                 // If the file has started being downloaded, start the download where it left off
                 if (Files.exists(tempPath)) {
@@ -74,7 +75,7 @@ public class FileUtilities {
 
                 // Rename the file to specified name
                 if (!multiEmitter.isCancelled()) {
-                    moveMedia(String.valueOf(tempPath), tempFolder + outputFilename, true);
+                    moveMedia(tempPath.toString(), tempPath.toString().replace(".pbdownload", ""), true);
                 }
 
                 multiEmitter.complete();
@@ -82,6 +83,24 @@ public class FileUtilities {
                 multiEmitter.fail(e);
             }
         });
+    }
+
+    public Multi<Long> downloadFile(String url, String outputFilename) {
+        return downloadFile(url, outputFilename, null);
+    }
+
+    public boolean isFolderEmpty(String folder) {
+        var path = Paths.get(folder);
+
+        if (Files.isDirectory(path)) {
+            try (Stream<Path> entries = Files.list(path)) {
+                return entries.findFirst().isEmpty();
+            } catch (IOException e) {
+                return false;
+            }
+        }
+
+        return false;
     }
 
     public boolean moveMedia(String source, String destination, boolean overwrite) {
@@ -116,6 +135,20 @@ public class FileUtilities {
 
         try {
             Files.createDirectory(Paths.get(movieFolder + generateFilename(mediaItem)));
+        } catch (IOException e) {
+            if (!(e instanceof FileAlreadyExistsException)) {
+                success = false;
+            }
+        }
+
+        return success;
+    }
+
+    public boolean createFolder(String folderPath) {
+        boolean success = true;
+
+        try {
+            Files.createDirectory(Paths.get(folderPath));
         } catch (IOException e) {
             if (!(e instanceof FileAlreadyExistsException)) {
                 success = false;
