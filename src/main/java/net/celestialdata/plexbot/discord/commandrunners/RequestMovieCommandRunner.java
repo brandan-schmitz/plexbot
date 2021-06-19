@@ -3,6 +3,7 @@ package net.celestialdata.plexbot.discord.commandrunners;
 import io.quarkus.arc.log.LoggerName;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResponseEnum;
+import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResultTypeEnum;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbSearchTypeEnum;
 import net.celestialdata.plexbot.clients.services.OmdbService;
 import net.celestialdata.plexbot.dataobjects.BotEmojis;
@@ -91,7 +92,7 @@ public class RequestMovieCommandRunner extends BotProcess {
 
         // Variables that store items related to the search and selection process
         List<OmdbResult> searchResultList = new ArrayList<>();
-        OmdbResult selectedMovie = new OmdbResult();
+        OmdbResult selectedMovie;
 
         // Split command arguments by the space character
         var args = parameterString.split("\\s+");
@@ -139,6 +140,12 @@ public class RequestMovieCommandRunner extends BotProcess {
             // Add the result to the list of results if it was successful otherwise display an error
             if (result.response == OmdbResponseEnum.TRUE) {
                 searchResultList.add(result);
+            } else if (result.type != OmdbResultTypeEnum.MOVIE) {
+                replyMessage.edit(messageFormatter.errorMessage(
+                        "The IMDb code you provided was for a TV series or episode. Please provide a code for a movie only."
+                )).exceptionally(ExceptionLogger.get());
+                endProcess();
+                return;
             } else {
                 replyMessage.edit(messageFormatter.errorMessage(
                         "An invalid IMDb code was provided and it returned no search results. Please verify your code and try again."
@@ -179,6 +186,16 @@ public class RequestMovieCommandRunner extends BotProcess {
                 endProcess();
                 return;
             }
+        }
+
+        // Filter out items that are not movies. If there are no items left after filtering then send an error
+        searchResultList.removeIf(r -> r.type != OmdbResultTypeEnum.MOVIE);
+        if (searchResultList.size() == 0) {
+            replyMessage.edit(messageFormatter.errorMessage(
+                    "No results returned. Please adjust your search parameters and try again."
+            )).exceptionally(ExceptionLogger.get());
+            endProcess();
+            return;
         }
 
         // Fetch more detailed information about each movie returned in the results from above
