@@ -15,6 +15,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.util.List;
 
 @ApplicationScoped
 public class EntityUtilities {
@@ -42,6 +43,26 @@ public class EntityUtilities {
 
     @Inject
     EntityManager entityManager;
+
+    @Transactional
+    public List<Movie> getAllMovies() {
+        return Movie.listAll();
+    }
+
+    @Transactional
+    public List<Episode> getAllEpisodes() {
+        return Episode.listAll();
+    }
+
+    @Transactional
+    public List<Season> getAllSeasons() {
+        return Season.listAll();
+    }
+
+    @Transactional
+    public List<Show> getAllShows() {
+        return Show.listAll();
+    }
 
     @Transactional
     public void addOrUpdateEpisode(TvdbExtendedEpisode episodeData, String filename, Season season, Show show) {
