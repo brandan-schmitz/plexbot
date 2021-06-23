@@ -8,4 +8,5 @@ import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbAuthResponseDat
 public class TvdbAuthResponse {
     public TvdbAuthResponseData data;
     public String status;
+    public String message;
 }

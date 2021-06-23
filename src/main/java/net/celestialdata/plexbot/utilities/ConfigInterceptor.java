@@ -28,12 +28,10 @@ public class ConfigInterceptor implements ConfigSourceInterceptor {
                 break;
             case "quarkus.datasource.username":
                 var username = context.proceed("DatabaseSettings.username");
-
                 configValue = username.withName(name);
                 break;
             case "quarkus.datasource.password":
                 var password = context.proceed("DatabaseSettings.password");
-
                 configValue = password.withName(name);
                 break;
         }

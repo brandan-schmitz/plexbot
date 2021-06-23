@@ -13,7 +13,7 @@ import net.celestialdata.plexbot.clients.services.RdbService;
 import net.celestialdata.plexbot.clients.services.YtsService;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.entities.EntityUtilities;
-import net.celestialdata.plexbot.enumerators.FileTypes;
+import net.celestialdata.plexbot.enumerators.FileType;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
@@ -181,33 +181,8 @@ public class MovieDownloadProcessor extends BotProcess {
                 // Choose the files to download
                 var selectedFiles = new ArrayList<RdbTorrentFile>();
                 for (RdbTorrentFile file : torrentInformation.files) {
-                    if (file.path.toLowerCase().endsWith(FileTypes.AVI.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.DIVX.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.FLV.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.M4V.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.MKV.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.MP4.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.MPEG.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.MPG.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.WMV.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.SRT.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.SMI.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.SSA.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.ASS.getExtension())) {
-                        selectedFiles.add(file);
-                    } else if (file.path.toLowerCase().endsWith(FileTypes.VTT.getExtension())) {
+                    var type = FileType.determineFiletype(file.path.toLowerCase());
+                    if (type.isVideo() || type.isSubtitle()) {
                         selectedFiles.add(file);
                     }
                 }
@@ -334,7 +309,7 @@ public class MovieDownloadProcessor extends BotProcess {
                 }
 
                 // Create the temporary download folder
-                var createTempFolderSuccess = fileUtilities.createFolder(tempFolder + fileUtilities.generateFilename(movieToDownload));
+                var createTempFolderSuccess = fileUtilities.createFolder(tempFolder + fileUtilities.generatePathname(movieToDownload));
                 if (!createTempFolderSuccess) {
                     processEmitter.fail(new InterruptedException("Unable to create a temporary folder for the downloaded media"));
                     endProcess();
@@ -342,43 +317,17 @@ public class MovieDownloadProcessor extends BotProcess {
                 }
 
                 // Download the files
-                var filenames = new HashMap<String, FileTypes>();
+                var filenames = new ArrayList<String>();
                 AtomicBoolean downloadFailed = new AtomicBoolean(false);
                 for (Map.Entry<RdbTorrent, RdbUnrestrictedLink> entry : unrestrictedLinks.entrySet()) {
                     // Normalize the filename to lowercase letters
                     var filename = entry.getValue().filename;
 
                     // Add selected files to their proper HashMap
-                    FileTypes fileType;
-                    if (filename.toLowerCase().endsWith(FileTypes.AVI.getExtension())) {
-                        fileType = FileTypes.AVI;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.DIVX.getExtension())) {
-                        fileType = FileTypes.DIVX;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.FLV.getExtension())) {
-                        fileType = FileTypes.FLV;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.M4V.getExtension())) {
-                        fileType = FileTypes.M4V;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.MKV.getExtension())) {
-                        fileType = FileTypes.MKV;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.MP4.getExtension())) {
-                        fileType = FileTypes.MP4;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.MPEG.getExtension())) {
-                        fileType = FileTypes.MPEG;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.MPG.getExtension())) {
-                        fileType = FileTypes.MPG;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.WMV.getExtension())) {
-                        fileType = FileTypes.WMV;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.SRT.getExtension())) {
-                        fileType = FileTypes.SRT;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.SMI.getExtension())) {
-                        fileType = FileTypes.SMI;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.SSA.getExtension())) {
-                        fileType = FileTypes.SSA;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.ASS.getExtension())) {
-                        fileType = FileTypes.ASS;
-                    } else if (filename.toLowerCase().endsWith(FileTypes.VTT.getExtension())) {
-                        fileType = FileTypes.VTT;
-                    } else {
+                    var fileType = FileType.determineFiletype(filename);
+
+                    // Make sure it is a valid filetype
+                    if (fileType == FileType.UNKNOWN) {
                         processEmitter.fail(new InterruptedException("File is of unknown type: " + filename));
                         endProcess();
                         return;
@@ -390,13 +339,13 @@ public class MovieDownloadProcessor extends BotProcess {
                     }
 
                     // Add the filename that will be downloaded to the list of filenames for processing later
-                    filenames.put(filename, fileType);
+                    filenames.add(filename);
 
                     long finalTotalDownloadSize = totalDownloadSize;
                     fileUtilities.downloadFile(
                             String.valueOf(entry.getValue().download),
                             filename,
-                            fileUtilities.generateFilename(movieToDownload))
+                            fileUtilities.generatePathname(movieToDownload))
                             .subscribe().with(
                                     progress -> {
                                         var percentage = (((double) progress / finalTotalDownloadSize) * 100);
@@ -447,42 +396,58 @@ public class MovieDownloadProcessor extends BotProcess {
 
                 // Move files into their proper place
                 var moveSucceeded = false;
-                for (Map.Entry<String, FileTypes> entry : filenames.entrySet()) {
-                    if (entry.getValue().isVideo()) {
+                var subtitleFiles = new ArrayList<String>();
+                for (String filename : filenames) {
+                    if (FileType.isVideo(filename)) {
                         // Move the media
                         moveSucceeded = fileUtilities.moveMedia(
-                                tempFolder + fileUtilities.generateFilename(movieToDownload) + "/" + entry.getKey(),
-                                movieFolder + fileUtilities.generateFilename(movieToDownload) + "/" + entry.getKey(),
+                                tempFolder + fileUtilities.generatePathname(movieToDownload) + "/" + filename,
+                                movieFolder + fileUtilities.generatePathname(movieToDownload) + "/" + filename,
                                 false
                         );
 
                         // Fail if the move failed for some reason
                         if (!moveSucceeded) {
-                            processEmitter.fail(new InterruptedException("Failed to move media file: " + entry.getKey()));
+                            processEmitter.fail(new InterruptedException("Failed to move media file: " + filename));
                             endProcess();
                             return;
                         }
                     } else {
-                        new MessageBuilder().setEmbed(new EmbedBuilder()
-                                .setTitle("New Subtitle Downloaded")
-                                .setDescription("A movie was recently downloaded to the server and was accompanied by the following " +
-                                        "subtitle file. The file has been left in the temp folder and will require manual importing.")
-                                .addInlineField("Movie:", movieToDownload.title + " (" + movieToDownload.year + ")")
-                                .addInlineField("IMDb: ", movieToDownload.imdbID)
-                                .addField("Subtitle Filename:", "```" + entry.getKey() + "```")
-                                .setFooter("Added by: " + (requestedBy != 0 ? discordApi.getUserById(requestedBy).join().getDiscriminatedName() : "NA"))
-                                .setColor(Color.GREEN)
-                        ).send(discordApi.getUserById(botOwner).join()).join();
+                        subtitleFiles.add(filename);
                     }
                 }
 
+                // Send a message that there are subtitles available to download
+                if (!subtitleFiles.isEmpty()) {
+                    var subtitleFileNamesBuilder = new StringBuilder();
+
+                    for (int pos = 0; pos < subtitleFiles.size(); pos++) {
+                        if ((subtitleFiles.size() - 1) == pos) {
+                            subtitleFileNamesBuilder.append(subtitleFiles.get(pos));
+                        } else {
+                            subtitleFileNamesBuilder.append(subtitleFiles.get(pos)).append("\n");
+                        }
+                    }
+
+                    new MessageBuilder().setEmbed(new EmbedBuilder()
+                            .setTitle("New Subtitle Downloaded")
+                            .setDescription("A movie was recently downloaded to the server and was accompanied by the following " +
+                                    "subtitle file. The file has been left in the temp folder and will require manual importing.")
+                            .addInlineField("Movie:", movieToDownload.title + " (" + movieToDownload.year + ")")
+                            .addInlineField("IMDb: ", movieToDownload.imdbID)
+                            .addField("Subtitle Filename(s):", "```" + subtitleFileNamesBuilder.toString() + "```")
+                            .setFooter("Added by: " + (requestedBy != 0 ? discordApi.getUserById(requestedBy).join().getDiscriminatedName() : "NA"))
+                            .setColor(Color.GREEN)
+                    ).send(discordApi.getUserById(botOwner).join()).join();
+                }
+
                 // Add movie to the database
-                for (Map.Entry<String, FileTypes> entry : filenames.entrySet()) {
-                    if (entry.getValue().isVideo()) {
+                for (String filename : filenames) {
+                    if (FileType.isVideo(filename)) {
                         try {
-                            entityUtilities.addOrUpdateMovie(movieToDownload, entry.getKey(), entry.getValue());
+                            entityUtilities.addOrUpdateMovie(movieToDownload, filename);
                         } catch (StringIndexOutOfBoundsException e) {
-                            processEmitter.fail(new InterruptedException("File is corrupted: " + entry.getKey()));
+                            processEmitter.fail(new InterruptedException("File is corrupted: " + filename));
                             endProcess();
                             return;
                         } catch (Exception e) {
@@ -494,15 +459,19 @@ public class MovieDownloadProcessor extends BotProcess {
 
                 // Delete the temporary download folder if it is empty
                 try {
-                    if (fileUtilities.isFolderEmpty(tempFolder + fileUtilities.generateFilename(movieToDownload))) {
-                        FileUtils.deleteDirectory(new File(tempFolder + fileUtilities.generateFilename(movieToDownload)));
+                    if (fileUtilities.isFolderEmpty(tempFolder + fileUtilities.generatePathname(movieToDownload))) {
+                        FileUtils.deleteDirectory(new File(tempFolder + fileUtilities.generatePathname(movieToDownload)));
                     }
                 } catch (IOException e) {
                     reportError(e);
                 }
 
                 // Trigger a refresh of the libraries on the Plex server
-                plexService.refreshLibraries();
+                try {
+                    plexService.refreshLibraries();
+                } catch (Exception e) {
+                    reportError(e);
+                }
 
                 endProcess();
                 processEmitter.complete();

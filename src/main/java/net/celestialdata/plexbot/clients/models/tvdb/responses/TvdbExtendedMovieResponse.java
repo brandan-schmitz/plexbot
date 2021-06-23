@@ -8,6 +8,7 @@ import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbExtendedMovie;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TvdbExtendedMovieResponse {
     public String status;
+    public String message;
 
     @JsonAlias(value = "data")
     public TvdbExtendedMovie extendedMovie;

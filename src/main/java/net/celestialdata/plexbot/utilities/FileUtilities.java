@@ -2,9 +2,13 @@ package net.celestialdata.plexbot.utilities;
 
 import io.smallrye.mutiny.Multi;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbEpisode;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbExtendedEpisode;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeason;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
 import net.celestialdata.plexbot.dataobjects.BlacklistedCharacters;
 import net.celestialdata.plexbot.dataobjects.MediaInfoData;
-import net.celestialdata.plexbot.enumerators.FileTypes;
+import net.celestialdata.plexbot.enumerators.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import uk.co.caprica.vlcjinfo.MediaInfoFile;
@@ -134,7 +138,7 @@ public class FileUtilities {
         boolean success = true;
 
         try {
-            Files.createDirectory(Paths.get(movieFolder + generateFilename(mediaItem)));
+            Files.createDirectory(Paths.get(movieFolder + generatePathname(mediaItem)));
         } catch (IOException e) {
             if (!(e instanceof FileAlreadyExistsException)) {
                 success = false;
@@ -170,12 +174,22 @@ public class FileUtilities {
         return success;
     }
 
-    public String generateFilename(OmdbResult mediaItem, FileTypes fileType) {
-        return generateFilename(mediaItem) + fileType.getExtension();
+    public String generateFilename(OmdbResult mediaItem, FileType fileType) {
+        return generatePathname(mediaItem) + fileType.getExtension();
     }
 
-    public String generateFilename(OmdbResult mediaItem) {
+    public String generatePathname(OmdbResult mediaItem) {
         return sanitizeFilesystemNames(mediaItem.title + " (" + mediaItem.year + ") {imdb-" + mediaItem.imdbID + "}");
+    }
+
+    public String generatePathname(TvdbSeries mediaItem) {
+        return sanitizeFilesystemNames(mediaItem.name + " {tvdb-" + mediaItem.id + "}");
+    }
+
+    public String generateEpisodeFilename(TvdbExtendedEpisode mediaItem, FileType fileType, String seasonAndEpisode, TvdbSeries series) {
+        if (mediaItem.name == null || mediaItem.name.isBlank()) {
+            return sanitizeFilesystemNames(series.name + " - " + seasonAndEpisode) + fileType.getExtension();
+        } else return sanitizeFilesystemNames(series.name + " - " + seasonAndEpisode + " - " + mediaItem.name) + fileType.getExtension();
     }
 
     public String sanitizeFilesystemNames(String input) {

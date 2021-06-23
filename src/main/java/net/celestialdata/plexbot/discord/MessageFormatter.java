@@ -1,6 +1,8 @@
 package net.celestialdata.plexbot.discord;
 
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbExtendedEpisode;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
 import net.celestialdata.plexbot.dataobjects.BotEmojis;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -33,7 +35,12 @@ public class MessageFormatter {
                 .setColor(Color.YELLOW);
     }
 
-
+    public EmbedBuilder warningMessage(String warningMessage, String warningCode) {
+        return new EmbedBuilder()
+                .addField("An warning has occurred:", "```" + warningMessage + "```")
+                .setFooter("Warning code: " + warningCode)
+                .setColor(Color.YELLOW);
+    }
 
     private EmbedBuilder baseDownloadProgressMessage(OmdbResult movie) {
         return new EmbedBuilder()
@@ -136,6 +143,16 @@ public class MessageFormatter {
                 .setColor(Color.GREEN);
     }
 
+    public EmbedBuilder newEpisodeNotification(TvdbExtendedEpisode episode, TvdbSeries series) {
+        return new EmbedBuilder()
+                .setTitle(episode.name)
+                .addField("Show:", series.name)
+                .addInlineField("Season:", String.valueOf(episode.seasonNumber))
+                .addInlineField("Episode:", String.valueOf(episode.number))
+                .setImage(episode.getImage())
+                .setColor(Color.GREEN);
+    }
+
     public EmbedBuilder newMovieUserNotification(OmdbResult movie) {
         return new EmbedBuilder()
                 .setTitle("Movie Added")
@@ -190,5 +207,16 @@ public class MessageFormatter {
                 .addInlineField("New Resolution:", String.valueOf(newResolution))
                 .setImage(movie.getPoster())
                 .setColor(Color.GREEN);
+    }
+
+    public EmbedBuilder importProgressMessage(String progressMessage) {
+        return new EmbedBuilder()
+                .setTitle("Import Processor")
+                .setDescription("You have requested the bot import media contained within the import folder. Please stand-by while " +
+                        "this action is performed as it may take a while.")
+                .addField("Progress:", "```" + progressMessage + "```")
+                .setFooter("Updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                        .format(ZonedDateTime.now()) + " CST")
+                .setColor(Color.BLUE);
     }
 }

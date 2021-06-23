@@ -105,7 +105,7 @@ public class ResolutionChecker extends BotProcess {
                     }
 
                     // Verify that the search returned results, otherwise continue to the next movie
-                    if (ytsResponse.results.resultCount == 0) {
+                    if (ytsResponse.results.resultCount == 0 || ytsResponse.results.movies == null) {
                         progress++;
                         continue;
                     }

@@ -20,5 +20,5 @@ public interface SyncthingService {
     @GET
     @Path(value = "/rest/db/completion")
     @Produces(MediaType.APPLICATION_JSON)
-    SyncthingCompletionResponse getCompletionStatus(@QueryParam(value = "folder") String folderName, @QueryParam(value = "device") String deviceID);
+    SyncthingCompletionResponse getCompletionStatus(@QueryParam(value = "folder") String folderId, @QueryParam(value = "device") String deviceId);
 }

@@ -1,6 +1,7 @@
 package net.celestialdata.plexbot.clients.models.tvdb.objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 import java.util.List;
 
@@ -16,4 +17,11 @@ public class TvdbMovie {
     public double score;
     public String slug;
     public TvdbStatus status;
+
+    public String getImage() {
+        var noPosterImageUrl = ConfigProvider.getConfig().getValue("BotSettings.noPosterImageUrl", String.class);
+        if (this.image.isBlank()) {
+            return noPosterImageUrl;
+        } else return this.image;
+    }
 }
