@@ -17,10 +17,10 @@
     <quarkus.native.enable-jni>true</quarkus.native.enable-jni>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-    <quarkus.platform.version>2.0.0.CR3</quarkus.platform.version>
-    <quarkus-plugin.version>2.0.0.CR3</quarkus-plugin.version>
+    <quarkus.platform.version>2.0.0.Final</quarkus.platform.version>
+    <quarkus-plugin.version>2.0.0.Final</quarkus-plugin.version>
     <quarkus.ssl.native>true</quarkus.ssl.native>
-    <version-date>06/18/2021</version-date>
+    <version-date>06/23/2021</version-date>
   </properties>
   <dependencyManagement>
     <dependencies>
