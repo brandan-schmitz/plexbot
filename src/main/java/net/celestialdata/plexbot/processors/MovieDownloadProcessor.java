@@ -335,7 +335,7 @@ public class MovieDownloadProcessor extends BotProcess {
 
                     // If file is a video file, rename it to use the movie information
                     if (fileType.isVideo()) {
-                        filename = fileUtilities.generateFilename(movieToDownload, fileType);
+                        filename = fileUtilities.generateMovieFilename(movieToDownload, fileType);
                     }
 
                     // Add the filename that will be downloaded to the list of filenames for processing later

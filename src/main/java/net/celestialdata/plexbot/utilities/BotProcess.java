@@ -22,7 +22,7 @@ public abstract class BotProcess {
     Logger logger;
 
     @Inject
-    BotStatusDisplay botStatusDisplay;
+    public BotStatusDisplay botStatusDisplay;
 
     @Inject
     DiscordApi discordApi;

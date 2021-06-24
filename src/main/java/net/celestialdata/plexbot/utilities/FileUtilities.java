@@ -8,6 +8,9 @@ import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeason;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
 import net.celestialdata.plexbot.dataobjects.BlacklistedCharacters;
 import net.celestialdata.plexbot.dataobjects.MediaInfoData;
+import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
+import net.celestialdata.plexbot.entities.Episode;
+import net.celestialdata.plexbot.entities.Show;
 import net.celestialdata.plexbot.enumerators.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -174,10 +177,6 @@ public class FileUtilities {
         return success;
     }
 
-    public String generateFilename(OmdbResult mediaItem, FileType fileType) {
-        return generatePathname(mediaItem) + fileType.getExtension();
-    }
-
     public String generatePathname(OmdbResult mediaItem) {
         return sanitizeFilesystemNames(mediaItem.title + " (" + mediaItem.year + ") {imdb-" + mediaItem.imdbID + "}");
     }
@@ -186,10 +185,47 @@ public class FileUtilities {
         return sanitizeFilesystemNames(mediaItem.name + " {tvdb-" + mediaItem.id + "}");
     }
 
+    public String generateMovieFilename(OmdbResult mediaItem, FileType fileType) {
+        return generatePathname(mediaItem) + fileType.getExtension();
+    }
+
+    private String subtitleSuffixBuilder(ParsedSubtitleFilename parsedFilename) {
+        // Create the StringBuilder used to build the file suffix
+        var suffixBuilder = new StringBuilder();
+
+        // Append the language code
+        suffixBuilder.append(".").append(parsedFilename.language);
+
+        // Add the .sdh or .cc flags if the applicable
+        if (parsedFilename.isSDH) {
+            suffixBuilder.append(".").append("sdh");
+        } else if (parsedFilename.isCC) {
+            suffixBuilder.append(".").append("cc");
+        }
+
+        // Add the .forced flag if applicable
+        if (parsedFilename.isForced) {
+            suffixBuilder.append(".").append("forced");
+        }
+
+        // Add the file extension
+        suffixBuilder.append(parsedFilename.fileType.getExtension());
+
+        return suffixBuilder.toString();
+    }
+
+    public String generateMovieSubtitleFilename(OmdbResult linkedMovie, ParsedSubtitleFilename parsedFilename) {
+        return generatePathname(linkedMovie) + subtitleSuffixBuilder(parsedFilename);
+    }
+
     public String generateEpisodeFilename(TvdbExtendedEpisode mediaItem, FileType fileType, String seasonAndEpisode, TvdbSeries series) {
         if (mediaItem.name == null || mediaItem.name.isBlank()) {
             return sanitizeFilesystemNames(series.name + " - " + seasonAndEpisode) + fileType.getExtension();
         } else return sanitizeFilesystemNames(series.name + " - " + seasonAndEpisode + " - " + mediaItem.name) + fileType.getExtension();
+    }
+
+    public String generateEpisodeSubtitleFilename(TvdbSeries linkedShow, String seasonAndEpisode, ParsedSubtitleFilename parsedFilename) {
+        return sanitizeFilesystemNames(linkedShow.name + " - " + seasonAndEpisode) + subtitleSuffixBuilder(parsedFilename);
     }
 
     public String sanitizeFilesystemNames(String input) {

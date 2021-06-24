@@ -126,7 +126,6 @@ public class RequestMovieCommandRunner extends BotProcess {
         // Assemble the movie title from the title builder
         titleArgument = titleBuilder.toString();
 
-
         /*
         Search for the movie on OMDB. Search priority:
             1. IMDb ID

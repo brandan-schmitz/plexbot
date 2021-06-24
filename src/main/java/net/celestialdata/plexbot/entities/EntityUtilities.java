@@ -3,6 +3,7 @@ package net.celestialdata.plexbot.entities;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbExtendedEpisode;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
+import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.enumerators.FileType;
 import net.celestialdata.plexbot.utilities.FileUtilities;
@@ -65,6 +66,16 @@ public class EntityUtilities {
     }
 
     @Transactional
+    public boolean episodeExists(String id) {
+        return Episode.count("id", id) == 1;
+    }
+
+    @Transactional
+    public Episode getEpisode(String id) {
+        return Episode.findById(id);
+    }
+
+    @Transactional
     public void addOrUpdateEpisode(TvdbExtendedEpisode episodeData, String filename, Season season, Show show) {
         var episodeFileData = fileUtilities.getMediaInfo(tvFolder + show.foldername + "/" + season.foldername + "/" + filename);
         var fileType = FileType.determineFiletype(filename);
@@ -89,6 +100,36 @@ public class EntityUtilities {
     }
 
     @Transactional
+    public boolean episodeSubtitleExists(String filename) {
+        return EpisodeSubtitle.count("filename", filename) == 1;
+    }
+
+    @Transactional
+    public EpisodeSubtitle findEpisodeSubtitle(String filename) {
+        return EpisodeSubtitle.find("filename", filename).firstResult();
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    @Transactional
+    public void addOrUpdateEpisodeSubtitle(String filename, ParsedSubtitleFilename parsedFilename, Episode linkedEpisode) {
+        EpisodeSubtitle episodeSubtitle = new EpisodeSubtitle();
+
+        episodeSubtitle.language = parsedFilename.language;
+        episodeSubtitle.episode = linkedEpisode;
+        episodeSubtitle.filename = filename;
+        episodeSubtitle.filetype = FileType.determineFiletype(filename).getTypeString();
+        episodeSubtitle.isForced = parsedFilename.isForced;
+        episodeSubtitle.isSDH = parsedFilename.isSDH;
+        episodeSubtitle.isCC = parsedFilename.isCC;
+
+        if (episodeSubtitleExists(filename)) {
+            episodeSubtitle.id = findEpisodeSubtitle(filename).id;
+        }
+
+        entityManager.merge(episodeSubtitle).persist();
+    }
+
+    @Transactional
     public Season findSeason(Show show, int seasonNumber) {
         return Season.find("show = ?1 and number = ?2", show, seasonNumber).firstResult();
     }
@@ -105,6 +146,10 @@ public class EntityUtilities {
         season.number = seasonNumber;
         season.foldername = seasonFoldername;
         season.show = show;
+
+        if (seasonExists(show, seasonNumber)) {
+            season.id = findSeason(show, seasonNumber).id;
+        }
 
         entityManager.merge(season).persist();
     }
@@ -131,6 +176,11 @@ public class EntityUtilities {
     }
 
     @Transactional
+    public Movie getMovie(String id) {
+        return Movie.findById(id);
+    }
+
+    @Transactional
     public void addOrUpdateMovie(OmdbResult movieToAdd, String filename) {
         var movieFileData = fileUtilities.getMediaInfo(movieFolder + fileUtilities.generatePathname(movieToAdd) + "/" + filename);
         var fileType = FileType.determineFiletype(filename);
@@ -150,17 +200,38 @@ public class EntityUtilities {
         movie.isOptimized = movieFileData.isOptimized();
 
         // If the movie is already listed in the database, update it versus adding a new one
-        if (movieExists(movieToAdd.imdbID)) {
-            entityManager.merge(movie).persist();
-        } else {
-            // Save movie to the database
-            movie.persist();
+        entityManager.merge(movie).persist();
+    }
+
+
+    @SuppressWarnings("DuplicatedCode")
+    @Transactional
+    public void addOrUpdateMovieSubtitle(String filename, ParsedSubtitleFilename parsedFilename, Movie linkedMovie) {
+        MovieSubtitle movieSubtitle = new MovieSubtitle();
+
+        movieSubtitle.language = parsedFilename.language;
+        movieSubtitle.movie = linkedMovie;
+        movieSubtitle.filename = filename;
+        movieSubtitle.filetype = FileType.determineFiletype(filename).getTypeString();
+        movieSubtitle.isForced = parsedFilename.isForced;
+        movieSubtitle.isSDH = parsedFilename.isSDH;
+        movieSubtitle.isCC = parsedFilename.isCC;
+
+        if (episodeSubtitleExists(filename)) {
+            movieSubtitle.id = findEpisodeSubtitle(filename).id;
         }
+
+        entityManager.merge(movieSubtitle).persist();
     }
 
     @Transactional
     public boolean waitlistMovieExists(String id) {
         return WaitlistMovie.count("id", id) == 1;
+    }
+
+    @Transactional
+    public WaitlistMovie getWaitlistMovie(String id) {
+        return WaitlistMovie.findById(id);
     }
 
     @Transactional

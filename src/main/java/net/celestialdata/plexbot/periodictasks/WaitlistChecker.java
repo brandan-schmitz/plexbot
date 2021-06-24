@@ -62,7 +62,7 @@ public class WaitlistChecker extends BotProcess {
     @Inject
     Instance<MovieDownloadProcessor> movieDownloadProcessor;
 
-    @Scheduled(every = "6h", delay = 10, delayUnit = TimeUnit.SECONDS)
+    //@Scheduled(every = "6h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void runCheck() {
         configureProcess("Waitlist Checker");
         int progress = 0;
