@@ -27,9 +27,6 @@ public class StatsCommand implements Command<Message> {
     @ConfigProperty(name = "FolderSettings.tvFolder")
     String tvFolder;
 
-    @ConfigProperty(name = "FolderSettings.queueFolder")
-    String queueFolder;
-
     @Inject
     EntityUtilities entityUtilities;
 
@@ -71,10 +68,9 @@ public class StatsCommand implements Command<Message> {
         // Get the total filesize of the movies and tv directory
         var movieSize = FileUtils.sizeOfDirectory(new File(movieFolder));
         var tvSize = FileUtils.sizeOfDirectory(new File(tvFolder));
-        var queueSize = FileUtils.sizeOfDirectory(new File(queueFolder));
 
         // Calculate the total filesize of everything
-        totalSize = movieSize + tvSize + queueSize;
+        totalSize = movieSize + tvSize;
 
         // Calculate the number of years
         var years = totalDuration / 525600;
