@@ -157,9 +157,6 @@ BotSettings:
   # The bot token, this is obtained from the Discord Developer Portal
   token: thisissomerandomediscordbotapitokendonotuseit
 
-  # The name of the bot displayed in all messages
-  name: Plexbot
-
   # The prefix the bot will use to listen for commands. Must be contained within ""
   prefix: "!"
 
@@ -217,10 +214,6 @@ DatabaseSettings:
   #            will fail to startup and the database will require manual migrations to the expected schema.
   generationStrategy: update
 
-  # The maximum number of tasks that should be executed at once. If your bot is operating
-  # slowly or crashing while processing multiple tasks, decrease this number.
-  concurentTasks: 8
-
 
 ###########################
 ### Channel ID Settings ###
@@ -240,9 +233,6 @@ ChannelSettings:
 
   # The ID of the channel for notifications about new TV episodes that have been added to the library
   newEpisodeNotificationChannel: 012345678901234567
-
-  # The ID of the channel for notifications about new TV episodes that have been added to the library
-  newEpisodesChannelId: 012345678901234567
 
   # The ID of the channel for notifications about movies that have been added to the waiting list
   movieWaitlistChannel: 012345678901234567
@@ -266,12 +256,6 @@ FolderSettings:
   # Place movies that need to get imported into the movies folder and episodes
   # that need to get imported within the episodes folder.
   importFolder: /path/to/import/folder/
-
-  # The folder that the TV shows are stored in
-  tvFolder: /path/to/tv/folder
-
-  # The folder where media to be imported into the libraries is stored in
-  importFolder: /path/to/import/folder
 
   # The folder that is used for temporary file operations
   tempFolder: /path/to/temp/folder/
@@ -321,27 +305,6 @@ ImportSettings:
   # hidden files on a system are automatically ignored.
   ignoredFiles:
     - "some-file.mp4"
-    - ".stignore"
-
-  # Check if the mount file (mount.pb) exists in the movie, tv, and import folders
-  # This can be used to make sure that remote filesystems are mounted and the files
-  # are accessible to the bot.
-  checkMount: true
-
-
-###############################
-### Import Manager Settings ###
-###############################
-ImportSettings:
-  # List of users (by ID) that are allowed to use the import command
-  authorizedUsers:
-    - 012345678901234567
-    - 012345678901234567
-
-  # List of files to ignore in the import folder during the import process
-  ignoredFiles:
-    - "mount.pb"
-    - ".DS_Store"
     - ".stignore"
 
 
