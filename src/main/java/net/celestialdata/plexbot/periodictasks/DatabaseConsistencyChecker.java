@@ -87,9 +87,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
                         .setTitle("Data Inconsistency Found")
                         .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
                                 "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "Show")
-                        .addInlineField("Show ID:", show.id)
-                        .addField("Show name:", show.name)
+                        .addInlineField("Media type:", "```Show```")
+                        .addInlineField("Show ID:", "```" + show.id + "```")
+                        .addInlineField("Show name:", "```" + show.name + "```")
                         .setColor(Color.YELLOW)
                 );
             }
@@ -113,10 +113,10 @@ public class DatabaseConsistencyChecker extends BotProcess {
                         .setTitle("Data Inconsistency Found")
                         .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
                                 "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "Season")
-                        .addInlineField("Season #:", String.valueOf(season.number))
-                        .addInlineField("Season ID:", String.valueOf(season.id))
-                        .addField("Associated show:", season.show.name)
+                        .addInlineField("Media type:", "```Season```")
+                        .addInlineField("Season #:", "```" + season.number + "```")
+                        .addInlineField("Season ID:", "```" + season.id + "```")
+                        .addInlineField("Associated show:", "```" + season.show.name + "```")
                         .setColor(Color.YELLOW)
                 );
             }
@@ -168,12 +168,12 @@ public class DatabaseConsistencyChecker extends BotProcess {
                         .setTitle("Data Inconsistency Found")
                         .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
                                 "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "Episode")
-                        .addInlineField("Episode ID:", episode.id)
-                        .addInlineField("Episode #:", String.valueOf(episode.number))
-                        .addInlineField("Season #:", String.valueOf(episode.season.number))
-                        .addField("Episode title:", episode.title)
-                        .addField("Associated show:", episode.show.name)
+                        .addInlineField("Media type:", "```Episode```")
+                        .addInlineField("Episode ID:", "```" + episode.id + "```")
+                        .addInlineField("Episode #:", "```" + episode.number + "```")
+                        .addInlineField("Season #:", "```" + episode.season.number + "```")
+                        .addInlineField("Episode title:", "```" + episode.title + "```")
+                        .addInlineField("Associated show:", "```" + episode.show.name + "```")
                         .setColor(Color.YELLOW)
                 );
             } else {
@@ -197,12 +197,12 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     .setTitle("Error fetching media information")
                     .setDescription("An error occurred while fetching information about the following media during the " +
                             "database consistency checker. Please make sure this media file is not corrupted.")
-                    .addInlineField("Media type:", "Episode")
-                    .addInlineField("Episode ID:", episode.id)
-                    .addInlineField("Episode #:", String.valueOf(episode.number))
-                    .addInlineField("Season #:", String.valueOf(episode.season.number))
-                    .addField("Episode title:", episode.title)
-                    .addField("Associated show:", episode.show.name)
+                    .addInlineField("Media type:", "```Episode```")
+                    .addInlineField("Episode ID:", "```" + episode.id + "```")
+                    .addInlineField("Episode #:", "```" + episode.number + "```")
+                    .addInlineField("Season #:", "```" + episode.season.number + "```")
+                    .addInlineField("Episode title:", "```" + episode.title + "```")
+                    .addInlineField("Associated show:", "```" + episode.show.name + "```")
                     .setColor(Color.YELLOW)
             );
         }
@@ -224,9 +224,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
                         .setTitle("Data Inconsistency Found")
                         .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
                                 "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "Movie")
-                        .addInlineField("Media ID:", movie.id)
-                        .addField("Media name:", movie.title)
+                        .addInlineField("Media type:", "```Movie```")
+                        .addInlineField("Media ID:", "```" + movie.id + "```")
+                        .addInlineField("Media name:", "```" + movie.title + "```")
                         .setColor(Color.YELLOW)
                 );
             } else {
@@ -250,9 +250,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     .setTitle("Error fetching media information")
                     .setDescription("An error occurred while fetching information about the following media during the " +
                             "database consistency checker. Please make sure this media file is not corrupted.")
-                    .addInlineField("Media type:", "Movie")
-                    .addInlineField("Media ID:", movie.id)
-                    .addField("Media name:", movie.title)
+                    .addInlineField("Media type:", "```Movie```")
+                    .addInlineField("Media ID:", "```" + movie.id + "```")
+                    .addInlineField("Media name:", "```" + movie.title + "```")
                     .setColor(Color.YELLOW)
             );
         }
