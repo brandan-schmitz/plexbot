@@ -20,7 +20,7 @@
     <quarkus.platform.version>2.0.0.Final</quarkus.platform.version>
     <quarkus-plugin.version>2.0.0.Final</quarkus-plugin.version>
     <quarkus.ssl.native>true</quarkus.ssl.native>
-    <version-date>06/23/2021</version-date>
+    <version-date>06/24/2021</version-date>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -87,11 +87,6 @@
       <artifactId>javacord</artifactId>
       <version>3.3.0</version>
       <type>pom</type>
-    </dependency>
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>antlr4-runtime</artifactId>
-      <version>4.9.2</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.logmanager</groupId>

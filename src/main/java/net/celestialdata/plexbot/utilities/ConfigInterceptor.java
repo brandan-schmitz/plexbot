@@ -14,6 +14,17 @@ public class ConfigInterceptor implements ConfigSourceInterceptor {
     public ConfigValue getValue(final ConfigSourceInterceptorContext context, final String name) {
         ConfigValue configValue = context.proceed(name);
         switch (name) {
+            case "quarkus.banner.enabled":
+                configValue = configValue.withValue("false");
+                break;
+            case "quarkus.log.level":
+                var logLevel = context.proceed("BotSettings.logLevel");
+                configValue = logLevel.withName(name);
+                break;
+            case "quarkus.hibernate-orm.database.generation":
+                var generationStrategy = context.proceed("DatabaseSettings.generationStrategy");
+                configValue = generationStrategy.withName(name);
+                break;
             case "quarkus.datasource.jdbc.url":
                 var connectionAddress = context.proceed("DatabaseSettings.address");
                 var connectionPort = context.proceed("DatabaseSettings.port");
@@ -24,7 +35,6 @@ public class ConfigInterceptor implements ConfigSourceInterceptor {
                         connectionPort.getValue() + "/" +
                         databaseName.getValue()
                 ).withName(name);
-
                 break;
             case "quarkus.datasource.username":
                 var username = context.proceed("DatabaseSettings.username");
