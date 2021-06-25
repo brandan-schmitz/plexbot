@@ -3,10 +3,7 @@ package net.celestialdata.plexbot.periodictasks;
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
 import io.quarkus.scheduler.Scheduled;
-import net.celestialdata.plexbot.entities.Episode;
-import net.celestialdata.plexbot.entities.Movie;
-import net.celestialdata.plexbot.entities.Season;
-import net.celestialdata.plexbot.entities.Show;
+import net.celestialdata.plexbot.entities.*;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -50,6 +47,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
     @Inject
     FileUtilities fileUtilities;
+
+    @Inject
+    EntityUtilities entityUtilities;
 
     // Helper method to send a warning message to the bot owner
     private void sendWarning(EmbedBuilder message) {
@@ -157,6 +157,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
     @TransactionConfiguration(timeout = 120)
     public void verifyEpisode(Episode episode) {
         try {
+            // Ensure we get a updated copy of the episode from the DB in the event it was upgraded while this was processing
+            episode = entityUtilities.getEpisode(episode.id);
+
             if (Files.notExists(Path.of(tvFolder + "/" + episode.show.foldername + "/" + episode.season.foldername + "/" + episode.filename))) {
                 logger.warn("Data inconsistency found: Episode " + episode.number + " of season " + episode.season.number + " of " + episode.show.name +
                         " could not be found on the filesystem, however it is listed in the database.");
@@ -210,6 +213,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
     @TransactionConfiguration(timeout = 120)
     public void verifyMovie(Movie movie) {
         try {
+            // Ensure we get a updated copy of the episode from the DB in the event it was upgraded while this was processing
+            movie = entityUtilities.getMovie(movie.id);
+
             if (Files.notExists(Path.of(movieFolder + "/" + movie.folderName + "/" + movie.filename))) {
                 logger.warn("Data inconsistency found: Movie \"" + movie.title + " (" + movie.year + ") {imdb-" + movie.id +
                         "}\" could not be found on the filesystem, however it is listed in the database.");
