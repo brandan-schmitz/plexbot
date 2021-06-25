@@ -6,20 +6,64 @@ BotSettings:
   token: thisissomerandomediscordbotapitokendonotuseit
 
   # The name of the bot displayed in all messages
-  botName: Plexbot
+  name: Plexbot
 
   # The prefix the bot will use to listen for commands. Must be contained within ""
-  botPrefix: "!"
+  prefix: "!"
 
-  # The ID of the user responsible for managing the bot
-  adminUserId: 012345678901234567
+  # The ID of the user that owns the bot
+  ownerID: 012345678901234567
 
   # URL of Image displayed in place of movies that do not have a poster image
   noPosterImageUrl: https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png
 
-  # Base URL of the current YTS domain to look at for API requests
-  # At the time of this commit, this is the current domain so this can be left as is
-  currentYtsDomain: https://yts.mx
+  # Level at of which the bot will start displaying logging information. Valid logging
+  # levels are as follows in order from most output to least output:
+  #  - ALL
+  #  - TRACE
+  #  - DEBUG
+  #  - INFO
+  #  - WARN
+  #  - ERROR
+  #  - FATAL
+  #  - OFF
+  logLevel: INFO
+
+
+#########################
+### Database Settings ###
+#########################
+DatabaseSettings:
+  # The IP or URL of the server hosting the bots database
+  address: 127.0.0.1
+
+  # The database server port
+  port: 3306
+
+  # The name of the database the bot should use
+  name: plexbot
+
+  # The username the bot will use to access the database
+  username: plexbot
+
+  # The password the bot will use to access the database
+  password: somepassword
+
+  # Configure how to handle updating and creating the database scheme. Valid options
+  # are as follows. Please make sure you understand the implications of your selected option.
+  #  - none: Take no action, this will require you to manually load a database
+  #          schema if one does not exist in the database.
+  #
+  #  - create: Create a blank database scheme if one does not exist. This will
+  #            only occur if the database is currently empty.
+  #
+  #  - drop-and-create: Drop the existing database and create a new empty one. Use this
+  #                     with caution as it will remove all data in an existing database.
+  #
+  #  - update: Use a best-effort to update the existing database to match what is defined in the
+  #            application code. If a change that could cause data-loss is defined, the application
+  #            will fail to startup and the database will require manual migrations to the expected schema.
+  generationStrategy: update
 
   # The maximum number of tasks that should be executed at once. If your bot is operating
   # slowly or crashing while processing multiple tasks, decrease this number.
@@ -30,33 +74,46 @@ BotSettings:
 ### Channel ID Settings ###
 ###########################
 ChannelSettings:
-
   # The ID of the channel for listing movies that can be upgraded to a better resolution
-  upgradableMoviesChannelId: 012345678901234567
+  upgradeApprovalChannel: 012345678901234567
 
   # The ID of the channel for notifications about movies that have been upgraded to a better resolution
-  upgradedMoviesChannelId: 012345678901234567
+  upgradeNotificationChannel: 012345678901234567
 
   # The ID of the channel where the bots status message will be located
-  botStatusChannelId: 012345678901234567
+  botStatusChannel: 012345678901234567
 
   # The ID of the channel for notifications about movies that have been added to the library
-  newMoviesChannelId: 012345678901234567
+  newMovieNotificationChannel: 012345678901234567
+
+  # The ID of the channel for notifications about new TV episodes that have been added to the library
+  newEpisodeNotificationChannel: 012345678901234567
 
   # The ID of the channel for notifications about new TV episodes that have been added to the library
   newEpisodesChannelId: 012345678901234567
 
   # The ID of the channel for notifications about movies that have been added to the waiting list
-  waitlistChannelId: 012345678901234567
+  movieWaitlistChannel: 012345678901234567
 
 
 #######################
 ### Folder Settings ###
 #######################
+# IMPORTANT: All file paths must end with a trailing / in order for the bot to properly work
 FolderSettings:
-
   # The folder that the movies are stored in
-  movieFolder: /path/to/movie/folder
+  movieFolder: /path/to/movie/folder/
+
+  # The folder that the TV shows are stored in
+  tvFolder: /path/to/tv/folder/
+
+  # The folder where media to be imported into the libraries is stored in
+  # The import folder should be empty except two folders inside:
+  #   - movies
+  #   - episodes
+  # Place movies that need to get imported into the movies folder and episodes
+  # that need to get imported within the episodes folder.
+  importFolder: /path/to/import/folder/
 
   # The folder that the TV shows are stored in
   tvFolder: /path/to/tv/folder
@@ -65,7 +122,54 @@ FolderSettings:
   importFolder: /path/to/import/folder
 
   # The folder that is used for temporary file operations
-  tempFolder: /path/to/temp/folder
+  tempFolder: /path/to/temp/folder/
+
+  # Allows you to customize what is allowed in filenames or not. Items listed under the remove
+  # section are simply removed. Items under the replace section are replaced with the content of
+  # the associated replacement string.
+  blacklistedCharacters:
+    remove:
+      - ">"
+      - "<"
+      - ":"
+      - "\""
+      - "/"
+      - "\\"
+      - "|"
+      - "?"
+      - "*"
+      - "."
+      - "’"
+      - "…"
+    replace:
+      - original: "·"
+        replacement: "-"
+      - original: "–"
+        replacement: "-"
+      - original: "Æ"
+        replacement: "Ae"
+      - original: "Я"
+        replacement: "R"
+      - original: "æ"
+        replacement: "ae"
+
+
+###############################
+### Import Manager Settings ###
+###############################
+ImportSettings:
+  # List of users (by ID) that are allowed to use the import command
+  authorizedUsers:
+    - "012345678901234567"
+    - "012345678901234567"
+
+  # List of files to ignore in the import folder during the import process
+  # This is matched by the end of a filename, so an entry of ".srt" below would
+  # remove any file that ends with ".srt' from the import process. Additionally,
+  # hidden files on a system are automatically ignored.
+  ignoredFiles:
+    - "some-file.mp4"
+    - ".stignore"
 
   # Check if the mount file (mount.pb) exists in the movie, tv, and import folders
   # This can be used to make sure that remote filesystems are mounted and the files
@@ -89,48 +193,54 @@ ImportSettings:
     - ".stignore"
 
 
-#########################
-### Database Settings ###
-#########################
-DatabaseSettings:
-  # The IP or URL of the server hosting the bots database
-  dbConnectionAddress: 127.0.0.1
-
-  # The database server port
-  dbPort: 3306
-
-  # The name of the database the bot should use
-  dbName: plexbot
-
-  # The username the bot will use to access the database
-  dbUsername: plexbot
-
-  # The password the bot will use to access the database
-  dbPassword: somepassword
-
-
 ##################################
 ### Plex Media Server Settings ###
 ##################################
-PlexServerSettings:
-  # The IP address of the Plex Media Server. If the bot is on the same network as the Plex server,
-  # this can be the private/local IP address, otherwise this should be the public IP address of the server
-  plexConnectionAddress: 127.0.0.1
-
-  # The port of the Plex Media Server. Plex defaults to 32400 unless it is manually changed
-  plexPort: 32400
-
-  # The username to your plex.tv account
-  plexUsername: username
-
-  # The password to your plex.tv account.
-  plexPassword: Password1234
-
+PlexSettings:
   # The Client Identifier used to identify individual devices on a Plex account. This needs to be a unique
   # UUID. You can generate one with the following commands:
   #   Windows (Powershell): [guid]::NewGuid()
   #   macOS and Linux: uuidgen
-  clientIdentifier: 8A3029AF-05EC-488B-91F5-FBA66706000F
+  clientIdentifier: 034CFB4E-F1C6-4518-A162-C4DB9E00E363
+
+  # The protocol (http/https), IP/DNS address, and port number of the Plex server to use
+  # connect to when refreshing media. Example address: http://127.0.0.1:32400
+  address/mp-rest/url: "http://127.0.0.1:32400"
+
+  # Username to your plex.tv account
+  username: username
+
+  # Password to your plex.tv account
+  password: password
+
+
+######################################
+### SyncThing Integration Settings ###
+######################################
+SyncthingSettings:
+  # Should the SyncThing integration be enabled? This prevents the bot from modifying media
+  # if the system is syncing data between folders. Currently this is only used to prevent the
+  # bot from importing media from the import folder if a sync is in progress.
+  enabled: true
+
+  # The protocol (http/https), IP/DNS address, and port number of the SyncThing server to use as
+  # an entrance to the SyncThing cluster. This can be any SyncThing node in the cluster.
+  # Example address: http://127.0.0.1:8384
+  address/mp-rest/url: "http://127.0.0.1:8384"
+
+  # The ID of the import folder as displayed on SyncThing
+  importFolderId: plexbot-import
+
+  # The ID of the movies folder as displayed on SyncThing
+  movieFolderId: plex-movies
+
+  # The ID of the TV folder as displayed on SyncThing
+  tvFolderId: plex-tv
+
+  # The ID's of the devices that the bot should monitor for sync progress
+  devices:
+    - "0123456-0123456-0123456-0123456-0123456-0123456-0123456-0123456"
+    - "9876543-9876543-9876543-9876543-9876543-9876543-9876543-9876543"
 
 
 ################
@@ -140,7 +250,7 @@ ApiKeys:
   # The API key for all requests to the OMDb API for getting IMDB OmdbMovie ID's.
   # You can get an API ket for this at http://www.omdbapi.com/ however it is recommended to purchase
   # at least the Basic plan through https://www.patreon.com/join/omdb to avoid API key limits.
-  omdbApiKey: somekey
+  omdbApiKey: somerandomeapikeygoeshereotherwiseitwontwork
 
   # Private API key for real-debrid which is where the movies get downloaded from
   # In order to get an API key, you will need to register an account at https://real-debrid.com
@@ -148,3 +258,15 @@ ApiKeys:
   # to https://real-debrid.com/apitoken to retrieve your token. You will need to purchase more time
   # before your plan expires otherwise the bot will not function.
   realDebridKey: somerandomeapikeygoeshereotherwiseitwontwork
+
+  # The API key to access the SyncThing server defined in the SyncThing settings block. This API key
+  # can be found on your SyncThing server UI under the Advanced Settings menu (Actions -> Advanced -> API Key).
+  syncthingApiKey: somerandomeapikeygoeshereotherwiseitwontwork
+
+  # The API key for all requests to TheTVDB API. You can get this key from https://thetvdb.com and will
+  # need to register to get a v4 API key. This is done once for the application.
+  tvdbApiKey: somerandomeapikeygoeshereotherwiseitwontwork
+
+  # The unique subscriber PIN code for TheTVDB API. This is retrieved from a users dashboard on https://thetvdb.com
+  # and is required in addition to the API key above.
+  tvdbSubscriberPin: somepin
