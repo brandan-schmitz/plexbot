@@ -51,8 +51,18 @@ public class EntityUtilities {
     }
 
     @Transactional
+    public List<MovieSubtitle> getAllMovieSubtitles() {
+        return MovieSubtitle.listAll();
+    }
+
+    @Transactional
     public List<Episode> getAllEpisodes() {
         return Episode.listAll();
+    }
+
+    @Transactional
+    public List<EpisodeSubtitle> getAllEpisodeSubtitles() {
+        return EpisodeSubtitle.listAll();
     }
 
     @Transactional
