@@ -66,11 +66,6 @@ public class EntityUtilities {
     }
 
     @Transactional
-    public List<Season> getAllSeasons() {
-        return Season.listAll();
-    }
-
-    @Transactional
     public List<Show> getAllShows() {
         return Show.listAll();
     }
@@ -86,8 +81,8 @@ public class EntityUtilities {
     }
 
     @Transactional
-    public void addOrUpdateEpisode(TvdbExtendedEpisode episodeData, String filename, Season season, Show show) {
-        var episodeFileData = fileUtilities.getMediaInfo(tvFolder + show.foldername + "/" + season.foldername + "/" + filename);
+    public void addOrUpdateEpisode(TvdbExtendedEpisode episodeData, String filename, Show show) {
+        var episodeFileData = fileUtilities.getMediaInfo(tvFolder + show.foldername + "/Season " + episodeData.seasonNumber + "/" + filename);
         var fileType = FileType.determineFiletype(filename);
         Episode episode = new Episode();
 
@@ -95,7 +90,7 @@ public class EntityUtilities {
         episode.title = episodeData.name;
         episode.date = episodeData.aired;
         episode.number = episodeData.number;
-        episode.season = season;
+        episode.season = String.valueOf(episodeData.seasonNumber);
         episode.show = show;
         episode.filename = filename;
         episode.filetype = fileType.getTypeString();
@@ -137,31 +132,6 @@ public class EntityUtilities {
         }
 
         entityManager.merge(episodeSubtitle).persist();
-    }
-
-    @Transactional
-    public Season findSeason(Show show, int seasonNumber) {
-        return Season.find("show = ?1 and number = ?2", show, seasonNumber).firstResult();
-    }
-
-    @Transactional
-    public boolean seasonExists(Show show, int seasonNumber) {
-        return Season.count("show = ?1 and number = ?2", show, seasonNumber) == 1;
-    }
-
-    @Transactional
-    public void addOrUpdateSeason(int seasonNumber, String seasonFoldername, Show show) {
-        Season season = new Season();
-
-        season.number = seasonNumber;
-        season.foldername = seasonFoldername;
-        season.show = show;
-
-        if (seasonExists(show, seasonNumber)) {
-            season.id = findSeason(show, seasonNumber).id;
-        }
-
-        entityManager.merge(season).persist();
     }
 
     @Transactional

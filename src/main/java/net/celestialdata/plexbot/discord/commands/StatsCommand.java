@@ -51,7 +51,6 @@ public class StatsCommand implements Command<Message> {
         var episodes = entityUtilities.getAllEpisodes();
         var episodeSubtitles = entityUtilities.getAllEpisodeSubtitles();
         var shows = entityUtilities.getAllShows();
-        var seasons = entityUtilities.getAllSeasons();
 
         // Create counters for some of the stats
         long totalDuration = 0;
@@ -99,7 +98,6 @@ public class StatsCommand implements Command<Message> {
                         "you will find several different statistics about all the media.")
                 .addInlineField("Movies:", "```" + movies.size() + "```")
                 .addInlineField("Shows:", "```" + shows.size() + "```")
-                .addInlineField("Seasons:", "```" + seasons.size() + "```")
                 .addInlineField("Episodes:", "```" + episodes.size() + "```")
                 .addInlineField("Subtitles:", "```" + (movieSubtitles.size() + episodeSubtitles.size()) + "```")
                 .addInlineField("File Size:", "```" + FileUtils.byteCountToDisplaySize(totalSize) + "```")

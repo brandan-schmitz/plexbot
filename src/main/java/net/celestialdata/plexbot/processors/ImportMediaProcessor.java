@@ -534,17 +534,11 @@ public class ImportMediaProcessor extends BotProcess {
                     // Add the show to the database
                     entityUtilities.addOrUpdateSeries(seriesResponse.series, showFoldername);
 
-                    // Create the season folder
-                    fileUtilities.createFolder(tvFolder + showFoldername + "/" + seasonFoldername);
-
                     // Fetch the show from the database
                     var show = entityUtilities.findSeries(String.valueOf(seriesResponse.series.id));
 
-                    // Add the season to the database if it does not exist
-                    entityUtilities.addOrUpdateSeason(episodeResponse.extendedEpisode.seasonNumber, seasonFoldername, show);
-
-                    // Fetch the season from the database
-                    var season = entityUtilities.findSeason(show, episodeResponse.extendedEpisode.seasonNumber);
+                    // Create the season folder
+                    fileUtilities.createFolder(tvFolder + showFoldername + "/" + seasonFoldername);
 
                     // Verify that the file does not exist. If it does and overwrite is not specified skip this file
                     if (Files.exists(Paths.get(tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename)) && !overwrite) {
@@ -569,7 +563,7 @@ public class ImportMediaProcessor extends BotProcess {
                         var linkedEpisode = entityUtilities.getEpisode(parsedId);
                         entityUtilities.addOrUpdateEpisodeSubtitle(itemFilename, (ParsedSubtitleFilename) parsedFilename, linkedEpisode);
                     } else {
-                        entityUtilities.addOrUpdateEpisode(episodeResponse.extendedEpisode, itemFilename, season, show);
+                        entityUtilities.addOrUpdateEpisode(episodeResponse.extendedEpisode, itemFilename, show);
                     }
 
                     // Send a message showing the episode has been added to the server if it is a episode
