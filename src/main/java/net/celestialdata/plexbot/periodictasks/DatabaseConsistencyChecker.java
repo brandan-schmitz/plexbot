@@ -63,14 +63,13 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
         // Get the lists of media in the database
         List<Show> shows = Show.listAll();
-        List<Season> seasons = Season.listAll();
         List<Episode> episodes = Episode.listAll();
         List<Movie> movies = Movie.listAll();
 
         // Create items to track progress for logging reasons
         AtomicInteger progress = new AtomicInteger(1);
         AtomicInteger overallProgress = new AtomicInteger(1);
-        var totalSize = shows.size() + seasons.size() + episodes.size() + movies.size();
+        var totalSize = shows.size() + episodes.size() + movies.size();
         DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
 
         // Verify that all the folders for the shows in the DB exist
@@ -87,36 +86,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
                         .setTitle("Data Inconsistency Found")
                         .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
                                 "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "Show")
-                        .addInlineField("Show ID:", show.id)
-                        .addField("Show name:", show.name)
-                        .setColor(Color.YELLOW)
-                );
-            }
-
-            progress.getAndIncrement();
-            overallProgress.getAndIncrement();
-        });
-
-        // Reset the progress counter and verify that all season folders exist
-        progress.set(1);
-        seasons.forEach(season -> {
-            logger.trace("Verifying season (" + progress + "/" + seasons.size() + "): Season " + season.number + " - " + season.show.name);
-            updateProcessString("Database Consistency Checker: " +
-                    decimalFormatter.format(((double) overallProgress.get() / totalSize) * 100) + "%");
-
-            if (!Files.isDirectory(Path.of(tvFolder + "/" + season.show.foldername + "/" + season.foldername))) {
-                logger.warn("Data inconsistency found: Season " + season.number + " of " + season.show.name +
-                        " could not be found on the filesystem, however it is listed in the database.");
-
-                sendWarning(new EmbedBuilder()
-                        .setTitle("Data Inconsistency Found")
-                        .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
-                                "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "Season")
-                        .addInlineField("Season #:", String.valueOf(season.number))
-                        .addInlineField("Season ID:", String.valueOf(season.id))
-                        .addField("Associated show:", season.show.name)
+                        .addInlineField("Media type:", "```Show```")
+                        .addInlineField("Show ID:", "```" + show.id + "```")
+                        .addInlineField("Show name:", "```" + show.name + "```")
                         .setColor(Color.YELLOW)
                 );
             }
@@ -128,7 +100,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
         // Reset the progress counter and verify that all episodes exist
         progress.set(1);
         episodes.forEach(episode -> {
-            logger.trace("Verifying episode (" + progress + "/" + episodes.size() + "): s" + episode.season.number +
+            logger.trace("Verifying episode (" + progress + "/" + episodes.size() + "): s" + episode.season +
                     "e" + episode.number + " - " + episode.show.name);
             updateProcessString("Database Consistency Checker - " +
                     decimalFormatter.format(((double) overallProgress.get() / totalSize) * 100) + "%");
@@ -160,25 +132,25 @@ public class DatabaseConsistencyChecker extends BotProcess {
             // Ensure we get a updated copy of the episode from the DB in the event it was upgraded while this was processing
             episode = entityUtilities.getEpisode(episode.id);
 
-            if (Files.notExists(Path.of(tvFolder + "/" + episode.show.foldername + "/" + episode.season.foldername + "/" + episode.filename))) {
-                logger.warn("Data inconsistency found: Episode " + episode.number + " of season " + episode.season.number + " of " + episode.show.name +
+            if (Files.notExists(Path.of(tvFolder + "/" + episode.show.foldername + "/Season " + episode.season + "/" + episode.filename))) {
+                logger.warn("Data inconsistency found: Episode " + episode.number + " of season " + episode.season + " of " + episode.show.name +
                         " could not be found on the filesystem, however it is listed in the database.");
 
                 sendWarning(new EmbedBuilder()
                         .setTitle("Data Inconsistency Found")
                         .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
                                 "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "Episode")
-                        .addInlineField("Episode ID:", episode.id)
-                        .addInlineField("Episode #:", String.valueOf(episode.number))
-                        .addInlineField("Season #:", String.valueOf(episode.season.number))
-                        .addField("Episode title:", episode.title)
-                        .addField("Associated show:", episode.show.name)
+                        .addInlineField("Media type:", "```Episode```")
+                        .addInlineField("Episode ID:", "```" + episode.id + "```")
+                        .addInlineField("Episode #:", "```" + episode.number + "```")
+                        .addInlineField("Season #:", "```" + episode.season + "```")
+                        .addInlineField("Episode title:", "```" + episode.title + "```")
+                        .addInlineField("Associated show:", "```" + episode.show.name + "```")
                         .setColor(Color.YELLOW)
                 );
             } else {
                 // Ensure information about the media file is up to date
-                var mediaFileData = fileUtilities.getMediaInfo(tvFolder + "/" + episode.show.foldername + "/" + episode.season.foldername + "/" + episode.filename);
+                var mediaFileData = fileUtilities.getMediaInfo(tvFolder + "/" + episode.show.foldername + "/Season " + episode.season + "/" + episode.filename);
 
                 // Update movie data
                 episode.codec = mediaFileData.codec;
@@ -197,12 +169,12 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     .setTitle("Error fetching media information")
                     .setDescription("An error occurred while fetching information about the following media during the " +
                             "database consistency checker. Please make sure this media file is not corrupted.")
-                    .addInlineField("Media type:", "Episode")
-                    .addInlineField("Episode ID:", episode.id)
-                    .addInlineField("Episode #:", String.valueOf(episode.number))
-                    .addInlineField("Season #:", String.valueOf(episode.season.number))
-                    .addField("Episode title:", episode.title)
-                    .addField("Associated show:", episode.show.name)
+                    .addInlineField("Media type:", "```Episode```")
+                    .addInlineField("Episode ID:", "```" + episode.id + "```")
+                    .addInlineField("Episode #:", "```" + episode.number + "```")
+                    .addInlineField("Season #:", "```" + episode.season + "```")
+                    .addInlineField("Episode title:", "```" + episode.title + "```")
+                    .addInlineField("Associated show:", "```" + episode.show.name + "```")
                     .setColor(Color.YELLOW)
             );
         }
@@ -224,9 +196,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
                         .setTitle("Data Inconsistency Found")
                         .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
                                 "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "Movie")
-                        .addInlineField("Media ID:", movie.id)
-                        .addField("Media name:", movie.title)
+                        .addInlineField("Media type:", "```Movie```")
+                        .addInlineField("Media ID:", "```" + movie.id + "```")
+                        .addInlineField("Media name:", "```" + movie.title + "```")
                         .setColor(Color.YELLOW)
                 );
             } else {
@@ -250,9 +222,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     .setTitle("Error fetching media information")
                     .setDescription("An error occurred while fetching information about the following media during the " +
                             "database consistency checker. Please make sure this media file is not corrupted.")
-                    .addInlineField("Media type:", "Movie")
-                    .addInlineField("Media ID:", movie.id)
-                    .addField("Media name:", movie.title)
+                    .addInlineField("Media type:", "```Movie```")
+                    .addInlineField("Media ID:", "```" + movie.id + "```")
+                    .addInlineField("Media name:", "```" + movie.title + "```")
                     .setColor(Color.YELLOW)
             );
         }

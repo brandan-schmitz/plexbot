@@ -18,7 +18,7 @@ public class EpisodeSubtitle extends PanacheEntityBase {
     public String language;
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "subtitle_episode", referencedColumnName = "episode_id")
+    @JoinColumn(name = "subtitle_episode", referencedColumnName = "episode_id", nullable = false)
     public Episode episode;
 
     @Column(name = "subtitle_filename", nullable = false, unique = true)

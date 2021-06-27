@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.celestialdata.plexbot</groupId>
   <artifactId>plexbot</artifactId>
-  <version>2.0.1</version>
+  <version>2.0.2</version>
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -21,7 +21,7 @@
     <quarkus-plugin.version>2.0.0.Final</quarkus-plugin.version>
     <quarkus.ssl.native>true</quarkus.ssl.native>
     <quarkus.swagger-ui.always-include>true</quarkus.swagger-ui.always-include>
-    <version-date>06/24/2021</version-date>
+    <version-date>06/27/2021</version-date>
   </properties>
   <dependencyManagement>
     <dependencies>

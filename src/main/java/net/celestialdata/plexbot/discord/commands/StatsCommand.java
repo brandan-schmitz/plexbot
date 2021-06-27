@@ -47,13 +47,13 @@ public class StatsCommand implements Command<Message> {
 
         // Fetch lists of all the media on the server
         var movies = entityUtilities.getAllMovies();
+        var movieSubtitles = entityUtilities.getAllMovieSubtitles();
         var episodes = entityUtilities.getAllEpisodes();
+        var episodeSubtitles = entityUtilities.getAllEpisodeSubtitles();
         var shows = entityUtilities.getAllShows();
-        var seasons = entityUtilities.getAllSeasons();
 
         // Create counters for some of the stats
         long totalDuration = 0;
-        long totalSize;
 
         // Calculate the duration of all movies in minutes
         for (Movie movie : movies) {
@@ -70,7 +70,7 @@ public class StatsCommand implements Command<Message> {
         var tvSize = FileUtils.sizeOfDirectory(new File(tvFolder));
 
         // Calculate the total filesize of everything
-        totalSize = movieSize + tvSize;
+        long totalSize = movieSize + tvSize;
 
         // Calculate the number of years
         var years = totalDuration / 525600;
@@ -98,8 +98,8 @@ public class StatsCommand implements Command<Message> {
                         "you will find several different statistics about all the media.")
                 .addInlineField("Movies:", "```" + movies.size() + "```")
                 .addInlineField("Shows:", "```" + shows.size() + "```")
-                .addInlineField("Seasons:", "```" + seasons.size() + "```")
                 .addInlineField("Episodes:", "```" + episodes.size() + "```")
+                .addInlineField("Subtitles:", "```" + (movieSubtitles.size() + episodeSubtitles.size()) + "```")
                 .addInlineField("File Size:", "```" + FileUtils.byteCountToDisplaySize(totalSize) + "```")
                 .addField("Total Playback Duration:", "```" +
                         years + " years, " + months + " months, " + days + " days, " + hours + " hours, and " + minutes + " minutes```")

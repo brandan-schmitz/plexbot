@@ -22,9 +22,8 @@ public class Episode extends PanacheEntityBase {
     @Column(name = "episode_number")
     public int number;
 
-    @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "episode_season", referencedColumnName = "season_id", nullable = false)
-    public Season season;
+    @Column(name = "episode_season")
+    public String season;
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "episode_show", referencedColumnName = "show_id", nullable = false)
