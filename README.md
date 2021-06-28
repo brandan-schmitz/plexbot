@@ -16,7 +16,7 @@ This project originally started in the summer of 2017 as a way for me to manage 
 
 2. [Command Documentation](#command-documentation)
 
-3. [Naming Import Media](#naming-import-media)]
+3. [Naming Import Media](#naming-import-media)
 
    a. [Deciding which ID to use](#deciding-which-id-to-use)
 
