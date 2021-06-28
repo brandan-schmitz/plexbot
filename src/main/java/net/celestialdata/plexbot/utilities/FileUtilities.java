@@ -251,8 +251,14 @@ public class FileUtilities {
             // Get the unparsed duration
             var durationString = file.info("General;%Duration/String3%");
 
+            // Get the codec type and verify it is not empty, if it is fetch and parse from another source
+            var codecString = file.info("Video;%Encoded_Library_Name%");
+            if (codecString.isBlank()) {
+                codecString = file.info("Video;%InternetMediaType%").replace("video/", "");
+            }
+
             // Set the media info information
-            mediaInfoData.codec = file.info("Video;%Encoded_Library_Name%");
+            mediaInfoData.codec = codecString;
             mediaInfoData.width = Integer.parseInt(file.info("Video;%Width%"));
             mediaInfoData.height = Integer.parseInt(file.info("Video;%Height%"));
             mediaInfoData.duration = (Integer.parseInt(durationString.substring(0, 2)) * 60) +

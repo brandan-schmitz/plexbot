@@ -51,7 +51,7 @@ public class ImportMediaProcessor extends BotProcess {
     private final DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
     private LocalDateTime lastUpdate = LocalDateTime.now();
     private int totalNumFiles = 0;
-    private int currentPos = 0;
+    private int currentPos = 1;
     private boolean overwrite = false;
     private Message replyMessage;
     private ListenerManager<ReactionAddListener> reactionListener;
@@ -144,6 +144,7 @@ public class ImportMediaProcessor extends BotProcess {
         this.overwrite = overwrite;
         this.replyMessage = replyMessage;
         this.stopProcess = false;
+        this.currentPos = 1;
 
         // Configure the reaction listener used to stop the import process
         this.replyMessage.addReaction(BotEmojis.STOP);
@@ -185,9 +186,7 @@ public class ImportMediaProcessor extends BotProcess {
                             reportError(failure);
                             endProcess();
                         },
-                        () -> {
-
-                        }
+                        () -> {}
                 );
             }
 
@@ -243,7 +242,6 @@ public class ImportMediaProcessor extends BotProcess {
 
             // Calculate the total number of files to process and ensure the current position is at 0
             totalNumFiles = episodeMediaFiles.size() + movieMediaFiles.size() + episodeSubtitleFiles.size() + movieSubtitleFiles.size();
-            currentPos = 0;
 
             // Ensure there are actually files to import, otherwise exit
             if (totalNumFiles == 0) {
@@ -255,7 +253,7 @@ public class ImportMediaProcessor extends BotProcess {
             }
 
             // Update the progress message to show it has started processing media
-            this.replyMessage.edit(messageFormatter.importProgressMessage("Processing file 1 of " + totalNumFiles));
+            updateStatus(0);
 
             // Process all episode media files
             processEpisodeItems(episodeMediaFiles, false).subscribe().with(
@@ -402,7 +400,7 @@ public class ImportMediaProcessor extends BotProcess {
 
     @SuppressWarnings("DuplicatedCode")
     public Multi<Integer> processEpisodeItems(Collection<File> files, boolean filesAreSubtitles) {
-        AtomicInteger progress = new AtomicInteger();
+        AtomicInteger progress = new AtomicInteger(0);
 
         return Multi.createFrom().emitter(multiEmitter -> {
             for (File file : files) {
@@ -596,7 +594,7 @@ public class ImportMediaProcessor extends BotProcess {
 
     @SuppressWarnings("DuplicatedCode")
     private Multi<Integer> processMovieItems(Collection<File> files, boolean filesAreSubtitles) {
-        AtomicInteger progress = new AtomicInteger();
+        AtomicInteger progress = new AtomicInteger(0);
 
         return Multi.createFrom().emitter(multiEmitter -> {
             for (File file : files) {
