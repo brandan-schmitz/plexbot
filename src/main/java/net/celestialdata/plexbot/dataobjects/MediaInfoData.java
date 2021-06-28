@@ -7,7 +7,7 @@ public class MediaInfoData {
     public int width;
 
     public boolean isOptimized() {
-        return this.codec.equals("x265");
+        return this.codec.contains("265");
     }
 
     public int resolution() {
