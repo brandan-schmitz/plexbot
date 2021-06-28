@@ -162,6 +162,11 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 // Update the episode in the database
                 entityManager.merge(episode).persist();
+
+                // If the episode is not optimized, ensure it is in the queue
+                if (!episode.isOptimized) {
+                    entityUtilities.addOrUpdateEncodingQueueItem("episode", episode.id);
+                }
             }
         } catch (Exception e) {
             logger.error("Unable to get information about this media file - " + episode.filename, e);
@@ -215,6 +220,11 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 // Update the movie in the database
                 entityManager.merge(movie).persist();
+
+                // If the episode is not optimized, ensure it is in the queue
+                if (!movie.isOptimized) {
+                    entityUtilities.addOrUpdateEncodingQueueItem("movie", movie.id);
+                }
             }
         } catch (Exception e) {
             logger.error("Unable to get information about this media file - " + movie.filename, e);
