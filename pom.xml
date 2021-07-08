@@ -15,10 +15,9 @@
     <quarkus.application.name>${project.artifactId}</quarkus.application.name>
     <quarkus.application.version>${project.version}</quarkus.application.version>
     <quarkus.native.enable-jni>true</quarkus.native.enable-jni>
-    <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
+    <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-    <quarkus.platform.version>2.0.0.Final</quarkus.platform.version>
-    <quarkus-plugin.version>2.0.0.Final</quarkus-plugin.version>
+    <quarkus.platform.version>2.0.1.Final</quarkus.platform.version>
     <quarkus.ssl.native>true</quarkus.ssl.native>
     <quarkus.swagger-ui.always-include>true</quarkus.swagger-ui.always-include>
     <version-date>06/28/2021</version-date>
@@ -86,7 +85,7 @@
     <dependency>
       <groupId>org.javacord</groupId>
       <artifactId>javacord</artifactId>
-      <version>3.3.0</version>
+      <version>3.3.2</version>
       <type>pom</type>
     </dependency>
     <dependency>
@@ -145,9 +144,9 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>io.quarkus</groupId>
+        <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>
-        <version>${quarkus-plugin.version}</version>
+        <version>${quarkus.platform.version}</version>
         <extensions>true</extensions>
         <executions>
           <execution>
