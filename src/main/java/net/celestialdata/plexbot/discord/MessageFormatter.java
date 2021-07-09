@@ -16,6 +16,17 @@ import java.time.format.FormatStyle;
 
 @ApplicationScoped
 public class MessageFormatter {
+    private String escapeString(String string) {
+        int firstCBIndex = string.indexOf("```");
+        if (firstCBIndex != string.lastIndexOf("```")) {
+            while (firstCBIndex != -1) {
+                string = string.substring(0, firstCBIndex) + string.substring(firstCBIndex + 3);
+                firstCBIndex = string.indexOf("```");
+            }
+        }
+        return string.replaceAll("[*|_>~]", "\\\\$0");
+    }
+
     public EmbedBuilder errorMessage(String errorMessage) {
         return new EmbedBuilder()
                 .addField("An error has occurred while processing your command:", "```" + errorMessage + "```")
@@ -38,16 +49,16 @@ public class MessageFormatter {
     public EmbedBuilder warningMessage(String warningMessage, String warningCode) {
         return new EmbedBuilder()
                 .addField("An warning has occurred:", "```" + warningMessage + "```")
-                .setFooter("Warning code: " + warningCode)
+                .setFooter("Warning code: " + escapeString(warningCode))
                 .setColor(Color.YELLOW);
     }
 
     private EmbedBuilder baseDownloadProgressMessage(OmdbResult movie) {
         return new EmbedBuilder()
                 .setTitle("Download Status")
-                .setDescription("The movie **" + movie.title + "** is being added:")
+                .setDescription("The movie **" + escapeString(movie.title) + "** is being added:")
                 .setFooter("Progress updated: " +
-                        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(ZonedDateTime.now()) + " CST")
+                        escapeString(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(ZonedDateTime.now()) + " CST"))
                 .setColor(Color.BLUE);
     }
 
@@ -121,12 +132,12 @@ public class MessageFormatter {
     public EmbedBuilder downloadFinishedMessage(OmdbResult movie) {
         return new EmbedBuilder()
                 .setTitle("Download Status")
-                .setDescription("The movie **" + movie.title + "** has been added:")
+                .setDescription("The movie **" + escapeString(movie.title) + "** has been added:")
                 .addField("Progress:", downloadProgressStringBuilder(MovieDownloadSteps.FINISHED, 0))
-                .addField(movie.title,
-                        "**Year:** " + movie.year + "\n" +
-                                "**Director(s):** " + movie.director + "\n" +
-                                "**Plot:** " + movie.plot)
+                .addField(escapeString(movie.title),
+                        "**Year:** " + escapeString(movie.year) + "\n" +
+                                "**Director(s):** " + escapeString(movie.director) + "\n" +
+                                "**Plot:** " + escapeString(movie.plot))
                 .setImage(movie.getPoster())
                 .setFooter("Added on: " +
                         DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(ZonedDateTime.now()) + " CST")
@@ -135,18 +146,18 @@ public class MessageFormatter {
 
     public EmbedBuilder newMovieNotification(OmdbResult movie) {
         return new EmbedBuilder()
-                .setTitle(movie.title)
-                .setDescription("**Year:** " + movie.year + "\n" +
-                        "**Director(s):** " + movie.director + "\n" +
-                        "**Plot:** " + movie.plot)
+                .setTitle(escapeString(movie.title))
+                .setDescription("**Year:** " + escapeString(movie.year) + "\n" +
+                        "**Director(s):** " + escapeString(movie.director) + "\n" +
+                        "**Plot:** " + escapeString(movie.plot))
                 .setImage(movie.getPoster())
                 .setColor(Color.GREEN);
     }
 
     public EmbedBuilder newEpisodeNotification(TvdbExtendedEpisode episode, TvdbSeries series) {
         return new EmbedBuilder()
-                .setTitle(episode.name)
-                .addField("Show:", series.name)
+                .setTitle(escapeString(episode.name))
+                .addField("Show:", escapeString(series.name))
                 .addInlineField("Season:", String.valueOf(episode.seasonNumber))
                 .addInlineField("Episode:", String.valueOf(episode.number))
                 .setImage(episode.getImage())
@@ -158,10 +169,10 @@ public class MessageFormatter {
                 .setTitle("Movie Added")
                 .setDescription("You requested the following movie be added to Celestial Movies Plex Server. This message " +
                         "is to notify you that the movie is now available on Plex.\n\n" +
-                        "**Title:** " + movie.title + "\n" +
-                        "**Year:** " + movie.year + "\n" +
-                        "**Director(s):** " + movie.director + "\n" +
-                        "**Plot:** " + movie.plot)
+                        "**Title:** " + escapeString(movie.title) + "\n" +
+                        "**Year:** " + escapeString(movie.year) + "\n" +
+                        "**Director(s):** " + escapeString(movie.director) + "\n" +
+                        "**Plot:** " + escapeString(movie.plot))
                 .setImage(movie.getPoster())
                 .setColor(Color.GREEN)
                 .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.");
@@ -169,10 +180,10 @@ public class MessageFormatter {
 
     public EmbedBuilder waitlistNotification(OmdbResult movie) {
         return new EmbedBuilder()
-                .setTitle(movie.title)
-                .setDescription("**Year:** " + movie.year + "\n" +
-                        "**Director(s):** " + movie.director + "\n" +
-                        "**Plot:** " + movie.plot)
+                .setTitle(escapeString(movie.title))
+                .setDescription("**Year:** " + escapeString(movie.year) + "\n" +
+                        "**Director(s):** " + escapeString(movie.director) + "\n" +
+                        "**Plot:** " + escapeString(movie.plot))
                 .setImage(movie.getPoster())
                 .setColor(Color.BLUE)
                 .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
@@ -186,11 +197,11 @@ public class MessageFormatter {
                         "approval in order to download and upgrade the movie. Please react to this message with a " +
                         BotEmojis.THUMBS_UP + " emoji if you approve this upgrade."
                 )
-                .addInlineField("Title:", movie.title)
-                .addInlineField("Year:", movie.year)
-                .addInlineField("IMDb ID:", movie.imdbID)
-                .addInlineField("Old Resolution:", String.valueOf(oldResolution))
-                .addInlineField("New Resolution:", String.valueOf(newResolution))
+                .addInlineField("Title:", "```" + movie.title + "```")
+                .addInlineField("Year:", "```" + movie.year + "```")
+                .addInlineField("IMDb ID:", "```" + movie.imdbID + "```")
+                .addInlineField("Old Resolution:", "```" + oldResolution + "```")
+                .addInlineField("New Resolution:", "```" + newResolution + "```")
                 .setImage(movie.getPoster())
                 .setColor(Color.GREEN);
     }
@@ -200,11 +211,11 @@ public class MessageFormatter {
                 .setTitle("Movie Quality Upgraded")
                 .setDescription("The bot has located and downloaded a better quality copy of the following movie and it " +
                         "should now be available for watching on Plex")
-                .addInlineField("Title:", movie.title)
-                .addInlineField("Year:", movie.year)
-                .addInlineField("IMDb ID:", movie.imdbID)
-                .addInlineField("Old Resolution:", String.valueOf(oldResolution))
-                .addInlineField("New Resolution:", String.valueOf(newResolution))
+                .addInlineField("Title:", "```" + movie.title + "```")
+                .addInlineField("Year:", "```" + movie.year + "```")
+                .addInlineField("IMDb ID:", "```" + movie.imdbID + "```")
+                .addInlineField("Old Resolution:", "```" + oldResolution + "```")
+                .addInlineField("New Resolution:", "```" + newResolution + "```")
                 .setImage(movie.getPoster())
                 .setColor(Color.GREEN);
     }

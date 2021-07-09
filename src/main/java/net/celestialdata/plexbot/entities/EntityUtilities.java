@@ -10,6 +10,8 @@ import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.component.ActionRow;
+import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.util.logging.ExceptionLogger;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -248,6 +250,11 @@ public class EntityUtilities {
     }
 
     @Transactional
+    public List<UpgradableMovie> getAllUpgradableMovies() {
+        return UpgradableMovie.listAll();
+    }
+
+    @Transactional
     public boolean upgradableMovieExists(String id) {
         return UpgradableMovie.count("id", id) == 1;
     }
@@ -257,6 +264,10 @@ public class EntityUtilities {
         UpgradableMovie upgradableMovie = new UpgradableMovie();
         var upgradeMessage = new MessageBuilder()
                 .setEmbed(messageFormatter.upgradeApprovalMessage(movie, oldResolution, newResolution))
+                .addComponents(ActionRow.of(
+                        Button.success("approve-upgrade-" + movie.imdbID, "Upgrade"),
+                        Button.danger("ignore-upgrade-" + movie.imdbID, "Ignore")
+                ))
                 .send(discordApi.getTextChannelById(upgradeApprovalChannel).orElseThrow())
                 .exceptionally(ExceptionLogger.get()).join();
 
