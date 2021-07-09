@@ -16,52 +16,39 @@ import java.time.format.FormatStyle;
 
 @ApplicationScoped
 public class MessageFormatter {
-    private String escapeString(String string, boolean insideCodeblock) {
+    private String escapeString(String string) {
         int firstCBIndex = string.indexOf("```");
-        // If there is more than one set of triple backticks, remove them all
-        // Even if there are an odd number of sets, removing all but one would be inconsistent and look out of place
-        //
-        // This block will probably never be used
         if (firstCBIndex != string.lastIndexOf("```")) {
             while (firstCBIndex != -1) {
                 string = string.substring(0, firstCBIndex) + string.substring(firstCBIndex + 3);
                 firstCBIndex = string.indexOf("```");
             }
         }
-
-        // It is impossible to escape characters inside of a codeblock so we can just leave the string as is
-        if (!insideCodeblock) {
-            return string.replaceAll("[*|_>~]", "\\\\$0");
-        }
-        return string;
-    }
-
-    private String escapeString(String string) {
-        return escapeString(string, false);
+        return string.replaceAll("[*|_>~]", "\\\\$0");
     }
 
     public EmbedBuilder errorMessage(String errorMessage) {
         return new EmbedBuilder()
-                .addField("An error has occurred while processing your command:", "```" + escapeString(errorMessage, true) + "```")
+                .addField("An error has occurred while processing your command:", "```" + errorMessage + "```")
                 .setColor(Color.RED);
     }
 
     public EmbedBuilder errorMessage(String errorMessage, String errorCode) {
         return new EmbedBuilder()
-                .addField("An error has occurred while processing your command:", "```" + escapeString(errorMessage, true) + "```")
+                .addField("An error has occurred while processing your command:", "```" + errorMessage + "```")
                 .setFooter("Error code:  " + errorCode)
                 .setColor(Color.RED);
     }
 
     public EmbedBuilder warningMessage(String warningMessage) {
         return new EmbedBuilder()
-                .addField("An warning has occurred:", "```" + escapeString(warningMessage, true) + "```")
+                .addField("An warning has occurred:", "```" + warningMessage + "```")
                 .setColor(Color.YELLOW);
     }
 
     public EmbedBuilder warningMessage(String warningMessage, String warningCode) {
         return new EmbedBuilder()
-                .addField("An warning has occurred:", "```" + escapeString(warningMessage, true) + "```")
+                .addField("An warning has occurred:", "```" + warningMessage + "```")
                 .setFooter("Warning code: " + escapeString(warningCode))
                 .setColor(Color.YELLOW);
     }
@@ -210,11 +197,11 @@ public class MessageFormatter {
                         "approval in order to download and upgrade the movie. Please react to this message with a " +
                         BotEmojis.THUMBS_UP + " emoji if you approve this upgrade."
                 )
-                .addInlineField("Title:", escapeString(movie.title))
-                .addInlineField("Year:", escapeString(movie.year))
-                .addInlineField("IMDb ID:", escapeString(movie.imdbID))
-                .addInlineField("Old Resolution:", String.valueOf(oldResolution))
-                .addInlineField("New Resolution:", String.valueOf(newResolution))
+                .addInlineField("Title:", "```" + movie.title + "```")
+                .addInlineField("Year:", "```" + movie.year + "```")
+                .addInlineField("IMDb ID:", "```" + movie.imdbID + "```")
+                .addInlineField("Old Resolution:", "```" + oldResolution + "```")
+                .addInlineField("New Resolution:", "```" + newResolution + "```")
                 .setImage(movie.getPoster())
                 .setColor(Color.GREEN);
     }
@@ -224,11 +211,11 @@ public class MessageFormatter {
                 .setTitle("Movie Quality Upgraded")
                 .setDescription("The bot has located and downloaded a better quality copy of the following movie and it " +
                         "should now be available for watching on Plex")
-                .addInlineField("Title:", escapeString(movie.title))
-                .addInlineField("Year:", escapeString(movie.year))
-                .addInlineField("IMDb ID:", escapeString(movie.imdbID))
-                .addInlineField("Old Resolution:", String.valueOf(oldResolution))
-                .addInlineField("New Resolution:", String.valueOf(newResolution))
+                .addInlineField("Title:", "```" + movie.title + "```")
+                .addInlineField("Year:", "```" + movie.year + "```")
+                .addInlineField("IMDb ID:", "```" + movie.imdbID + "```")
+                .addInlineField("Old Resolution:", "```" + oldResolution + "```")
+                .addInlineField("New Resolution:", "```" + newResolution + "```")
                 .setImage(movie.getPoster())
                 .setColor(Color.GREEN);
     }
@@ -238,7 +225,7 @@ public class MessageFormatter {
                 .setTitle("Import Processor")
                 .setDescription("You have requested the bot import media contained within the import folder. Please stand-by while " +
                         "this action is performed as it may take a while.")
-                .addField("Progress:", "```" + escapeString(progressMessage, true) + "```")
+                .addField("Progress:", "```" + progressMessage + "```")
                 .setFooter("Updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
                         .format(ZonedDateTime.now()) + " CST")
                 .setColor(Color.BLUE);
