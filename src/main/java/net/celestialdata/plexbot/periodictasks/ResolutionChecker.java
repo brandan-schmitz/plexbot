@@ -1,13 +1,14 @@
 package net.celestialdata.plexbot.periodictasks;
 
+import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Uni;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResponseEnum;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovie;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovieTorrent;
 import net.celestialdata.plexbot.clients.services.OmdbService;
 import net.celestialdata.plexbot.clients.services.PlexService;
 import net.celestialdata.plexbot.clients.services.YtsService;
-import net.celestialdata.plexbot.dataobjects.BotEmojis;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.entities.EntityUtilities;
 import net.celestialdata.plexbot.entities.Movie;
@@ -21,11 +22,14 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -81,6 +85,110 @@ public class ResolutionChecker extends BotProcess {
 
     @Inject
     MessageFormatter messageFormatter;
+
+    public void init(@Observes StartupEvent event) {
+        discordApi.addButtonClickListener(clickEvent -> {
+            if (clickEvent.getButtonInteraction().getCustomId().contains("approve-upgrade") || clickEvent.getButtonInteraction().getCustomId().contains("ignore-upgrade")) {
+                var upgradableMovies = entityUtilities.getAllUpgradableMovies();
+
+                // Cycle through the movies and see if the click event matches one of the movies that can be upgraded
+                upgradableMovies.forEach(upgradableMovie -> {
+                    // Upgrade the movie if the upgrade button was clicked
+                    if (clickEvent.getButtonInteraction().getCustomId().equals("approve-upgrade-" + upgradableMovie.id)) {
+                        // Start the upgrade process
+                        upgradeMovie(upgradableMovie).runSubscriptionOn(managedExecutor.get()).subscribe().with(
+                                completion -> {},
+                                this::reportError
+                        );
+
+                        // Update the message to reflect that the upgrade has been started
+                        clickEvent.getInteraction().asMessageComponentInteraction().orElseThrow()
+                                .createOriginalMessageUpdater()
+                                .removeAllComponents()
+                                .removeAllEmbeds()
+                                .addEmbed(new EmbedBuilder()
+                                        .setTitle("Upgrade approved")
+                                        .setDescription("You have approved an upgrade to the following movie. It is currently " +
+                                                "being processed, this message will be removed when the upgrade is completed.")
+                                        .addInlineField("Title:", "```" + upgradableMovie.title + "```")
+                                        .addInlineField("Year:", "```" + upgradableMovie.year + "```")
+                                        .addInlineField("IMDb ID:", "```" + upgradableMovie.id + " ```")
+                                        .addInlineField("Old Resolution:", "```" + upgradableMovie.resolution + "```")
+                                        .addInlineField("New Resolution:", "```" + upgradableMovie.newResolution + "```")
+                                        .setColor(Color.BLUE)
+                                )
+                                .update();
+                    }
+
+                    // Remove the upgradable movie if the ignore button was clicked
+                    if (clickEvent.getButtonInteraction().getCustomId().equals("ignore-upgrade-" + upgradableMovie.id)) {
+                        entityUtilities.deleteUpgradeMovie(upgradableMovie.id);
+                    }
+                });
+            }
+        });
+    }
+
+    public Uni<Void> upgradeMovie(UpgradableMovie upgradableMovie) {
+        return Uni.createFrom().emitter(emitter -> {
+            // Get information about this movie from OMDb
+            var omdbResult = omdbService.getById(upgradableMovie.id, omdbApiKey);
+
+            // Verify the OMDb search was successful, if not move to the next movie
+            if (omdbResult.response == OmdbResponseEnum.FALSE) {
+                emitter.fail(new InterruptedException("Failed OMDb Request: " + omdbResult.error));
+            }
+
+            // Fetch the current instance of the movie from the database
+            var oldMovie = entityUtilities.getMovie(upgradableMovie.id);
+
+            // Rename the current file to use the .bak extension in the event something goes wrong
+            var moveStatus = false;
+            if (Files.exists(Paths.get(movieFolder + oldMovie.folderName + "/" + oldMovie.filename))) {
+                moveStatus = fileUtilities.moveMedia(
+                        movieFolder + oldMovie.folderName + "/" + oldMovie.filename,
+                        movieFolder + oldMovie.folderName + "/" + oldMovie.filename + ".bak",
+                        true
+                );
+            } else if (Files.exists(Paths.get(movieFolder + oldMovie.folderName + "/" + oldMovie.filename + ".bak"))) {
+                moveStatus = true;
+            }
+
+            // Ensure the file was rename to the .bak extension properly
+            if (!moveStatus) {
+                emitter.fail(new InterruptedException("Unable to backup old video file"));
+            }
+
+            movieDownloadProcessor.get().processDownload(omdbResult).runSubscriptionOn(managedExecutor.get()).subscribe().with(
+                    progress -> {},
+                    this::reportError,
+                    () -> {
+                        // Delete the old file
+                        fileUtilities.deleteFile(movieFolder + oldMovie.folderName + "/" + oldMovie.filename + ".bak");
+
+                        // Send a upgrade notification
+                        new MessageBuilder()
+                                .setEmbed(messageFormatter.upgradedNotification(omdbResult, oldMovie.resolution, upgradableMovie.resolution))
+                                .send(discordApi.getTextChannelById(upgradeNotificationChannel).orElseThrow())
+                                .exceptionally(ExceptionLogger.get());
+
+                        // Update the channel status to show the last time this check was run
+                        discordApi.getTextChannelById(upgradeApprovalChannel)
+                                .flatMap(Channel::asServerTextChannel).ifPresent(serverTextChannel -> serverTextChannel.updateTopic(
+                                "Last checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                                        .format(ZonedDateTime.now()) + " CST"));
+
+                        // Delete the upgradable movie entry from the database
+                        entityUtilities.deleteUpgradeMovie(upgradableMovie.id);
+
+                        // Trigger a refresh of the libraries on the Plex server
+                        plexService.refreshLibraries();
+                    }
+            );
+
+            emitter.complete(null);
+        });
+    }
 
     @Scheduled(every = "12h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void runCheck() {
@@ -158,79 +266,10 @@ public class ResolutionChecker extends BotProcess {
 
                 progress++;
             }
-
-            // Cycle through all the movies listed as upgradable and start a download process to upgrade them if they have been approved
-            List<UpgradableMovie> upgradableMovies = UpgradableMovie.listAll();
-            for (UpgradableMovie movie : upgradableMovies) {
-                try {
-                    discordApi.getTextChannelById(upgradeApprovalChannel).flatMap(textChannel -> textChannel.getMessageById(movie.messageId).join()
-                            .getReactionByEmoji(BotEmojis.THUMBS_UP)).ifPresent(reaction -> {
-
-                                // Get information about this movie from OMDb
-                                var omdbResult = omdbService.getById(movie.id, omdbApiKey);
-
-                                // Verify the OMDb search was successful, if not move to the next movie
-                                if (omdbResult.response == OmdbResponseEnum.FALSE) {
-                                    return;
-                                }
-
-                                // Fetch the current instance of the movie from the database
-                                Movie oldMovie = Movie.findById(movie.id);
-
-                                // Rename the current file to use the .bak extension in the event something goes wrong
-                                var moveStatus = false;
-                                if (Files.exists(Paths.get(movieFolder + oldMovie.folderName + "/" + oldMovie.filename))) {
-                                    moveStatus = fileUtilities.moveMedia(
-                                            movieFolder + oldMovie.folderName + "/" + oldMovie.filename,
-                                            movieFolder + oldMovie.folderName + "/" + oldMovie.filename + ".bak",
-                                            true
-                                    );
-                                } else if (Files.exists(Paths.get(movieFolder + oldMovie.folderName + "/" + oldMovie.filename + ".bak"))) {
-                                    moveStatus = true;
-                                }
-
-                                // Ensure the file was rename to the .bak extension properly
-                                if (!moveStatus) {
-                                    return;
-                                }
-
-                                movieDownloadProcessor.get().processDownload(omdbResult).runSubscriptionOn(managedExecutor.get()).subscribe().with(
-                                        process -> {},
-                                        this::reportError,
-                                        () -> {
-                                            // Delete the old file
-                                            fileUtilities.deleteFile(movieFolder + oldMovie.folderName + "/" + oldMovie.filename + ".bak");
-
-                                            // Send a upgrade notification
-                                            new MessageBuilder()
-                                                    .setEmbed(messageFormatter.upgradedNotification(omdbResult, oldMovie.resolution, movie.resolution))
-                                                    .send(discordApi.getTextChannelById(upgradeNotificationChannel).orElseThrow())
-                                                    .exceptionally(ExceptionLogger.get());
-
-                                            // Update the channel status to show the last time this check was run
-                                            discordApi.getTextChannelById(upgradeApprovalChannel)
-                                                    .flatMap(Channel::asServerTextChannel).ifPresent(serverTextChannel -> serverTextChannel.updateTopic(
-                                                    "Last checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                                                            .format(ZonedDateTime.now()) + " CST"));
-
-                                            // Delete the upgradable movie entry from the database
-                                            entityUtilities.deleteUpgradeMovie(movie.id);
-
-                                            // Trigger a refresh of the libraries on the Plex server
-                                            plexService.refreshLibraries();
-                                        }
-                                );
-                            });
-                } catch (Exception e) {
-                    reportError(e);
-                }
-            }
         } catch (Exception e) {
             reportError(e);
         }
 
         endProcess();
     }
-
-
 }

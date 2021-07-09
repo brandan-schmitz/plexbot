@@ -23,8 +23,7 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.user.User;
-import org.javacord.api.listener.message.reaction.ReactionAddListener;
+import org.javacord.api.listener.interaction.ButtonClickListener;
 import org.javacord.api.util.event.ListenerManager;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.jboss.logging.Logger;
@@ -51,10 +50,10 @@ public class ImportMediaProcessor extends BotProcess {
     private final DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
     private LocalDateTime lastUpdate = LocalDateTime.now();
     private int totalNumFiles = 0;
-    private int currentPos = 0;
+    private int currentPos = 1;
     private boolean overwrite = false;
     private Message replyMessage;
-    private ListenerManager<ReactionAddListener> reactionListener;
+    private ListenerManager<ButtonClickListener> cancelListener;
     private boolean stopProcess = false;
 
     @LoggerName("net.celestialdata.plexbot.processors.ImportMediaProcessor")
@@ -116,7 +115,7 @@ public class ImportMediaProcessor extends BotProcess {
         // Configure the UncaughtExceptionHandler
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
             logger.error(e);
-            this.reactionListener.remove();
+            this.cancelListener.remove();
             replyMessage.edit(messageFormatter.errorMessage("An unknown error occurred. Brandan has been notified of the error.", e.getMessage()));
             endProcess(e);
         });
@@ -129,39 +128,49 @@ public class ImportMediaProcessor extends BotProcess {
     private void onCancel() {
         this.replyMessage.edit(new EmbedBuilder()
                 .setTitle("Import Canceled")
-                .setDescription("The import has been canceled after the " + BotEmojis.STOP + " reaction " +
-                        "was pressed. You can resume this import by running the import command again.")
+                .setDescription("The import has been canceled. You can resume this import by running the import command again.")
                 .setColor(Color.BLACK)
         );
         endProcess();
     }
 
-    public void processImport(Message replyMessage, boolean skipSync, boolean overwrite) {
+    public void processImport(Message replyMessage, Long commandMessageId, boolean skipSync, boolean overwrite) {
         // TODO: Ensure there are no previous instance of the import processor running to avoid interference
+
+        // Configure the button click listener used to stop the import process
+        this.cancelListener = discordApi.addButtonClickListener(clickEvent -> {
+            if (clickEvent.getButtonInteraction().getCustomId().equals("cancel-" + commandMessageId)) {
+                clickEvent.getInteraction().asMessageComponentInteraction().orElseThrow()
+                        .createOriginalMessageUpdater()
+                        .removeAllComponents()
+                        .removeAllEmbeds()
+                        .addEmbed(new EmbedBuilder()
+                                .setTitle("Stopping Import")
+                                .setDescription("The bot will finish importing the current media item " +
+                                        "then stop the import process. This will ensure no media files are " +
+                                        "corrupted by an improper stopping of the file transfer that occurs " +
+                                        "during the import process.")
+                                .setColor(Color.YELLOW)
+                        )
+                        .update();
+                this.stopProcess = true;
+            }
+        });
+
+        // Configure the cancel listener to remove the button when the listener is removed
+        this.cancelListener.addRemoveHandler(() -> {
+            var replacementMessage = new MessageBuilder().copy(replyMessage);
+            var channel = replyMessage.getChannel();
+            replyMessage.delete();
+            this.replyMessage = replacementMessage.replyTo(commandMessageId).send(channel).join();
+        });
 
         // Configure this process
         configureProcess("Import Processor - initializing", replyMessage);
         this.overwrite = overwrite;
         this.replyMessage = replyMessage;
         this.stopProcess = false;
-
-        // Configure the reaction listener used to stop the import process
-        this.replyMessage.addReaction(BotEmojis.STOP);
-        this.reactionListener = this.replyMessage.addReactionAddListener(reactionAddEvent -> {
-            if (!reactionAddEvent.getUser().map(User::isBot).orElse(true)) {
-                this.replyMessage.removeAllReactions();
-                this.replyMessage.edit(new EmbedBuilder()
-                        .setTitle("Stopping Import")
-                        .setDescription("The bot will finish importing the current media item " +
-                                "then stop the import process. This will ensure no media files are " +
-                                "corrupted by an improper stopping of the file transfer that occurs " +
-                                "during the import process.")
-                        .setColor(Color.YELLOW)
-                );
-                this.stopProcess = true;
-            }
-        });
-        this.reactionListener.addRemoveHandler(this.replyMessage::removeAllReactions);
+        this.currentPos = 1;
 
         try {
             // Verify that SyncThing is not currently syncing the import folder
@@ -181,20 +190,18 @@ public class ImportMediaProcessor extends BotProcess {
                                     .exceptionally(ExceptionLogger.get());
                             logger.error(failure);
                             syncthingSucceeded.set(false);
-                            this.reactionListener.remove();
+                            this.cancelListener.remove();
                             reportError(failure);
                             endProcess();
                         },
-                        () -> {
-
-                        }
+                        () -> {}
                 );
             }
 
             // Fail the process if there was an issue with waiting for Syncthing
             if (!syncthingSucceeded.get()) {
                 replyMessage.edit(messageFormatter.errorMessage("Failed while waiting for Syncthing.")).exceptionally(ExceptionLogger.get());
-                this.reactionListener.remove();
+                this.cancelListener.remove();
                 endProcess();
                 return;
             }
@@ -243,19 +250,18 @@ public class ImportMediaProcessor extends BotProcess {
 
             // Calculate the total number of files to process and ensure the current position is at 0
             totalNumFiles = episodeMediaFiles.size() + movieMediaFiles.size() + episodeSubtitleFiles.size() + movieSubtitleFiles.size();
-            currentPos = 0;
 
             // Ensure there are actually files to import, otherwise exit
             if (totalNumFiles == 0) {
                 replyMessage.edit(messageFormatter.warningMessage("There were no files available to import. Please make sure they are " +
                         "in the proper folders before continuing.")).exceptionally(ExceptionLogger.get());
-                this.reactionListener.remove();
+                this.cancelListener.remove();
                 endProcess();
                 return;
             }
 
             // Update the progress message to show it has started processing media
-            this.replyMessage.edit(messageFormatter.importProgressMessage("Processing file 1 of " + totalNumFiles));
+            updateStatus(0);
 
             // Process all episode media files
             processEpisodeItems(episodeMediaFiles, false).subscribe().with(
@@ -316,7 +322,7 @@ public class ImportMediaProcessor extends BotProcess {
                 return;
             }
         } catch (Exception e) {
-            this.reactionListener.remove();
+            this.cancelListener.remove();
             reportError(e);
             endProcess();
         }
@@ -325,7 +331,7 @@ public class ImportMediaProcessor extends BotProcess {
             onCancel();
             return;
         } else {
-            this.reactionListener.remove();
+            this.cancelListener.remove();
             replyMessage.edit(new EmbedBuilder()
                     .setTitle("Import Processor")
                     .setDescription("You have requested the bot import media contained within the import folder. This action has been completed.")
@@ -402,7 +408,7 @@ public class ImportMediaProcessor extends BotProcess {
 
     @SuppressWarnings("DuplicatedCode")
     public Multi<Integer> processEpisodeItems(Collection<File> files, boolean filesAreSubtitles) {
-        AtomicInteger progress = new AtomicInteger();
+        AtomicInteger progress = new AtomicInteger(0);
 
         return Multi.createFrom().emitter(multiEmitter -> {
             for (File file : files) {
@@ -596,7 +602,7 @@ public class ImportMediaProcessor extends BotProcess {
 
     @SuppressWarnings("DuplicatedCode")
     private Multi<Integer> processMovieItems(Collection<File> files, boolean filesAreSubtitles) {
-        AtomicInteger progress = new AtomicInteger();
+        AtomicInteger progress = new AtomicInteger(0);
 
         return Multi.createFrom().emitter(multiEmitter -> {
             for (File file : files) {

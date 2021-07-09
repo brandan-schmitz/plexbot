@@ -1,24 +1,25 @@
 package net.celestialdata.plexbot.discord.commandrunners;
 
 import io.quarkus.arc.log.LoggerName;
+import io.smallrye.mutiny.Uni;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResponseEnum;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResultTypeEnum;
 import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbSearchTypeEnum;
 import net.celestialdata.plexbot.clients.services.OmdbService;
-import net.celestialdata.plexbot.dataobjects.BotEmojis;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.entities.EntityUtilities;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
 import net.celestialdata.plexbot.processors.MovieDownloadProcessor;
 import net.celestialdata.plexbot.utilities.BotProcess;
-import net.celestialdata.plexbot.utilities.SelectionUtilities;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.component.ActionRow;
+import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.jboss.logging.Logger;
@@ -33,17 +34,18 @@ import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("unused")
 @Dependent
 public class RequestMovieCommandRunner extends BotProcess {
+    private Message replyMessage;
+    private Message incomingMessage;
 
     @LoggerName("net.celestialdata.plexbot.discord.commandrunners.RequestMovieCommandRunner")
     Logger logger;
-
-    @Inject
-    SelectionUtilities selectionUtilities;
 
     @ConfigProperty(name = "BotSettings.prefix")
     String commandPrefix;
@@ -73,10 +75,118 @@ public class RequestMovieCommandRunner extends BotProcess {
     @Inject
     Instance<ManagedExecutor> managedExecutor;
 
+    private ActionRow determineSelectionButtons(int pos, int size) {
+        if (size == 1) {
+            return ActionRow.of(
+                    org.javacord.api.entity.message.component.Button.success("select-" + incomingMessage.getId(), "Select"),
+                    org.javacord.api.entity.message.component.Button.danger("cancel-" + incomingMessage.getId(), "Cancel")
+            );
+        } else if (pos == 0) {
+            return ActionRow.of(
+                    org.javacord.api.entity.message.component.Button.secondary("next-" + incomingMessage.getId(), "Next"),
+                    org.javacord.api.entity.message.component.Button.success("select-" + incomingMessage.getId(), "Select"),
+                    org.javacord.api.entity.message.component.Button.danger("cancel-" + incomingMessage.getId(), "Cancel")
+            );
+        } else if (pos == (size - 1)) {
+            return ActionRow.of(
+                    org.javacord.api.entity.message.component.Button.secondary("previous-" + incomingMessage.getId(), "Previous"),
+                    org.javacord.api.entity.message.component.Button.success("select-" + incomingMessage.getId(), "Select"),
+                    org.javacord.api.entity.message.component.Button.danger("cancel-" + incomingMessage.getId(), "Cancel")
+            );
+        } else {
+            return ActionRow.of(
+                    org.javacord.api.entity.message.component.Button.secondary("previous-" + incomingMessage.getId(), "Previous"),
+                    org.javacord.api.entity.message.component.Button.secondary("next-" + incomingMessage.getId(), "Next"),
+                    org.javacord.api.entity.message.component.Button.success("select-" + incomingMessage.getId(), "Select"),
+                    Button.danger("cancel-" + incomingMessage.getId(), "Cancel")
+            );
+        }
+    }
+
+    public Uni<OmdbResult> handleMovieSelection(List<OmdbResult> movieList) {
+        return Uni.createFrom().emitter(uniEmitter -> {
+            var selectScreens = new ArrayList<EmbedBuilder>();
+
+            // Build the screens for each movie
+            for (OmdbResult movie : movieList) {
+                selectScreens.add(new EmbedBuilder()
+                        .setTitle("Choose your movie")
+                        .setDescription("It looks like your search returned " + movieList.size() + " results. " +
+                                "Please use the buttons below to navigate and select the correct movie.\n\u200b")
+                        .addInlineField("Title:", "```" + movie.title + "```")
+                        .addInlineField("Year:", "```" + movie.year + "```")
+                        .addInlineField("IMDb ID:", "```" + movie.imdbID + "```")
+                        .addField("Plot:", "```" + movie.plot + "```")
+                        .setImage(movie.getPoster())
+                        .setColor(Color.BLUE)
+                );
+            }
+
+            // Replace the reply message with one that uses components
+            AtomicInteger currentScreen = new AtomicInteger(0);
+            replyMessage.delete();
+            replyMessage = new MessageBuilder()
+                    .setEmbed(selectScreens.get(currentScreen.get()))
+                    .addComponents(determineSelectionButtons(currentScreen.get(), selectScreens.size()))
+                    .replyTo(incomingMessage)
+                    .send(incomingMessage.getChannel())
+                    .join();
+
+            // Add the button click listener that allows navigation through the screens
+            discordApi.addButtonClickListener(clickEvent -> {
+                if (clickEvent.getButtonInteraction().getCustomId().equals("next-" + incomingMessage.getId())) {
+                    // Proceed to the next screen
+                    currentScreen.getAndIncrement();
+
+                    // Update the displayed screen and buttons
+                    clickEvent.getInteraction().asMessageComponentInteraction().orElseThrow()
+                            .createOriginalMessageUpdater()
+                            .removeAllEmbeds()
+                            .addEmbed(selectScreens.get(currentScreen.get()))
+                            .removeAllComponents()
+                            .addComponents(determineSelectionButtons(currentScreen.get(), selectScreens.size()))
+                            .update();
+                } else if (clickEvent.getButtonInteraction().getCustomId().equals("previous-" + incomingMessage.getId())) {
+                    // Proceed to the previous screen
+                    currentScreen.getAndDecrement();
+
+                    // Update the displayed screen and buttons
+                    clickEvent.getInteraction().asMessageComponentInteraction().orElseThrow()
+                            .createOriginalMessageUpdater()
+                            .removeAllEmbeds()
+                            .addEmbed(selectScreens.get(currentScreen.get()))
+                            .removeAllComponents()
+                            .addComponents(determineSelectionButtons(currentScreen.get(), selectScreens.size()))
+                            .update();
+                } else if (clickEvent.getButtonInteraction().getCustomId().equals("select-" + incomingMessage.getId())) {
+                    // Remove the buttons from the message
+                    clickEvent.getInteraction().asMessageComponentInteraction().orElseThrow()
+                            .createOriginalMessageUpdater()
+                            .removeAllComponents()
+                            .update();
+
+                    // Submit the selected movie
+                    uniEmitter.complete(movieList.get(currentScreen.get()));
+                } else if (clickEvent.getButtonInteraction().getCustomId().equals("cancel-" + incomingMessage.getId())) {
+                    // Remove the buttons from the message
+                    clickEvent.getInteraction().asMessageComponentInteraction().orElseThrow()
+                            .createOriginalMessageUpdater()
+                            .removeAllComponents()
+                            .update();
+
+                    // Submit the cancellation
+                    uniEmitter.fail(new InterruptedException("User has canceled the selection process."));
+                }
+            }).removeAfter(2, TimeUnit.MINUTES).addRemoveHandler(() -> uniEmitter.fail(new InterruptedException("Timeout occurred while waiting for user to select a movie.")));
+        });
+    }
+
     @SuppressWarnings("unused")
     public void runCommand(Message incomingMessage, String parameterString) {
+        this.incomingMessage = incomingMessage;
+
         // Reply to the command message and save that message so it can be modified later
-        var replyMessage = incomingMessage.reply(new EmbedBuilder()
+        replyMessage = incomingMessage.reply(new EmbedBuilder()
                 .setTitle("Processing Request")
                 .setDescription("I am processing your command request. Please stand-by for this process to be completed.")
                 .setColor(Color.BLUE)
@@ -205,7 +315,7 @@ public class RequestMovieCommandRunner extends BotProcess {
         // Send the list of results to the movie selection handler method and await its result
         AtomicBoolean selectionFailed = new AtomicBoolean(false);
         try {
-            selectedMovie = selectionUtilities.handleMovieSelection(replyMessage, searchResultList).onFailure().invoke(returnedError -> {
+            selectedMovie = handleMovieSelection(searchResultList).onFailure().invoke(returnedError -> {
                 selectionFailed.set(true);
                 if (returnedError instanceof InterruptedException) {
                     if (returnedError.getMessage().endsWith("movie.")) {
@@ -219,8 +329,7 @@ public class RequestMovieCommandRunner extends BotProcess {
                     } else if (returnedError.getMessage().equals("User has canceled the selection process.")) {
                         replyMessage.edit(new EmbedBuilder()
                                 .setTitle("Request Canceled")
-                                .setDescription("The bot is no longer processing your request since you requested it to be canceled by pressing the " +
-                                        BotEmojis.X + " emoji.")
+                                .setDescription("Your request has been canceled.")
                                 .setColor(Color.BLACK));
                         endProcess();
                     } else {
@@ -283,6 +392,7 @@ public class RequestMovieCommandRunner extends BotProcess {
                     ).exceptionally(ExceptionLogger.get()).join();
                 }
         );
+
         endProcess();
     }
 }

@@ -6,6 +6,9 @@ import net.celestialdata.plexbot.discord.commandhandler.api.Command;
 import net.celestialdata.plexbot.processors.ImportMediaProcessor;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.component.ActionRow;
+import org.javacord.api.entity.message.component.Button;
 import org.jboss.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -54,10 +57,15 @@ public class ImportCommand implements Command<Message> {
             }
 
             // Reply to the command message to acquire the reply message for later usage
-            var replyMessage = incomingMessage.reply(messageFormatter.importProgressMessage("Initializing Import Process")).join();
+            var replyMessage = new MessageBuilder()
+                    .setEmbed(messageFormatter.importProgressMessage("Initializing Import Process"))
+                    .addComponents(ActionRow.of(Button.danger("cancel-" + incomingMessage.getId(), "Cancel")))
+                    .replyTo(incomingMessage)
+                    .send(incomingMessage.getChannel())
+                    .join();
 
             // Run the import processor
-            importMediaProcessor.get().processImport(replyMessage, skipSync, overwrite);
+            importMediaProcessor.get().processImport(replyMessage, incomingMessage.getId(), skipSync, overwrite);
         } else {
             incomingMessage.reply(messageFormatter.errorMessage("You are not authorized to use this command. If you believe this is a mistake, please contact Brandan."));
         }
