@@ -156,14 +156,6 @@ public class ImportMediaProcessor extends BotProcess {
             }
         });
 
-        // Configure the cancel listener to remove the button when the listener is removed
-        this.cancelListener.addRemoveHandler(() -> {
-            var replacementMessage = new MessageBuilder().copy(replyMessage);
-            var channel = replyMessage.getChannel();
-            replyMessage.delete();
-            this.replyMessage = replacementMessage.replyTo(commandMessageId).send(channel).join();
-        });
-
         // Configure this process
         configureProcess("Import Processor - initializing", replyMessage);
         this.overwrite = overwrite;
@@ -332,7 +324,7 @@ public class ImportMediaProcessor extends BotProcess {
         } else {
             this.cancelListener.remove();
             var channel = replyMessage.getChannel();
-            replyMessage.delete().join();
+            discordApi.getMessageById(replyMessage.getId(), replyMessage.getChannel()).join().delete().join();
             new MessageBuilder()
                     .setEmbed(new EmbedBuilder()
                             .setTitle("Import Processor")
@@ -349,7 +341,7 @@ public class ImportMediaProcessor extends BotProcess {
     }
 
     private void updateStatus(int progress) {
-        var percentage = (((double) (currentPos + progress) / totalNumFiles) * 100);
+        var percentage = (((double) ((currentPos - 1) + progress) / totalNumFiles) * 100);
 
         // Update the bot status process string
         updateProcessString("Import Processor - " + decimalFormatter.format(percentage) + "%");
@@ -364,15 +356,20 @@ public class ImportMediaProcessor extends BotProcess {
     private Multi<Double> awaitSyncthing() {
         return Multi.createFrom().emitter(multiEmitter -> {
             try {
-                var syncComplete = false;
-                var lastEmitted = LocalDateTime.now().minus(3, ChronoUnit.SECONDS);
+                var syncComplete = true;
+                var lastEmitted = LocalDateTime.now();
 
-                do {
+                for (String deviceId : syncthingDevices) {
+                    var response = syncthingService.getCompletionStatus(syncthingImportFolderId, deviceId);
+                    syncComplete = response.completion == 100;
+                }
+
+                while (!syncComplete) {
                     // Reset the progress
                     var progress = 0.00;
 
-                    // Wait 3 seconds between requests to avoid overloading syncthing
-                    if (lastEmitted.plus(3, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
+                    // Wait 2 seconds between requests to avoid overloading syncthing
+                    if (lastEmitted.plus(2, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
                         // Cycle through the devices and check their status and calculate the overall sync status
                         for (String deviceId : syncthingDevices) {
                             var response = syncthingService.getCompletionStatus(syncthingImportFolderId, deviceId);
@@ -387,7 +384,7 @@ public class ImportMediaProcessor extends BotProcess {
                         multiEmitter.emit(progress);
                         lastEmitted = LocalDateTime.now();
                     }
-                } while (!syncComplete);
+                }
 
                 multiEmitter.complete();
             } catch (Exception e) {
