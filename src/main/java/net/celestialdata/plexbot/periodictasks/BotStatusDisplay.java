@@ -20,7 +20,6 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.awt.*;
-import java.text.DecimalFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -33,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 @ApplicationScoped
 public class BotStatusDisplay {
     final private HashMap<String, String> currentProcesses = new HashMap<>();
-    final private DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
     Message statusMessage;
 
     @LoggerName("net.celestialdata.plexbot.periodictasks.BotStatusDisplay")
@@ -130,7 +128,7 @@ public class BotStatusDisplay {
 
                 // Build the string
                 encodingStatusBuilder.append(counter).append(") ").append(itemTitle).append(" - ")
-                        .append(decimalFormatter.format(workItem.progress)).append("%\n");
+                        .append(workItem.progress).append("%\n");
 
                 // Increment the counter
                 counter++;
