@@ -331,13 +331,18 @@ public class ImportMediaProcessor extends BotProcess {
             return;
         } else {
             this.cancelListener.remove();
-            replyMessage.edit(new EmbedBuilder()
-                    .setTitle("Import Processor")
-                    .setDescription("You have requested the bot import media contained within the import folder. This action has been completed.")
-                    .setColor(Color.GREEN)
-                    .setFooter("Finished: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                            .format(ZonedDateTime.now()) + " CST")
-            );
+            var channel = replyMessage.getChannel();
+            replyMessage.delete().join();
+            new MessageBuilder()
+                    .setEmbed(new EmbedBuilder()
+                            .setTitle("Import Processor")
+                            .setDescription("You have requested the bot import media contained within the import folder. This action has been completed.")
+                            .setColor(Color.GREEN)
+                            .setFooter("Finished: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                                    .format(ZonedDateTime.now()) + " CST"))
+                    .replyTo(commandMessageId)
+                    .send(channel)
+                    .join();
         }
 
         endProcess();
