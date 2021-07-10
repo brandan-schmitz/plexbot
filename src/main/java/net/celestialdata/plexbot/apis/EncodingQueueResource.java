@@ -9,25 +9,25 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Tag(name = "Encoding Queue", description = "Endpoints available for the encoding workers get information about items in the encoding queue")
-@Path("/encoding")
+@Path("/encoding/queue")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EncodingQueueResource {
 
     @GET
-    @Path("/queue/next")
+    @Path("/next")
     public EncodingQueueItem next() {
         return (EncodingQueueItem) EncodingQueueItem.listAll(Sort.by("mediaId").descending()).get(0);
     }
 
     @GET
-    @Path("/queue/{id}")
+    @Path("/{id}")
     public EncodingQueueItem get(@PathParam("id") int id) {
         return EncodingQueueItem.findById(id);
     }
 
     @DELETE
-    @Path("/queue/{id}")
+    @Path("/{id}")
     @Transactional
     public void delete(@PathParam("id") int id) {
         EncodingQueueItem entity = EncodingQueueItem.findById(id);

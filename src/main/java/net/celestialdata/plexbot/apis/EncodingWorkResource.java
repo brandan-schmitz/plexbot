@@ -6,31 +6,28 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.net.URI;
 
 @Tag(name = "Encoding Work", description = "Endpoints available for the encoding workers get information about items being encoded")
-@Path("/encoding")
+@Path("/encoding/work")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EncodingWorkResource {
 
     @GET
-    @Path("/work/{id}")
+    @Path("/{id}")
     public EncodingWorkItem get(@PathParam("id") int id) {
         return EncodingWorkItem.findById(id);
     }
 
     @POST
-    @Path("/work")
     @Transactional
-    public Response create(EncodingWorkItem workItem) {
+    public int create(EncodingWorkItem workItem) {
         workItem.persist();
-        return Response.created(URI.create("/encoding/queue/" + workItem.id)).build();
+        return workItem.id;
     }
 
     @PUT
-    @Path("/work/{id}")
+    @Path("/{id}")
     @Transactional
     public EncodingWorkItem update(@PathParam("id") int id, EncodingWorkItem workItem) {
         EncodingWorkItem entity = EncodingWorkItem.findById(id);
@@ -47,7 +44,7 @@ public class EncodingWorkResource {
     }
 
     @DELETE
-    @Path("/work/{id}")
+    @Path("/{id}")
     @Transactional
     public void delete(@PathParam("id") int id) {
         EncodingWorkItem entity = EncodingWorkItem.findById(id);

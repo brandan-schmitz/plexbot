@@ -15,7 +15,7 @@ public class EncodingWorkItem extends PanacheEntityBase {
     public int id;
 
     @Column(name = "item_progress", nullable = false)
-    public double progress;
+    public String progress;
 
     @Column(name = "item_agent_name", nullable = false)
     public String workerAgentName;
