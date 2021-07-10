@@ -2,15 +2,11 @@ package net.celestialdata.plexbot.utilities;
 
 import io.smallrye.mutiny.Multi;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
-import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbEpisode;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbExtendedEpisode;
-import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeason;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
 import net.celestialdata.plexbot.dataobjects.BlacklistedCharacters;
 import net.celestialdata.plexbot.dataobjects.MediaInfoData;
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
-import net.celestialdata.plexbot.entities.Episode;
-import net.celestialdata.plexbot.entities.Show;
 import net.celestialdata.plexbot.enumerators.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

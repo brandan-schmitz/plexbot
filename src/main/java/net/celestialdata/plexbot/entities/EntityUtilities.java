@@ -207,6 +207,30 @@ public class EntityUtilities {
     }
 
     @Transactional
+    public boolean encodingQueueItemExists(String mediaId) {
+        return EncodingQueueItem.count("mediaId", mediaId) == 1;
+    }
+
+    @Transactional
+    public EncodingQueueItem findEncodingQueueItem(String mediaId) {
+        return EncodingQueueItem.find("mediaId", mediaId).firstResult();
+    }
+
+    @Transactional
+    public void addOrUpdateEncodingQueueItem(String itemType, String mediaId) {
+        EncodingQueueItem encodingQueueItem = new EncodingQueueItem();
+
+        encodingQueueItem.type = itemType;
+        encodingQueueItem.mediaId = mediaId;
+
+        if (encodingQueueItemExists(mediaId)) {
+            encodingQueueItem.id = findEncodingQueueItem(mediaId).id;
+        }
+
+        entityManager.merge(encodingQueueItem).persist();
+    }
+
+    @Transactional
     public boolean waitlistMovieExists(String id) {
         return WaitlistMovie.count("id", id) == 1;
     }
