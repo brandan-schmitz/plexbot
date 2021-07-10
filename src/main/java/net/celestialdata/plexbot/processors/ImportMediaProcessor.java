@@ -8,7 +8,6 @@ import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbRemoteID;
 import net.celestialdata.plexbot.clients.services.OmdbService;
 import net.celestialdata.plexbot.clients.services.SyncthingService;
 import net.celestialdata.plexbot.clients.services.TvdbService;
-import net.celestialdata.plexbot.dataobjects.BotEmojis;
 import net.celestialdata.plexbot.dataobjects.ParsedMediaFilename;
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
 import net.celestialdata.plexbot.discord.MessageFormatter;
@@ -332,13 +331,18 @@ public class ImportMediaProcessor extends BotProcess {
             return;
         } else {
             this.cancelListener.remove();
-            replyMessage.edit(new EmbedBuilder()
-                    .setTitle("Import Processor")
-                    .setDescription("You have requested the bot import media contained within the import folder. This action has been completed.")
-                    .setColor(Color.GREEN)
-                    .setFooter("Finished: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                            .format(ZonedDateTime.now()) + " CST")
-            );
+            var channel = replyMessage.getChannel();
+            replyMessage.delete().join();
+            new MessageBuilder()
+                    .setEmbed(new EmbedBuilder()
+                            .setTitle("Import Processor")
+                            .setDescription("You have requested the bot import media contained within the import folder. This action has been completed.")
+                            .setColor(Color.GREEN)
+                            .setFooter("Finished: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                                    .format(ZonedDateTime.now()) + " CST"))
+                    .replyTo(commandMessageId)
+                    .send(channel)
+                    .join();
         }
 
         endProcess();
@@ -360,13 +364,12 @@ public class ImportMediaProcessor extends BotProcess {
     private Multi<Double> awaitSyncthing() {
         return Multi.createFrom().emitter(multiEmitter -> {
             try {
-                var syncComplete = true;
-                var lastEmitted = LocalDateTime.now();
+                var syncComplete = false;
+                var lastEmitted = LocalDateTime.now().minus(3, ChronoUnit.SECONDS);
 
                 do {
                     // Reset the progress
                     var progress = 0.00;
-                    syncComplete = true;
 
                     // Wait 3 seconds between requests to avoid overloading syncthing
                     if (lastEmitted.plus(3, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
@@ -377,7 +380,7 @@ public class ImportMediaProcessor extends BotProcess {
                             if (response.completion != 100) {
                                 syncComplete = false;
                                 progress = progress + (response.completion / syncthingDevices.size());
-                            }
+                            } else syncComplete = true;
                         }
 
                         // Emit the progress
@@ -546,10 +549,13 @@ public class ImportMediaProcessor extends BotProcess {
                     // Create the season folder
                     fileUtilities.createFolder(tvFolder + showFoldername + "/" + seasonFoldername);
 
+                    // Check if the item is in the database at all
+                    var existsInDatabase = filesAreSubtitles ? entityUtilities.episodeSubtitleExists(itemFilename) : entityUtilities.episodeExists(parsedId);
+
                     // Verify that the file does not exist. If it does and overwrite is not specified skip this file
-                    if (Files.exists(Paths.get(tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename)) && !overwrite) {
+                    if (Files.exists(Paths.get(tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename)) && !overwrite || existsInDatabase && !overwrite) {
                         new MessageBuilder()
-                                .setEmbed(messageFormatter.errorMessage("The following item already exists in the filesystem. " +
+                                .setEmbed(messageFormatter.errorMessage("The following item already exists. " +
                                         "Please use the --overwrite flag if you wish to overwrite this file: " +
                                         file.getName()))
                                 .send(replyMessage.getChannel())
@@ -558,6 +564,11 @@ public class ImportMediaProcessor extends BotProcess {
                         progress.getAndIncrement();
                         multiEmitter.emit(progress.get());
                         continue;
+                    }
+
+                    // Ensure that old media files get deleted if they are being replaced by a file of a different type
+                    if (!filesAreSubtitles && !entityUtilities.getEpisode(parsedId).filename.equalsIgnoreCase(itemFilename)) {
+                        fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + entityUtilities.getEpisode(parsedId).filename);
                     }
 
                     // Move the item into place
@@ -700,10 +711,13 @@ public class ImportMediaProcessor extends BotProcess {
                     // Create the movie folder
                     fileUtilities.createFolder(omdbResponse);
 
+                    // Check if the item is in the database at all
+                    var existsInDatabase = filesAreSubtitles ? entityUtilities.movieSubtitleExists(itemFilename) : entityUtilities.movieExists(parsedId);
+
                     // Verify that the file does not exist. If it does and overwrite is not specified skip this file
-                    if (Files.exists(Paths.get(movieFolder + "/" + itemFilename)) && !overwrite) {
+                    if (Files.exists(Paths.get(movieFolder + foldername + "/" + itemFilename)) && !overwrite || existsInDatabase && !overwrite) {
                         new MessageBuilder()
-                                .setEmbed(messageFormatter.errorMessage("The following item already exists in the filesystem. " +
+                                .setEmbed(messageFormatter.errorMessage("The following item already exists. " +
                                         "Please use the --overwrite flag if you wish to overwrite this file: " +
                                         file.getName()))
                                 .send(replyMessage.getChannel())
@@ -712,6 +726,11 @@ public class ImportMediaProcessor extends BotProcess {
                         progress.getAndIncrement();
                         multiEmitter.emit(progress.get());
                         continue;
+                    }
+
+                    // Ensure that old media files get deleted if they are being replaced by a file of a different type
+                    if (!filesAreSubtitles && !entityUtilities.getMovie(parsedId).filename.equalsIgnoreCase(itemFilename)) {
+                        fileUtilities.deleteFile(movieFolder + foldername + "/" + entityUtilities.getMovie(parsedId).filename);
                     }
 
                     // Move the item into place

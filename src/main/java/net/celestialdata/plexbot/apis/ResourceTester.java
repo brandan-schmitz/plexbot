@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.clients;
+package net.celestialdata.plexbot.apis;
 
 import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 import net.celestialdata.plexbot.clients.models.omdb.OmdbSearchResponse;

@@ -107,6 +107,11 @@ public class EntityUtilities {
     }
 
     @Transactional
+    public boolean movieSubtitleExists(String filename) {
+        return MovieSubtitle.count("filename", filename) == 1;
+    }
+
+    @Transactional
     public boolean episodeSubtitleExists(String filename) {
         return EpisodeSubtitle.count("filename", filename) == 1;
     }
@@ -204,6 +209,30 @@ public class EntityUtilities {
         }
 
         entityManager.merge(movieSubtitle).persist();
+    }
+
+    @Transactional
+    public boolean encodingQueueItemExists(String mediaId) {
+        return EncodingQueueItem.count("mediaId", mediaId) == 1;
+    }
+
+    @Transactional
+    public EncodingQueueItem findEncodingQueueItem(String mediaId) {
+        return EncodingQueueItem.find("mediaId", mediaId).firstResult();
+    }
+
+    @Transactional
+    public void addOrUpdateEncodingQueueItem(String itemType, String mediaId) {
+        EncodingQueueItem encodingQueueItem = new EncodingQueueItem();
+
+        encodingQueueItem.type = itemType;
+        encodingQueueItem.mediaId = mediaId;
+
+        if (encodingQueueItemExists(mediaId)) {
+            encodingQueueItem.id = findEncodingQueueItem(mediaId).id;
+        }
+
+        entityManager.merge(encodingQueueItem).persist();
     }
 
     @Transactional

@@ -22,7 +22,7 @@ public class TvdbSeries {
 
     public String getImage() {
         var noPosterImageUrl = ConfigProvider.getConfig().getValue("BotSettings.noPosterImageUrl", String.class);
-        if (this.image.isBlank()) {
+        if (this.image.isBlank() || this.image == null) {
             return noPosterImageUrl;
         } else return this.image;
     }
