@@ -8,7 +8,6 @@ import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbRemoteID;
 import net.celestialdata.plexbot.clients.services.OmdbService;
 import net.celestialdata.plexbot.clients.services.SyncthingService;
 import net.celestialdata.plexbot.clients.services.TvdbService;
-import net.celestialdata.plexbot.dataobjects.BotEmojis;
 import net.celestialdata.plexbot.dataobjects.ParsedMediaFilename;
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
 import net.celestialdata.plexbot.discord.MessageFormatter;
@@ -360,13 +359,12 @@ public class ImportMediaProcessor extends BotProcess {
     private Multi<Double> awaitSyncthing() {
         return Multi.createFrom().emitter(multiEmitter -> {
             try {
-                var syncComplete = true;
-                var lastEmitted = LocalDateTime.now();
+                var syncComplete = false;
+                var lastEmitted = LocalDateTime.now().minus(3, ChronoUnit.SECONDS);
 
                 do {
                     // Reset the progress
                     var progress = 0.00;
-                    syncComplete = true;
 
                     // Wait 3 seconds between requests to avoid overloading syncthing
                     if (lastEmitted.plus(3, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
@@ -377,7 +375,7 @@ public class ImportMediaProcessor extends BotProcess {
                             if (response.completion != 100) {
                                 syncComplete = false;
                                 progress = progress + (response.completion / syncthingDevices.size());
-                            }
+                            } else syncComplete = true;
                         }
 
                         // Emit the progress
