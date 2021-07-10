@@ -549,10 +549,13 @@ public class ImportMediaProcessor extends BotProcess {
                     // Create the season folder
                     fileUtilities.createFolder(tvFolder + showFoldername + "/" + seasonFoldername);
 
+                    // Check if the item is in the database at all
+                    var existsInDatabase = filesAreSubtitles ? entityUtilities.episodeSubtitleExists(itemFilename) : entityUtilities.episodeExists(parsedId);
+
                     // Verify that the file does not exist. If it does and overwrite is not specified skip this file
-                    if (Files.exists(Paths.get(tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename)) && !overwrite) {
+                    if (Files.exists(Paths.get(tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename)) && !overwrite || existsInDatabase && !overwrite) {
                         new MessageBuilder()
-                                .setEmbed(messageFormatter.errorMessage("The following item already exists in the filesystem. " +
+                                .setEmbed(messageFormatter.errorMessage("The following item already exists. " +
                                         "Please use the --overwrite flag if you wish to overwrite this file: " +
                                         file.getName()))
                                 .send(replyMessage.getChannel())
@@ -561,6 +564,11 @@ public class ImportMediaProcessor extends BotProcess {
                         progress.getAndIncrement();
                         multiEmitter.emit(progress.get());
                         continue;
+                    }
+
+                    // Ensure that old media files get deleted if they are being replaced by a file of a different type
+                    if (!filesAreSubtitles && !entityUtilities.getEpisode(parsedId).filename.equalsIgnoreCase(itemFilename)) {
+                        fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + entityUtilities.getEpisode(parsedId).filename);
                     }
 
                     // Move the item into place
@@ -703,10 +711,13 @@ public class ImportMediaProcessor extends BotProcess {
                     // Create the movie folder
                     fileUtilities.createFolder(omdbResponse);
 
+                    // Check if the item is in the database at all
+                    var existsInDatabase = filesAreSubtitles ? entityUtilities.movieSubtitleExists(itemFilename) : entityUtilities.movieExists(parsedId);
+
                     // Verify that the file does not exist. If it does and overwrite is not specified skip this file
-                    if (Files.exists(Paths.get(movieFolder + "/" + itemFilename)) && !overwrite) {
+                    if (Files.exists(Paths.get(movieFolder + foldername + "/" + itemFilename)) && !overwrite || existsInDatabase && !overwrite) {
                         new MessageBuilder()
-                                .setEmbed(messageFormatter.errorMessage("The following item already exists in the filesystem. " +
+                                .setEmbed(messageFormatter.errorMessage("The following item already exists. " +
                                         "Please use the --overwrite flag if you wish to overwrite this file: " +
                                         file.getName()))
                                 .send(replyMessage.getChannel())
@@ -715,6 +726,11 @@ public class ImportMediaProcessor extends BotProcess {
                         progress.getAndIncrement();
                         multiEmitter.emit(progress.get());
                         continue;
+                    }
+
+                    // Ensure that old media files get deleted if they are being replaced by a file of a different type
+                    if (!filesAreSubtitles && !entityUtilities.getMovie(parsedId).filename.equalsIgnoreCase(itemFilename)) {
+                        fileUtilities.deleteFile(movieFolder + foldername + "/" + entityUtilities.getMovie(parsedId).filename);
                     }
 
                     // Move the item into place

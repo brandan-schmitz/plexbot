@@ -107,6 +107,11 @@ public class EntityUtilities {
     }
 
     @Transactional
+    public boolean movieSubtitleExists(String filename) {
+        return MovieSubtitle.count("filename", filename) == 1;
+    }
+
+    @Transactional
     public boolean episodeSubtitleExists(String filename) {
         return EpisodeSubtitle.count("filename", filename) == 1;
     }
