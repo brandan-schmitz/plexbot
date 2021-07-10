@@ -128,7 +128,7 @@ public class BotStatusDisplay {
 
                 // Build the string
                 encodingStatusBuilder.append(counter).append(") ").append(itemTitle).append(" - ")
-                        .append(workItem.progress).append("%\n");
+                        .append(workItem.progress).append("\n");
 
                 // Increment the counter
                 counter++;
