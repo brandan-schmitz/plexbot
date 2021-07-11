@@ -1,6 +1,5 @@
 package net.celestialdata.plexbot.apis;
 
-import io.quarkus.panache.common.Sort;
 import net.celestialdata.plexbot.entities.EncodingQueueItem;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -17,7 +16,7 @@ public class EncodingQueueResource {
     @GET
     @Path("/next")
     public EncodingQueueItem next() {
-        return (EncodingQueueItem) EncodingQueueItem.listAll(Sort.by("mediaId").descending()).get(0);
+        return (EncodingQueueItem) EncodingQueueItem.listAll().get(0);
     }
 
     @GET
