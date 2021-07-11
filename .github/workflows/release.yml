@@ -16,7 +16,7 @@ jobs:
 
       - name: Setup MS Build Tools
         uses: microsoft/setup-msbuild@v1
-        
+
       - name: Setup Graalvm
         id: setup-graalvm
         uses: DeLaGuardo/setup-graalvm@master
@@ -34,29 +34,29 @@ jobs:
       - name: Create app config for building
         run: copy src\main\resources\config.sample src\main\resources\application.yaml
         shell: cmd
-      
+
       - name: Build native-image release
         run: mvn clean generate-resources compile package -Pnative
-      
+
       - name: Rename executable
         run: |
           cd target
           rename plexbot-runner.exe plexbot-win64.exe
         shell: cmd
-      
+
       - name: Upload executable
         uses: actions/upload-artifact@v2
         with:
           name: plexbot-win64.exe
           path: target\plexbot-win64.exe
           retention-days: 1
-        
+
   build-macOS:
     runs-on: macos-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-    
+
       - name: Setup Graalvm
         id: setup-graalvm
         uses: DeLaGuardo/setup-graalvm@master
@@ -73,26 +73,26 @@ jobs:
 
       - name: Create app config for building
         run: cp src/main/resources/config.sample src/main/resources/application.yaml
-      
+
       - name: Build native-image release
         run: mvn clean generate-resources compile package -Pnative
-      
+
       - name: Rename executable
         run: mv target/plexbot-runner target/plexbot-darwin64
-        
+
       - name: Upload executable
         uses: actions/upload-artifact@v2
         with:
           name: plexbot-encoder-darwin64
           path: target/plexbot-darwin64
           retention-days: 1
-        
+
   build-linux:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-        
+
       - name: Setup Graalvm
         id: setup-graalvm
         uses: DeLaGuardo/setup-graalvm@master
@@ -109,13 +109,13 @@ jobs:
 
       - name: Create app config for building
         run: cp src/main/resources/config.sample src/main/resources/application.yaml
-      
+
       - name: Build native-image release
         run: mvn clean generate-resources compile package -Pnative
-      
+
       - name: Rename executable
         run: mv target/plexbot-runner target/plexbot-linux64
-        
+
       - name: Upload executable
         uses: actions/upload-artifact@v2
         with:
@@ -128,7 +128,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-        
+
       - name: Setup Graalvm
         id: setup-graalvm
         uses: DeLaGuardo/setup-graalvm@master
@@ -142,13 +142,13 @@ jobs:
 
       - name: Create app config for building
         run: cp src/main/resources/config.sample src/main/resources/application.yaml
-      
+
       - name: Build jar release
         run: mvn clean generate-resources compile package -Puber
-      
+
       - name: Rename jar
         run: mv target/plexbot-runner.jar target/plexbot.jar
-        
+
       - name: Upload jar
         uses: actions/upload-artifact@v2
         with:
@@ -162,17 +162,17 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-        
+
       - name: Download windows executable
         uses: actions/download-artifact@v2
         with:
           name: plexbot-win64.exe
-          
+
       - name: Download macOS executable
         uses: actions/download-artifact@v2
         with:
           name: plexbot-darwin64
-    
+
       - name: Download linux executable
         uses: actions/download-artifact@v2
         with:
@@ -182,11 +182,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: plexbot.jar
-      
+
       - name: Fetch release version
         id: fetch-release-version
         run: echo "::set-output name=release-version::$(cat pom.xml | sed -n 's/  <version>\(.*\)<\/version>/\1/p; /version>/q')"
-      
+
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
