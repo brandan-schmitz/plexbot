@@ -2,7 +2,7 @@ name: Build Releases
 
 on:
   push:
-    branches: [ v2, main ]
+    branches: [ v2 ]
 
 jobs:
   build-windows:
@@ -51,114 +51,113 @@ jobs:
           path: target\plexbot-win64.exe
           retention-days: 1
 
-#  build-macOS:
-#    runs-on: macos-latest
-#    steps:
-#      - name: Checkout Repository
-#        uses: actions/checkout@v2
-#
-#      - name: Setup Graalvm
-#        id: setup-graalvm
-#        uses: DeLaGuardo/setup-graalvm@master
-#        with:
-#          # GraalVM version, no pattern syntax available atm
-#          graalvm: '21.1.0'
-#          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
-#          java: 'java11'
-#          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
-#          arch: 'amd64'
-#
-#      - name: Install native-image component
-#        run: gu install native-image
-#
-#      - name: Create app config for building
-#        run: cp src/main/resources/config.sample src/main/resources/application.yaml
-#
-#      - name: Build native-image release
-#        run: mvn clean generate-resources compile package -Pnative
-#
-#      - name: Rename executable
-#        run: mv target/plexbot-runner target/plexbot-darwin64
-#
-#      - name: Upload executable
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: plexbot-encoder-darwin64
-#          path: target/plexbot-darwin64
-#          retention-days: 1
-#
-#  build-linux:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout Repository
-#        uses: actions/checkout@v2
-#
-#      - name: Setup Graalvm
-#        id: setup-graalvm
-#        uses: DeLaGuardo/setup-graalvm@master
-#        with:
-#          # GraalVM version, no pattern syntax available atm
-#          graalvm: '21.1.0'
-#          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
-#          java: 'java11'
-#          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
-#          arch: 'amd64'
-#
-#      - name: Install native-image component
-#        run: gu install native-image
-#
-#      - name: Create app config for building
-#        run: cp src/main/resources/config.sample src/main/resources/application.yaml
-#
-#      - name: Build native-image release
-#        run: mvn clean generate-resources compile package -Pnative
-#
-#      - name: Rename executable
-#        run: mv target/plexbot-runner target/plexbot-linux64
-#
-#      - name: Upload executable
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: plexbot-encoder-linux64
-#          path: target/plexbot-linux64
-#          retention-days: 1
-#
-#  build-jar:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout Repository
-#        uses: actions/checkout@v2
-#
-#      - name: Setup Graalvm
-#        id: setup-graalvm
-#        uses: DeLaGuardo/setup-graalvm@master
-#        with:
-#          # GraalVM version, no pattern syntax available atm
-#          graalvm: '21.1.0'
-#          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
-#          java: 'java11'
-#          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
-#          arch: 'amd64'
-#
-#      - name: Create app config for building
-#        run: cp src/main/resources/config.sample src/main/resources/application.yaml
-#
-#      - name: Build jar release
-#        run: mvn clean generate-resources compile package -Puber
-#
-#      - name: Rename jar
-#        run: mv target/plexbot-runner.jar target/plexbot.jar
-#
-#      - name: Upload jar
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: plexbot.jar
-#          path: target/plexbot.jar
-#          retention-days: 1
-#
+  build-macOS:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Graalvm
+        id: setup-graalvm
+        uses: DeLaGuardo/setup-graalvm@master
+        with:
+          # GraalVM version, no pattern syntax available atm
+          graalvm: '21.1.0'
+          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
+          java: 'java11'
+          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
+          arch: 'amd64'
+
+      - name: Install native-image component
+        run: gu install native-image
+
+      - name: Create app config for building
+        run: cp src/main/resources/config.sample src/main/resources/application.yaml
+
+      - name: Build native-image release
+        run: mvn clean generate-resources compile package -Pnative
+
+      - name: Rename executable
+        run: mv target/plexbot-runner target/plexbot-darwin64
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v2
+        with:
+          name: plexbot-encoder-darwin64
+          path: target/plexbot-darwin64
+          retention-days: 1
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Graalvm
+        id: setup-graalvm
+        uses: DeLaGuardo/setup-graalvm@master
+        with:
+          # GraalVM version, no pattern syntax available atm
+          graalvm: '21.1.0'
+          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
+          java: 'java11'
+          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
+          arch: 'amd64'
+
+      - name: Install native-image component
+        run: gu install native-image
+
+      - name: Create app config for building
+        run: cp src/main/resources/config.sample src/main/resources/application.yaml
+
+      - name: Build native-image release
+        run: mvn clean generate-resources compile package -Pnative
+
+      - name: Rename executable
+        run: mv target/plexbot-runner target/plexbot-linux64
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v2
+        with:
+          name: plexbot-encoder-linux64
+          path: target/plexbot-linux64
+          retention-days: 1
+
+  build-jar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Graalvm
+        id: setup-graalvm
+        uses: DeLaGuardo/setup-graalvm@master
+        with:
+          # GraalVM version, no pattern syntax available atm
+          graalvm: '21.1.0'
+          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
+          java: 'java11'
+          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
+          arch: 'amd64'
+
+      - name: Create app config for building
+        run: cp src/main/resources/config.sample src/main/resources/application.yaml
+
+      - name: Build jar release
+        run: mvn clean generate-resources compile package -Puber
+
+      - name: Rename jar
+        run: mv target/plexbot-runner.jar target/plexbot.jar
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v2
+        with:
+          name: plexbot.jar
+          path: target/plexbot.jar
+          retention-days: 1
+
   create-release:
-    #needs: [build-windows, build-macOS, build-linux, build-jar]
-    needs: build-windows
+    needs: [build-windows, build-macOS, build-linux, build-jar]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -169,32 +168,25 @@ jobs:
         with:
           name: plexbot-win64.exe
 
-#      - name: Download macOS executable
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: plexbot-darwin64
-#
-#      - name: Download linux executable
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: plexbot-linux64
-#
-#      - name: Download jar
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: plexbot.jar
+      - name: Download macOS executable
+        uses: actions/download-artifact@v2
+        with:
+          name: plexbot-darwin64
+
+      - name: Download linux executable
+        uses: actions/download-artifact@v2
+        with:
+          name: plexbot-linux64
+
+      - name: Download jar
+        uses: actions/download-artifact@v2
+        with:
+          name: plexbot.jar
 
       - name: Fetch release version
         id: fetch-release-version
         run: echo "::set-output name=release-version::$(cat pom.xml | sed -n 's/  <version>\(.*\)<\/version>/\1/p; /version>/q')"
 
-      - name: Build Release Changelog
-        id: build-release-changelog
-        uses: mikepenz/release-changelog-builder-action@v2
-        with:
-          commitMode: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -203,11 +195,10 @@ jobs:
           tag_name: ${{ steps.fetch-release-version.outputs.release-version }}
           draft: true
           prerelease: false
-          body: ${{ steps.build-release-changelog.outputs.changelog }}
           files: |
             plexbot-win64.exe
-#            plexbot-darwin64
-#            plexbot-linux64
-#            plexbot.jar
+            plexbot-darwin64
+            plexbot-linux64
+            plexbot.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
