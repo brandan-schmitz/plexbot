@@ -35,6 +35,9 @@ jobs:
         run: copy src\main\resources\config.sample src\main\resources\application.yaml
         shell: cmd
 
+      - name: Alter pomx.xml for windows build
+        run: sed -i 's/com.sun.proxy.$Proxy303/com.sun.proxy.$Proxy303\\,com.sun.proxy.$Proxy285/' pom.xml
+
       - name: Build native-image release
         run: mvn clean generate-resources compile package -Pnative
 
