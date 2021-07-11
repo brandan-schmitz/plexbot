@@ -188,7 +188,6 @@
           -H:JNIConfigurationFiles=jni-config.json,\
           -H:DynamicProxyConfigurationFiles=proxy-config.json,\
           --allow-incomplete-classpath,\
-          --trace-class-initialization=com.sun.jna.Platform\,com.sun.jna.Native\,com.sun.jna.Structure,\
           --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.proxy.$Proxy285\,com.sun.proxy.$Proxy298\,com.sun.proxy.$Proxy299\,com.sun.proxy.$Proxy300\,com.sun.proxy.$Proxy301\,com.sun.jna\,com.sun.proxy.$Proxy302\,com.sun.proxy.$Proxy303
         </quarkus.native.additional-build-args>
         <quarkus.native.debug.enabled>false</quarkus.native.debug.enabled>
