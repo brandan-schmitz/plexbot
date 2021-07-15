@@ -86,7 +86,7 @@ jobs:
       - name: Upload executable
         uses: actions/upload-artifact@v2
         with:
-          name: plexbot-encoder-darwin64
+          name: plexbot-darwin64
           path: target/plexbot-darwin64
           retention-days: 1
 
@@ -122,7 +122,7 @@ jobs:
       - name: Upload executable
         uses: actions/upload-artifact@v2
         with:
-          name: plexbot-encoder-linux64
+          name: plexbot-linux64
           path: target/plexbot-linux64
           retention-days: 1
 
