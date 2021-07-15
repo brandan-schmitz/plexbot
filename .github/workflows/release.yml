@@ -5,54 +5,54 @@ on:
     branches: [ v2 ]
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Install MSVC
-        uses: ilammy/msvc-dev-cmd@v1.5.0
-
-      - name: Setup MS Build Tools
-        uses: microsoft/setup-msbuild@v1
-
-      - name: Setup Graalvm
-        id: setup-graalvm
-        uses: DeLaGuardo/setup-graalvm@master
-        with:
-          # GraalVM version, no pattern syntax available atm
-          graalvm: '21.1.0'
-          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
-          java: 'java11'
-          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
-          arch: 'amd64'
-
-      - name: Install native-image component
-        run: gu.cmd install native-image
-
-      - name: Create app config for building
-        run: copy src\main\resources\config.sample src\main\resources\application.yaml
-        shell: cmd
-
-      - name: Alter pomx.xml for windows build
-        run: sed -i 's/com.sun.proxy.$Proxy303/com.sun.proxy.$Proxy303\\,com.sun.proxy.$Proxy285/' pom.xml
-
-      - name: Build native-image release
-        run: mvn clean generate-resources compile package -Pnative
-
-      - name: Rename executable
-        run: |
-          cd target
-          rename plexbot-runner.exe plexbot-win64.exe
-        shell: cmd
-
-      - name: Upload executable
-        uses: actions/upload-artifact@v2
-        with:
-          name: plexbot-win64.exe
-          path: target\plexbot-win64.exe
-          retention-days: 1
+  #  build-windows:
+  #    runs-on: windows-latest
+  #    steps:
+  #      - name: Checkout Repository
+  #        uses: actions/checkout@v2
+  #
+  #      - name: Install MSVC
+  #        uses: ilammy/msvc-dev-cmd@v1.5.0
+  #
+  #      - name: Setup MS Build Tools
+  #        uses: microsoft/setup-msbuild@v1
+  #
+  #      - name: Setup Graalvm
+  #        id: setup-graalvm
+  #        uses: DeLaGuardo/setup-graalvm@master
+  #        with:
+  #          # GraalVM version, no pattern syntax available atm
+  #          graalvm: '21.1.0'
+  #          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
+  #          java: 'java11'
+  #          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
+  #          arch: 'amd64'
+  #
+  #      - name: Install native-image component
+  #        run: gu.cmd install native-image
+  #
+  #      - name: Create app config for building
+  #        run: copy src\main\resources\config.sample src\main\resources\application.yaml
+  #        shell: cmd
+  #
+  #      - name: Alter pomx.xml for windows build
+  #        run: sed -i 's/com.sun.proxy.$Proxy303/com.sun.proxy.$Proxy303\\,com.sun.proxy.$Proxy285/' pom.xml
+  #
+  #      - name: Build native-image release
+  #        run: mvn clean generate-resources compile package -Pnative
+  #
+  #      - name: Rename executable
+  #        run: |
+  #          cd target
+  #          rename plexbot-runner.exe plexbot-win64.exe
+  #        shell: cmd
+  #
+  #      - name: Upload executable
+  #        uses: actions/upload-artifact@v2
+  #        with:
+  #          name: plexbot-win64.exe
+  #          path: target\plexbot-win64.exe
+  #          retention-days: 1
 
   build-macOS:
     runs-on: macos-latest
@@ -160,16 +160,17 @@ jobs:
           retention-days: 1
 
   create-release:
-    needs: [build-windows, build-macOS, build-linux, build-jar]
+    #    needs: [build-windows, build-macOS, build-linux, build-jar]
+    needs: [build-macOS, build-linux, build-jar]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Download windows executable
-        uses: actions/download-artifact@v2
-        with:
-          name: plexbot-win64.exe
+      #      - name: Download windows executable
+      #        uses: actions/download-artifact@v2
+      #        with:
+      #          name: plexbot-win64.exe
 
       - name: Download macOS executable
         uses: actions/download-artifact@v2
@@ -190,7 +191,6 @@ jobs:
         id: fetch-release-version
         run: echo "::set-output name=release-version::$(cat pom.xml | sed -n 's/  <version>\(.*\)<\/version>/\1/p; /version>/q')"
 
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -199,7 +199,6 @@ jobs:
           draft: true
           prerelease: false
           files: |
-            plexbot-win64.exe
             plexbot-darwin64
             plexbot-linux64
             plexbot.jar
