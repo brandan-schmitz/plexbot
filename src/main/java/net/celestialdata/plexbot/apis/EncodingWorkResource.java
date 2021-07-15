@@ -6,12 +6,18 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Tag(name = "Encoding Work", description = "Endpoints available for the encoding workers get information about items being encoded")
 @Path("/encoding/work")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EncodingWorkResource {
+
+    @GET
+    public List<EncodingWorkItem> get() {
+        return EncodingWorkItem.listAll();
+    }
 
     @GET
     @Path("/{id}")
