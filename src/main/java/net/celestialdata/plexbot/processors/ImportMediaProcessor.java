@@ -564,7 +564,7 @@ public class ImportMediaProcessor extends BotProcess {
                     }
 
                     // Ensure that old media files get deleted if they are being replaced by a file of a different type
-                    if (!filesAreSubtitles && !entityUtilities.getEpisode(parsedId).filename.equalsIgnoreCase(itemFilename)) {
+                    if (overwrite && !filesAreSubtitles && !entityUtilities.getEpisode(parsedId).filename.equalsIgnoreCase(itemFilename)) {
                         fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + entityUtilities.getEpisode(parsedId).filename);
                     }
 
@@ -726,7 +726,7 @@ public class ImportMediaProcessor extends BotProcess {
                     }
 
                     // Ensure that old media files get deleted if they are being replaced by a file of a different type
-                    if (!filesAreSubtitles && !entityUtilities.getMovie(parsedId).filename.equalsIgnoreCase(itemFilename)) {
+                    if (overwrite && !filesAreSubtitles && !entityUtilities.getMovie(parsedId).filename.equalsIgnoreCase(itemFilename)) {
                         fileUtilities.deleteFile(movieFolder + foldername + "/" + entityUtilities.getMovie(parsedId).filename);
                     }
 
