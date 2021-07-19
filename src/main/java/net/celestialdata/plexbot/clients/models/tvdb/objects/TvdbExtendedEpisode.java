@@ -1,6 +1,7 @@
 package net.celestialdata.plexbot.clients.models.tvdb.objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import java.util.List;
@@ -34,9 +35,8 @@ public class TvdbExtendedEpisode {
     public List<TvdbTrailer> trailers = null;
 
     public String getImage() {
-        var noPosterImageUrl = ConfigProvider.getConfig().getValue("BotSettings.noPosterImageUrl", String.class);
-        if (this.image.isBlank() || this.image == null) {
-            return noPosterImageUrl;
+        if (StringUtils.isBlank(this.image)) {
+            return ConfigProvider.getConfig().getValue("BotSettings.noPosterImageUrl", String.class);
         } else return this.image;
     }
 }

@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 @ApplicationScoped
 public class FileUtilities {
 
+    @SuppressWarnings("CdiInjectionPointsInspection")
     @Inject
     BlacklistedCharacters blacklistedCharacters;
 

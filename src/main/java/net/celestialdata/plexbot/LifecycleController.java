@@ -6,7 +6,6 @@ import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 import net.celestialdata.plexbot.periodictasks.BotStatusDisplay;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.javacord.api.DiscordApi;
 import org.jboss.logging.Logger;
 
@@ -15,8 +14,6 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.resource.spi.ConfigProperty;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -47,7 +44,7 @@ public class LifecycleController {
 
                     Files.copy(configSample, Paths.get("config/application.yaml").toAbsolutePath());
                     logger.fatal("The bot configuration file does not exist, hover a sample configuration file has been provided for you. " +
-                            "Please edit the created configuration file located at " + Paths.get("config/application.yaml").toAbsolutePath().toString() +
+                            "Please edit the created configuration file located at " + Paths.get("config/application.yaml").toAbsolutePath() +
                             " to use your own settings as the default settings in this sample file WILL NOT WORK.");
                     Quarkus.asyncExit(1);
                 } catch (Exception e) {

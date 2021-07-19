@@ -435,7 +435,7 @@ public class MovieDownloadProcessor extends BotProcess {
                                     "subtitle file. The file has been left in the temp folder and will require manual importing.")
                             .addInlineField("Movie:", movieToDownload.title + " (" + movieToDownload.year + ")")
                             .addInlineField("IMDb: ", movieToDownload.imdbID)
-                            .addField("Subtitle Filename(s):", "```" + subtitleFileNamesBuilder.toString() + "```")
+                            .addField("Subtitle Filename(s):", "```" + subtitleFileNamesBuilder + "```")
                             .setFooter("Added by: " + (requestedBy != 0 ? discordApi.getUserById(requestedBy).join().getDiscriminatedName() : "NA"))
                             .setColor(Color.GREEN)
                     ).send(discordApi.getUserById(botOwner).join()).join();
