@@ -133,7 +133,7 @@ public class RequestMovieCommandRunner extends BotProcess {
                     .join();
 
             // Add the button click listener that allows navigation through the screens
-            discordApi.addButtonClickListener(clickEvent -> {
+            replyMessage.getChannel().addButtonClickListener(clickEvent -> {
                 if (clickEvent.getButtonInteraction().getCustomId().equals("next-" + incomingMessage.getId())) {
                     // Proceed to the next screen
                     currentScreen.getAndIncrement();

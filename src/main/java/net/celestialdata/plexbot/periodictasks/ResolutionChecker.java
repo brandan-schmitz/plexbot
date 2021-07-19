@@ -21,6 +21,7 @@ import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.Channel;
+import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
@@ -87,7 +88,8 @@ public class ResolutionChecker extends BotProcess {
     MessageFormatter messageFormatter;
 
     public void init(@Observes StartupEvent event) {
-        discordApi.addButtonClickListener(clickEvent -> {
+        TextChannel upgradeChannel = discordApi.getTextChannelById(upgradeApprovalChannel).orElseThrow();
+        upgradeChannel.addButtonClickListener(clickEvent -> {
             if (clickEvent.getButtonInteraction().getCustomId().contains("approve-upgrade") || clickEvent.getButtonInteraction().getCustomId().contains("ignore-upgrade")) {
                 var upgradableMovies = entityUtilities.getAllUpgradableMovies();
 

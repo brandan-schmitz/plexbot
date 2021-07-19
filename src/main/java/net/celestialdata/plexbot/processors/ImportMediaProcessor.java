@@ -133,11 +133,21 @@ public class ImportMediaProcessor extends BotProcess {
         endProcess();
     }
 
+    private void resetToNewMessage(EmbedBuilder embedBuilder, long messageToReplyTo) {
+        var channel = replyMessage.getChannel();
+        discordApi.getMessageById(replyMessage.getId(), channel).join().delete().join();
+        new MessageBuilder()
+                .setEmbed(embedBuilder)
+                .replyTo(messageToReplyTo)
+                .send(channel)
+                .join();
+    }
+
     public void processImport(Message replyMessage, Long commandMessageId, boolean skipSync, boolean overwrite) {
         // TODO: Ensure there are no previous instance of the import processor running to avoid interference
 
         // Configure the button click listener used to stop the import process
-        this.cancelListener = discordApi.addButtonClickListener(clickEvent -> {
+        this.cancelListener = replyMessage.getChannel().addButtonClickListener(clickEvent -> {
             if (clickEvent.getButtonInteraction().getCustomId().equals("cancel-" + commandMessageId)) {
                 clickEvent.getInteraction().asMessageComponentInteraction().orElseThrow()
                         .createOriginalMessageUpdater()
@@ -191,7 +201,10 @@ public class ImportMediaProcessor extends BotProcess {
 
             // Fail the process if there was an issue with waiting for Syncthing
             if (!syncthingSucceeded.get()) {
-                replyMessage.edit(messageFormatter.errorMessage("Failed while waiting for Syncthing.")).exceptionally(ExceptionLogger.get());
+                resetToNewMessage(new EmbedBuilder()
+                        .setTitle("Import Failed")
+                        .setDescription("An error occurred while waiting for Syncthing to complete it's sync. Please try again later.")
+                        .setColor(Color.RED), commandMessageId);
                 this.cancelListener.remove();
                 endProcess();
                 return;
@@ -244,8 +257,9 @@ public class ImportMediaProcessor extends BotProcess {
 
             // Ensure there are actually files to import, otherwise exit
             if (totalNumFiles == 0) {
-                replyMessage.edit(messageFormatter.warningMessage("There were no files available to import. Please make sure they are " +
-                        "in the proper folders before continuing.")).exceptionally(ExceptionLogger.get());
+                resetToNewMessage(new EmbedBuilder()
+                        .setDescription("There were no files available to import. Please make sure they are in the proper folders before using the import command again.")
+                        .setColor(Color.YELLOW), commandMessageId);
                 this.cancelListener.remove();
                 endProcess();
                 return;
@@ -323,18 +337,12 @@ public class ImportMediaProcessor extends BotProcess {
             return;
         } else {
             this.cancelListener.remove();
-            var channel = replyMessage.getChannel();
-            discordApi.getMessageById(replyMessage.getId(), replyMessage.getChannel()).join().delete().join();
-            new MessageBuilder()
-                    .setEmbed(new EmbedBuilder()
-                            .setTitle("Import Processor")
-                            .setDescription("You have requested the bot import media contained within the import folder. This action has been completed.")
-                            .setColor(Color.GREEN)
-                            .setFooter("Finished: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                                    .format(ZonedDateTime.now()) + " CST"))
-                    .replyTo(commandMessageId)
-                    .send(channel)
-                    .join();
+            resetToNewMessage(new EmbedBuilder()
+                    .setTitle("Import Processor")
+                    .setDescription("You have requested the bot import media contained within the import folder. This action has been completed.")
+                    .setColor(Color.GREEN)
+                    .setFooter("Finished: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+                            .format(ZonedDateTime.now()) + " CST"), commandMessageId);
         }
 
         endProcess();
@@ -347,7 +355,7 @@ public class ImportMediaProcessor extends BotProcess {
         updateProcessString("Import Processor - " + decimalFormatter.format(percentage) + "%");
 
         // Update the progress message
-        if (lastUpdate.plus(3, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
+        if (lastUpdate.plus(3, ChronoUnit.SECONDS).isBefore(LocalDateTime.now()) || progress == 0) {
             this.replyMessage.edit(messageFormatter.importProgressMessage("Processing file " + (currentPos + progress) + " of " + totalNumFiles));
             lastUpdate = LocalDateTime.now();
         }

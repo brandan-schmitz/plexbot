@@ -13,7 +13,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 @Singleton
-@RegisterRestClient(baseUri = "http://www.omdbapi.com")
+@RegisterRestClient(baseUri = "https://www.omdbapi.com")
 public interface OmdbService {
 
     @GET
