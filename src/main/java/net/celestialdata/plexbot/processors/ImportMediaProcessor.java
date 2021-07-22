@@ -143,7 +143,7 @@ public class ImportMediaProcessor extends BotProcess {
                 .join();
     }
 
-    public void processImport(Message replyMessage, Long commandMessageId, boolean skipSync, boolean overwrite) {
+    public void processImport(Message replyMessage, Long commandMessageId, boolean skipSync, boolean overwrite, boolean optimized, boolean includeOptimized) {
         // TODO: Ensure there are no previous instance of the import processor running to avoid interference
 
         // Configure the button click listener used to stop the import process
@@ -232,13 +232,35 @@ public class ImportMediaProcessor extends BotProcess {
                     FileType.VTT.getTypeString()
             };
 
-            // Collect a list of media files to process
-            Collection<File> episodeMediaFiles = FileUtils.listFiles(new File(importFolder + "episodes"), mediaFileExtensions, false);
-            Collection<File> movieMediaFiles = FileUtils.listFiles(new File(importFolder + "movies"), mediaFileExtensions, false);
+            // Create the objects to hold the collections of media media files
+            Collection<File> episodeMediaFiles;
+            Collection<File> movieMediaFiles;
+            Collection<File> episodeSubtitleFiles;
+            Collection<File> movieSubtitleFiles;
 
-            // Collect a list of subtitle files to process
-            Collection<File> episodeSubtitleFiles = FileUtils.listFiles(new File(importFolder + "episodes"), subtitleFileExtensions, false);
-            Collection<File> movieSubtitleFiles = FileUtils.listFiles(new File(importFolder + "movies"), subtitleFileExtensions, false);
+            // Collect a list of media files to process
+            // If the optimized flag is given, only collect media files within the optimized directory
+            // If the include-optimized flag is given include media in the regular import folders as well as the optimized directory
+            if (optimized) {
+                episodeMediaFiles = FileUtils.listFiles(new File(importFolder + "optimized/episodes"), mediaFileExtensions, false);
+                movieMediaFiles = FileUtils.listFiles(new File(importFolder + "optimized/movies"), mediaFileExtensions, false);
+                episodeSubtitleFiles = FileUtils.listFiles(new File(importFolder + "optimized/episodes"), subtitleFileExtensions, false);
+                movieSubtitleFiles = FileUtils.listFiles(new File(importFolder + "optimized/movies"), subtitleFileExtensions, false);
+            } else {
+                // Fetch the regular import files
+                episodeMediaFiles = FileUtils.listFiles(new File(importFolder + "episodes"), mediaFileExtensions, false);
+                movieMediaFiles = FileUtils.listFiles(new File(importFolder + "movies"), mediaFileExtensions, false);
+                episodeSubtitleFiles = FileUtils.listFiles(new File(importFolder + "episodes"), subtitleFileExtensions, false);
+                movieSubtitleFiles = FileUtils.listFiles(new File(importFolder + "movies"), subtitleFileExtensions, false);
+
+                // Add the optimized media files if flag is used
+                if (includeOptimized) {
+                    episodeMediaFiles.addAll(FileUtils.listFiles(new File(importFolder + "optimized/episodes"), mediaFileExtensions, false));
+                    movieMediaFiles.addAll(FileUtils.listFiles(new File(importFolder + "optimized/movies"), mediaFileExtensions, false));
+                    episodeSubtitleFiles.addAll(FileUtils.listFiles(new File(importFolder + "optimized/episodes"), subtitleFileExtensions, false));
+                    movieSubtitleFiles.addAll(FileUtils.listFiles(new File(importFolder + "optimized/movies"), subtitleFileExtensions, false));
+                }
+            }
 
             // Ensure there are no directories listed as files
             episodeMediaFiles.removeIf(File::isDirectory);
@@ -554,31 +576,44 @@ public class ImportMediaProcessor extends BotProcess {
                     // Create the season folder
                     fileUtilities.createFolder(tvFolder + showFoldername + "/" + seasonFoldername);
 
-                    // Check if the item is in the database at all
-                    var existsInDatabase = filesAreSubtitles ? entityUtilities.episodeSubtitleExists(itemFilename) : entityUtilities.episodeExists(parsedId);
+                    // Move the file into place as long as it is not overwriting a file without the proper flag. It only requires
+                    // the overwrite flag if the file is not one that has been optimized.
+                    if (file.getAbsolutePath().contains(importFolder + "optimized/episodes")) {
+                        // Ensure that old media files get deleted if they are being replaced by a file of a different type
+                        if (!filesAreSubtitles && !entityUtilities.getEpisode(parsedId).filename.equalsIgnoreCase(itemFilename)) {
+                            fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + entityUtilities.getEpisode(parsedId).filename);
+                        }
 
-                    // Verify that the file does not exist. If it does and overwrite is not specified skip this file
-                    if (Files.exists(Paths.get(tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename)) && !overwrite || existsInDatabase && !overwrite) {
-                        new MessageBuilder()
-                                .setEmbed(messageFormatter.errorMessage("The following item already exists. " +
-                                        "Please use the --overwrite flag if you wish to overwrite this file: " +
-                                        file.getName()))
-                                .send(replyMessage.getChannel())
-                                .exceptionally(ExceptionLogger.get())
-                                .join();
-                        progress.getAndIncrement();
-                        multiEmitter.emit(progress.get());
-                        continue;
+                        // Move the item into place
+                        fileUtilities.moveMedia(importFolder + "optimized/episodes/" + file.getName(),
+                                tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename, true);
+                    } else {
+                        // Check if the item is in the database at all
+                        var existsInDatabase = filesAreSubtitles ? entityUtilities.episodeSubtitleExists(itemFilename) : entityUtilities.episodeExists(parsedId);
+
+                        // Verify that the file does not exist. If it does and overwrite is not specified skip this file
+                        if (Files.exists(Paths.get(tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename)) && !overwrite || existsInDatabase && !overwrite) {
+                            new MessageBuilder()
+                                    .setEmbed(messageFormatter.errorMessage("The following item already exists. " +
+                                            "Please use the --overwrite flag if you wish to overwrite this file: " +
+                                            file.getAbsolutePath()))
+                                    .send(replyMessage.getChannel())
+                                    .exceptionally(ExceptionLogger.get())
+                                    .join();
+                            progress.getAndIncrement();
+                            multiEmitter.emit(progress.get());
+                            continue;
+                        }
+
+                        // Ensure that old media files get deleted if they are being replaced by a file of a different type
+                        if (overwrite && !filesAreSubtitles && !entityUtilities.getEpisode(parsedId).filename.equalsIgnoreCase(itemFilename)) {
+                            fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + entityUtilities.getEpisode(parsedId).filename);
+                        }
+
+                        // Move the item into place
+                        fileUtilities.moveMedia(importFolder + "episodes/" + file.getName(),
+                                tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename, overwrite);
                     }
-
-                    // Ensure that old media files get deleted if they are being replaced by a file of a different type
-                    if (overwrite && !filesAreSubtitles && !entityUtilities.getEpisode(parsedId).filename.equalsIgnoreCase(itemFilename)) {
-                        fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + entityUtilities.getEpisode(parsedId).filename);
-                    }
-
-                    // Move the item into place
-                    fileUtilities.moveMedia(importFolder + "episodes/" + file.getName(),
-                            tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename, overwrite);
 
                     // Add the item to the database
                     if (filesAreSubtitles) {
@@ -716,31 +751,44 @@ public class ImportMediaProcessor extends BotProcess {
                     // Create the movie folder
                     fileUtilities.createFolder(omdbResponse);
 
-                    // Check if the item is in the database at all
-                    var existsInDatabase = filesAreSubtitles ? entityUtilities.movieSubtitleExists(itemFilename) : entityUtilities.movieExists(parsedId);
+                    // Move the file into place as long as it is not overwriting a file without the proper flag. It only requires
+                    // the overwrite flag if the file is not one that has been optimized.
+                    if (file.getAbsolutePath().contains(importFolder + "optimized/movies")) {
+                        // Ensure that old media files get deleted if they are being replaced by a file of a different type
+                        if (!filesAreSubtitles && !entityUtilities.getMovie(parsedId).filename.equalsIgnoreCase(itemFilename)) {
+                            fileUtilities.deleteFile(movieFolder + foldername + "/" + entityUtilities.getMovie(parsedId).filename);
+                        }
 
-                    // Verify that the file does not exist. If it does and overwrite is not specified skip this file
-                    if (Files.exists(Paths.get(movieFolder + foldername + "/" + itemFilename)) && !overwrite || existsInDatabase && !overwrite) {
-                        new MessageBuilder()
-                                .setEmbed(messageFormatter.errorMessage("The following item already exists. " +
-                                        "Please use the --overwrite flag if you wish to overwrite this file: " +
-                                        file.getName()))
-                                .send(replyMessage.getChannel())
-                                .exceptionally(ExceptionLogger.get())
-                                .join();
-                        progress.getAndIncrement();
-                        multiEmitter.emit(progress.get());
-                        continue;
+                        // Move the item into place
+                        fileUtilities.moveMedia(importFolder + "optimized/movies/" + file.getName(),
+                                movieFolder + foldername + "/" + itemFilename, true);
+                    } else {
+                        // Check if the item is in the database at all
+                        var existsInDatabase = filesAreSubtitles ? entityUtilities.movieSubtitleExists(itemFilename) : entityUtilities.movieExists(parsedId);
+
+                        // Verify that the file does not exist. If it does and overwrite is not specified skip this file
+                        if (Files.exists(Paths.get(movieFolder + foldername + "/" + itemFilename)) && !overwrite || existsInDatabase && !overwrite) {
+                            new MessageBuilder()
+                                    .setEmbed(messageFormatter.errorMessage("The following item already exists. " +
+                                            "Please use the --overwrite flag if you wish to overwrite this file: " +
+                                            file.getAbsolutePath()))
+                                    .send(replyMessage.getChannel())
+                                    .exceptionally(ExceptionLogger.get())
+                                    .join();
+                            progress.getAndIncrement();
+                            multiEmitter.emit(progress.get());
+                            continue;
+                        }
+
+                        // Ensure that old media files get deleted if they are being replaced by a file of a different type
+                        if (overwrite && !filesAreSubtitles && !entityUtilities.getMovie(parsedId).filename.equalsIgnoreCase(itemFilename)) {
+                            fileUtilities.deleteFile(movieFolder + foldername + "/" + entityUtilities.getMovie(parsedId).filename);
+                        }
+
+                        // Move the item into place
+                        fileUtilities.moveMedia(importFolder + "movies/" + file.getName(),
+                                movieFolder + foldername + "/" + itemFilename, overwrite);
                     }
-
-                    // Ensure that old media files get deleted if they are being replaced by a file of a different type
-                    if (overwrite && !filesAreSubtitles && !entityUtilities.getMovie(parsedId).filename.equalsIgnoreCase(itemFilename)) {
-                        fileUtilities.deleteFile(movieFolder + foldername + "/" + entityUtilities.getMovie(parsedId).filename);
-                    }
-
-                    // Move the item into place
-                    fileUtilities.moveMedia(importFolder + "movies/" + file.getName(),
-                            movieFolder + foldername + "/" + itemFilename, overwrite);
 
                     // Add the item to the database
                     if (filesAreSubtitles) {
