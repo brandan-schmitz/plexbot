@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.discord.commandrunners;
+package net.celestialdata.plexbot.processors;
 
 import io.quarkus.arc.log.LoggerName;
 import io.smallrye.mutiny.Uni;
@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("unused")
 @Dependent
-public class RequestMovieCommandRunner extends BotProcess {
+public class RequestMovieCommandProcessor extends BotProcess {
     private Message replyMessage;
     private Message incomingMessage;
 
