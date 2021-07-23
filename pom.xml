@@ -176,10 +176,10 @@
       </properties>
     </profile>
     <profile>
-      <id>native</id>
+      <id>native-macos</id>
       <activation>
         <property>
-          <name>native</name>
+          <name>native-macos</name>
         </property>
       </activation>
       <properties>
@@ -188,7 +188,27 @@
           -H:JNIConfigurationFiles=jni-config.json,\
           -H:DynamicProxyConfigurationFiles=proxy-config.json,\
           --allow-incomplete-classpath,\
-          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.proxy.$Proxy298\,com.sun.proxy.$Proxy299\,com.sun.proxy.$Proxy300\,com.sun.proxy.$Proxy301\,com.sun.jna\,com.sun.proxy.$Proxy302\,com.sun.proxy.$Proxy303
+          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.jna\,com.sun.proxy.$Proxy308
+        </quarkus.native.additional-build-args>
+        <quarkus.native.debug.enabled>false</quarkus.native.debug.enabled>
+        <quarkus.package.type>native</quarkus.package.type>
+        <quarkus.native.native-image-xmx>7G</quarkus.native.native-image-xmx>
+      </properties>
+    </profile>
+    <profile>
+      <id>native-linux</id>
+      <activation>
+        <property>
+          <name>native-linux</name>
+        </property>
+      </activation>
+      <properties>
+        <quarkus.native.additional-build-args>-H:ResourceConfigurationFiles=resources-config.json,\
+          -H:ReflectionConfigurationFiles=reflection-config.json,\
+          -H:JNIConfigurationFiles=jni-config.json,\
+          -H:DynamicProxyConfigurationFiles=proxy-config.json,\
+          --allow-incomplete-classpath,\
+          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.jna\,com.sun.proxy.$Proxy307
         </quarkus.native.additional-build-args>
         <quarkus.native.debug.enabled>false</quarkus.native.debug.enabled>
         <quarkus.package.type>native</quarkus.package.type>

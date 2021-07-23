@@ -14,7 +14,7 @@
               <option value="generate-resources" />
               <option value="compile" />
               <option value="package" />
-              <option value="-Pnative" />
+              <option value="-Pnative-macos" />
             </list>
           </option>
           <option name="pomFileName" />
