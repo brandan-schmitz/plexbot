@@ -2,7 +2,7 @@ package net.celestialdata.plexbot.discord.commands;
 
 import io.quarkus.arc.log.LoggerName;
 import net.celestialdata.plexbot.discord.commandhandler.api.Command;
-import net.celestialdata.plexbot.discord.commandrunners.RequestMovieCommandRunner;
+import net.celestialdata.plexbot.processors.RequestMovieCommandProcessor;
 import org.javacord.api.entity.message.Message;
 import org.jboss.logging.Logger;
 
@@ -20,7 +20,7 @@ public class RequestMovieCommand implements Command<Message> {
     Logger logger;
 
     @Inject
-    Instance<RequestMovieCommandRunner> requestMovieCommandRunner;
+    Instance<RequestMovieCommandProcessor> requestMovieCommandRunner;
 
     @Override
     public void handleFailure(Throwable error) {

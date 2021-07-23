@@ -14,7 +14,7 @@
               <option value="generate-resources" />
               <option value="compile" />
               <option value="package" />
-              <option value="-Pnative" />
+              <option value="-Pnative-linux" />
               <option value="-Dquarkus.native.container-build=true" />
             </list>
           </option>

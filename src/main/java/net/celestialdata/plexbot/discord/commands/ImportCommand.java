@@ -43,6 +43,8 @@ public class ImportCommand implements Command<Message> {
             // Configure the default parameter options
             var skipSync = false;
             var overwrite = false;
+            var optimized = false;
+            var includeOptimized = false;
 
             // Parse the provided parameters
             var params = parameterString.split("\\s+");
@@ -53,6 +55,10 @@ public class ImportCommand implements Command<Message> {
                     skipSync = true;
                 } else if (param.equalsIgnoreCase("--overwrite")) {
                     overwrite = true;
+                } else if (param.equalsIgnoreCase("--optimized")) {
+                    optimized = true;
+                } else if (param.equalsIgnoreCase("--include-optimized")) {
+                    includeOptimized = true;
                 }
             }
 
@@ -65,7 +71,7 @@ public class ImportCommand implements Command<Message> {
                     .join();
 
             // Run the import processor
-            importMediaProcessor.get().processImport(replyMessage, incomingMessage.getId(), skipSync, overwrite);
+            importMediaProcessor.get().processImport(replyMessage, incomingMessage.getId(), skipSync, overwrite, optimized, includeOptimized);
         } else {
             incomingMessage.reply(messageFormatter.errorMessage("You are not authorized to use this command. If you believe this is a mistake, please contact Brandan."));
         }
