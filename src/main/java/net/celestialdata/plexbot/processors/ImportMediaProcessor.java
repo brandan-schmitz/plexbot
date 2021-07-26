@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static net.celestialdata.plexbot.enumerators.FileType.mediaFileExtensions;
+import static net.celestialdata.plexbot.enumerators.FileType.subtitleFileExtensions;
+
 @ApplicationScoped
 public class ImportMediaProcessor extends BotProcess {
     private final DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
@@ -209,28 +212,6 @@ public class ImportMediaProcessor extends BotProcess {
                 endProcess();
                 return;
             }
-
-            // Create the array of media file extensions to look for
-            String[] mediaFileExtensions = {
-                    FileType.AVI.getTypeString(),
-                    FileType.DIVX.getTypeString(),
-                    FileType.FLV.getTypeString(),
-                    FileType.M4V.getTypeString(),
-                    FileType.MKV.getTypeString(),
-                    FileType.MP4.getTypeString(),
-                    FileType.MPEG.getTypeString(),
-                    FileType.MPG.getTypeString(),
-                    FileType.WMV.getTypeString()
-            };
-
-            // Create the array of subtitle file extensions to look for
-            String[] subtitleFileExtensions = {
-                    FileType.SRT.getTypeString(),
-                    FileType.SMI.getTypeString(),
-                    FileType.SSA.getTypeString(),
-                    FileType.ASS.getTypeString(),
-                    FileType.VTT.getTypeString()
-            };
 
             // Create the objects to hold the collections of media media files
             Collection<File> episodeMediaFiles;
