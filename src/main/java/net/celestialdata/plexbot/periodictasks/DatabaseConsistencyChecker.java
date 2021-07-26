@@ -6,6 +6,7 @@ import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.entities.*;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -16,16 +17,30 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.awt.*;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static net.celestialdata.plexbot.enumerators.FileType.mediaFileExtensions;
+import static net.celestialdata.plexbot.enumerators.FileType.subtitleFileExtensions;
+
 @SuppressWarnings("unused")
 @ApplicationScoped
 public class DatabaseConsistencyChecker extends BotProcess {
+    DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
+    private List<Movie> moviesInDatabase = new ArrayList<>();
+    private List<Episode> episodesInDatabase = new ArrayList<>();
+    private List<Show> showsInDatabase = new ArrayList<>();
+    private List<MovieSubtitle> movieSubtitlesInDatabase = new ArrayList<>();
+    private List<EpisodeSubtitle> episodeSubtitlesInDatabase = new ArrayList<>();
+    private Collection<File> mediaFiles;
+    private Collection<File> subtitleFiles;
 
     @LoggerName("net.celestialdata.plexbot.periodictasks.DatabaseConsistencyChecker")
     Logger logger;
@@ -56,32 +71,55 @@ public class DatabaseConsistencyChecker extends BotProcess {
         discordApi.getUserById(ownerId).join().sendMessage(message);
     }
 
+    // Helper method to update the progress of the checker
+    private void updateProgress(int progress) {
+        var total = decimalFormatter.format(((double) progress / (showsInDatabase.size() +
+                episodesInDatabase.size() + moviesInDatabase.size() + mediaFiles.size() + subtitleFiles.size() +
+                movieSubtitlesInDatabase.size() + episodeSubtitlesInDatabase.size())) * 100);
+        updateProcessString("Database Consistency Checker - " + total + "%");
+    }
+
     @Scheduled(every = "168h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void verifyDatabase() {
         // Configure the process
         configureProcess("Database Consistency Checker - na%");
 
         // Get the lists of media in the database
-        List<Show> shows = Show.listAll();
-        List<Episode> episodes = Episode.listAll();
-        List<Movie> movies = Movie.listAll();
+        showsInDatabase = Show.listAll();
+        episodesInDatabase = Episode.listAll();
+        episodeSubtitlesInDatabase = EpisodeSubtitle.listAll();
+        moviesInDatabase = Movie.listAll();
+        movieSubtitlesInDatabase = MovieSubtitle.listAll();
+
+        // Fetch a list of all media files in the filesystem
+        mediaFiles = FileUtils.listFiles(new File(movieFolder), mediaFileExtensions, true);
+        mediaFiles.addAll(FileUtils.listFiles(new File(tvFolder), mediaFileExtensions, true));
+
+        // Fetch a list of all subtitle files in the filesystem
+        subtitleFiles = FileUtils.listFiles(new File(movieFolder), subtitleFileExtensions, true);
+        subtitleFiles.addAll(FileUtils.listFiles(new File(tvFolder), subtitleFileExtensions, true));
+
+        // Ensure folders and hidden files are somehow not included in the files list
+        mediaFiles.removeIf(File::isDirectory);
+        mediaFiles.removeIf(File::isHidden);
+        subtitleFiles.removeIf(File::isDirectory);
+        subtitleFiles.removeIf(File::isHidden);
 
         // Create items to track progress for logging reasons
-        AtomicInteger progress = new AtomicInteger(1);
         AtomicInteger overallProgress = new AtomicInteger(1);
-        var totalSize = shows.size() + episodes.size() + movies.size();
-        DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
 
         // Verify that all the folders for the shows in the DB exist
-        shows.forEach(show -> {
-            logger.trace("Verifying show (" + progress + "/" + shows.size() + "): " + show.name + " {tvdb-" + show.id + "}");
-            updateProcessString("Database Consistency Checker - " +
-                    decimalFormatter.format(((double) overallProgress.get() / totalSize) * 100) + "%");
+        showsInDatabase.forEach(show -> {
+            // Log a tracer message
+            logger.info("Verifying show: " + show.name + " {tvdb-" + show.id + "}");
 
+            // Verify the folder exists, if not send warnings
             if (!Files.isDirectory(Path.of(tvFolder + "/" + show.foldername))) {
+                // Log that the folder does not exist
                 logger.warn("Data inconsistency found: Show \"" + show.name + " {tvdb-" + show.id +
                         "}\" could not be found on the filesystem, however it is listed in the database.");
 
+                // Send a warning in discord about the folder not existing.
                 sendWarning(new EmbedBuilder()
                         .setTitle("Data Inconsistency Found")
                         .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
@@ -93,83 +131,90 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 );
             }
 
-            progress.getAndIncrement();
+            // Update the progress
             overallProgress.getAndIncrement();
+            updateProgress(overallProgress.get());
         });
 
-        // Reset the progress counter and verify that all episodes exist
-        progress.set(1);
-        episodes.forEach(episode -> {
-            logger.trace("Verifying episode (" + progress + "/" + episodes.size() + "): s" + episode.season +
-                    "e" + episode.number + " - " + episode.show.name);
-            updateProcessString("Database Consistency Checker - " +
-                    decimalFormatter.format(((double) overallProgress.get() / totalSize) * 100) + "%");
-            verifyEpisode(episode);
-            progress.getAndIncrement();
+        // Verify that the media files exist and are updated
+        mediaFiles.forEach(file -> {
+            // Log a tracer message
+            logger.info("Verifying media file: " + file.getAbsolutePath());
+
+            // Verify the file
+            verifyMediaFile(file);
+
+            // Update the progress
             overallProgress.getAndIncrement();
+            updateProgress(overallProgress.get());
         });
 
+        // Verify that the subtitle files exist
+        subtitleFiles.forEach(file -> {
+            // Log a tracer message
+            logger.info("Verifying subtitle file: " + file.getAbsolutePath());
 
-        // Reset the progress counter and verify that all movies exist
-        progress.set(1);
-        movies.forEach(movie -> {
-            logger.trace("Verifying movie (" + progress + "/" + movies.size() + "): " + movie.title + " (" + movie.year + ") {imdb-" + movie.id + "}");
-            updateProcessString("Database Consistency Checker - " +
-                    decimalFormatter.format(((double) overallProgress.get() / totalSize) * 100) + "%");
-            verifyMovie(movie);
-            progress.getAndIncrement();
+            // Verify the file
+            verifySubtitleFile(file);
+
+            // Update the progress
             overallProgress.getAndIncrement();
+            updateProgress(overallProgress.get());
         });
 
-        endProcess();
-    }
+        // Report any movies remaining in the list of movies in the database since they were not located on the filesystem
+        moviesInDatabase.forEach(movie -> {
+            // Log the warning about a missing movie
+            logger.warn("Data inconsistency found: Movie \"" + movie.title + " (" + movie.year + ") {imdb-" + movie.id +
+                    "}\" could not be found on the filesystem, however it is listed in the database.");
 
-    @SuppressWarnings("DuplicatedCode")
-    @Transactional
-    @TransactionConfiguration(timeout = 120)
-    public void verifyEpisode(Episode episode) {
-        try {
-            // Ensure we get a updated copy of the episode from the DB in the event it was upgraded while this was processing
-            episode = entityUtilities.getEpisode(episode.id);
+            // Send the warning over discord
+            sendWarning(new EmbedBuilder()
+                    .setTitle("Data Inconsistency Found")
+                    .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
+                            "database but cannot be found on the filesystem.")
+                    .addInlineField("Media type:", "```Movie```")
+                    .addInlineField("Media ID:", "```" + movie.id + "```")
+                    .addInlineField("Media name:", "```" + movie.title + "```")
+                    .setColor(Color.YELLOW)
+            );
 
-            if (Files.notExists(Path.of(tvFolder + "/" + episode.show.foldername + "/Season " + episode.season + "/" + episode.filename))) {
-                logger.warn("Data inconsistency found: Episode " + episode.number + " of season " + episode.season + " of " + episode.show.name +
-                        " could not be found on the filesystem, however it is listed in the database.");
+            // Update the progress
+            overallProgress.getAndIncrement();
+            updateProgress(overallProgress.get());
+        });
 
-                sendWarning(new EmbedBuilder()
-                        .setTitle("Data Inconsistency Found")
-                        .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
-                                "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "```Episode```")
-                        .addInlineField("Episode ID:", "```" + episode.id + "```")
-                        .addInlineField("Episode #:", "```" + episode.number + "```")
-                        .addInlineField("Season #:", "```" + episode.season + "```")
-                        .addInlineField("Episode title:", "```" + episode.title + "```")
-                        .addInlineField("Associated show:", "```" + episode.show.name + "```")
-                        .setColor(Color.YELLOW)
-                );
-            } else {
-                // Ensure information about the media file is up to date
-                var mediaFileData = fileUtilities.getMediaInfo(tvFolder + "/" + episode.show.foldername + "/Season " + episode.season + "/" + episode.filename);
+        // Report any movie subtitles remaining in the list of movie subtitles in the database since they were not located on the filesystem
+        movieSubtitlesInDatabase.forEach(subtitle -> {
+            // Log the warning about a missing movie
+            logger.warn("Data inconsistency found: Movie subtitle " + subtitle.filename + " for \"" + subtitle.movie.title +
+                    " (" + subtitle.movie.year + ") {imdb-" + subtitle.movie.id + "}\" could not be found on the filesystem, " +
+                    "however it is listed in the database.");
 
-                // Update movie data
-                episode.codec = mediaFileData.codec;
-                episode.isOptimized = mediaFileData.isOptimized();
-                episode.width = mediaFileData.width;
-                episode.height = mediaFileData.height;
-                episode.resolution = mediaFileData.resolution();
-                episode.duration = mediaFileData.duration;
+            // Send the warning over discord
+            sendWarning(new EmbedBuilder()
+                    .setTitle("Data Inconsistency Found")
+                    .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
+                            "database but cannot be found on the filesystem.")
+                    .addInlineField("Media type:", "```Movie Subtitle```")
+                    .addInlineField("Subtitle: ", "```" + subtitle.filename + "```")
+                    .addInlineField("Associated Movie ID:", "```" + subtitle.movie.id + "```")
+                    .addInlineField("Associated Movie name:", "```" + subtitle.movie.title + "```")
+                    .setColor(Color.YELLOW)
+            );
 
-                // Update the episode in the database
-                entityManager.merge(episode).persist();
+            // Update the progress
+            overallProgress.getAndIncrement();
+            updateProgress(overallProgress.get());
+        });
 
-                // If the episode is not optimized, ensure it is in the queue
-                if (!episode.isOptimized) {
-                    entityUtilities.addOrUpdateEncodingQueueItem("episode", episode.id);
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Unable to get information about this media file - " + episode.filename, e);
+        // Report any episodes remaining in the list of movies in the database since they were not located on the filesystem
+        episodesInDatabase.forEach(episode -> {
+            // Log the warning about a missing movie
+            logger.warn("Data inconsistency found: Episode " + episode.number + " of season " + episode.season + " of " + episode.show.name +
+                    " could not be found on the filesystem, however it is listed in the database.");
+
+            // Send the warning over discord
             sendWarning(new EmbedBuilder()
                     .setTitle("Error fetching media information")
                     .setDescription("An error occurred while fetching information about the following media during the " +
@@ -182,59 +227,209 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     .addInlineField("Associated show:", "```" + episode.show.name + "```")
                     .setColor(Color.YELLOW)
             );
-        }
+
+            // Update the progress
+            overallProgress.getAndIncrement();
+            updateProgress(overallProgress.get());
+        });
+
+        // Report any episode subtitles remaining in the list of episode subtitles in the database since they were not located on the filesystem
+        episodeSubtitlesInDatabase.forEach(subtitle -> {
+            // Log the warning about a missing movie
+            logger.warn("Data inconsistency found: Episode subtitle " + subtitle.filename + " for season " + subtitle.episode.season + ", episode " +
+                    subtitle.episode.number + " of " + subtitle.episode.show.name + " {tvdb-" + subtitle.episode.show.id + "} could not be found on the " +
+                    "filesystem, however it is located in the database");
+
+            // Send the warning over discord
+            sendWarning(new EmbedBuilder()
+                    .setTitle("Data Inconsistency Found")
+                    .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
+                            "database but cannot be found on the filesystem.")
+                    .addInlineField("Media type:", "```Episode Subtitle```")
+                    .addInlineField("Subtitle: ", "```" + subtitle.filename + "```")
+                    .addInlineField("Associated Episode #:", "```" + subtitle.episode.number + "```")
+                    .addInlineField("Associated Season #:", "```" + subtitle.episode.season + "```")
+                    .addInlineField("Associated show:", "```" + subtitle.episode.show.name + "```")
+                    .setColor(Color.YELLOW)
+            );
+
+            // Update the progress
+            overallProgress.getAndIncrement();
+            updateProgress(overallProgress.get());
+        });
+
+        endProcess();
     }
 
-    @SuppressWarnings("DuplicatedCode")
     @Transactional
     @TransactionConfiguration(timeout = 120)
-    public void verifyMovie(Movie movie) {
+    public void verifyMediaFile(File file) {
         try {
-            // Ensure we get a updated copy of the episode from the DB in the event it was upgraded while this was processing
-            movie = entityUtilities.getMovie(movie.id);
-
-            if (Files.notExists(Path.of(movieFolder + "/" + movie.folderName + "/" + movie.filename))) {
-                logger.warn("Data inconsistency found: Movie \"" + movie.title + " (" + movie.year + ") {imdb-" + movie.id +
-                        "}\" could not be found on the filesystem, however it is listed in the database.");
-
-                sendWarning(new EmbedBuilder()
-                        .setTitle("Data Inconsistency Found")
-                        .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
-                                "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "```Movie```")
-                        .addInlineField("Media ID:", "```" + movie.id + "```")
-                        .addInlineField("Media name:", "```" + movie.title + "```")
-                        .setColor(Color.YELLOW)
-                );
+            // Determine if the file is a movie or episode
+            String mediaType;
+            if (file.getAbsolutePath().contains(movieFolder)) {
+                mediaType = "movie";
             } else {
-                // Ensure information about the media file is up to date
-                var mediaFileData = fileUtilities.getMediaInfo(movieFolder + "/" + movie.folderName + "/" + movie.filename);
+                mediaType = "episode";
+            }
 
-                // Update movie data
-                movie.codec = mediaFileData.codec;
-                movie.isOptimized = mediaFileData.isOptimized();
-                movie.width = mediaFileData.width;
-                movie.height = mediaFileData.height;
-                movie.resolution = mediaFileData.resolution();
-                movie.duration = mediaFileData.duration;
+            // Load media info about this file
+            var mediaInfo = fileUtilities.getMediaInfo(file.getAbsolutePath());
 
-                // Update the movie in the database
-                entityManager.merge(movie).persist();
+            // Attempt to find the corresponding item in the database
+            var exists = true;
+            if (mediaType.equals("movie")) {
+                // Fetch the movie from the database
+                Movie movie = Movie.find("filename", file.getName()).singleResult();
+
+                // If the file does not exist in the database, send an alert and continue to the next file
+                if (movie == null) {
+                    // Send a warning
+                    logger.warn("Data inconsistency found: Movie " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
+                    sendWarning(new EmbedBuilder()
+                            .setTitle("Data Inconsistency Found")
+                            .setDescription("A inconsistency in the database has been found. The following movie file " +
+                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setColor(Color.YELLOW)
+                    );
+
+                    // Ensure that the file was not in the list of database entries
+                    moviesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
+
+                    // Continue to the next file
+                    return;
+                }
+
+                // Update movie information in the database
+                movie.codec = mediaInfo.codec;
+                movie.isOptimized = mediaInfo.isOptimized();
+                movie.width = mediaInfo.width;
+                movie.height = mediaInfo.height;
+                movie.resolution = mediaInfo.resolution();
+                movie.duration = mediaInfo.duration;
 
                 // If the episode is not optimized, ensure it is in the queue
                 if (!movie.isOptimized) {
                     entityUtilities.addOrUpdateEncodingQueueItem("movie", movie.id);
                 }
+
+                // Remove the movie from the list of movies in the database
+                moviesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
+            } else {
+                // Fetch the episode from the database
+                Episode episode = Episode.find("filename", file.getName()).singleResult();
+
+                // If the file does not exist in the database, send an alert and continue to the next file
+                if (episode == null) {
+                    // Send a warning
+                    logger.warn("Data inconsistency found: Episode " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
+                    sendWarning(new EmbedBuilder()
+                            .setTitle("Data Inconsistency Found")
+                            .setDescription("A inconsistency in the database has been found. The following episode file " +
+                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setColor(Color.YELLOW)
+                    );
+
+                    // Ensure that the file was not in the list of database entries
+                    episodesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
+
+                    // Continue to the next file
+                    return;
+                }
+
+                // Update episode data
+                episode.codec = mediaInfo.codec;
+                episode.isOptimized = mediaInfo.isOptimized();
+                episode.width = mediaInfo.width;
+                episode.height = mediaInfo.height;
+                episode.resolution = mediaInfo.resolution();
+                episode.duration = mediaInfo.duration;
+
+                // If the episode is not optimized, ensure it is in the queue
+                if (!episode.isOptimized) {
+                    entityUtilities.addOrUpdateEncodingQueueItem("episode", episode.id);
+                }
             }
+
         } catch (Exception e) {
-            logger.error("Unable to get information about this media file - " + movie.filename, e);
+            // Remove the entry for this file from the database lists if it exists
+            moviesInDatabase.removeIf(movie -> movie.filename.equals(file.getName()));
+            episodesInDatabase.removeIf(episode -> episode.filename.equals(file.getName()));
+
+            // Log the error and send a warning in Discord
+            logger.error("Unable to get information about this media file: " + file.getAbsolutePath(), e);
             sendWarning(new EmbedBuilder()
                     .setTitle("Error fetching media information")
                     .setDescription("An error occurred while fetching information about the following media during the " +
-                            "database consistency checker. Please make sure this media file is not corrupted.")
-                    .addInlineField("Media type:", "```Movie```")
-                    .addInlineField("Media ID:", "```" + movie.id + "```")
-                    .addInlineField("Media name:", "```" + movie.title + "```")
+                            "database consistency checker. Please make sure this media file is not corrupted.\n```" + file.getAbsolutePath() + "```")
+                    .setColor(Color.YELLOW)
+            );
+        }
+    }
+
+    @Transactional
+    @TransactionConfiguration(timeout = 120)
+    public void verifySubtitleFile(File file) {
+        try {
+            // Determine if the file is a movie or episode
+            String mediaType;
+            if (file.getAbsolutePath().contains(movieFolder)) {
+                mediaType = "movie";
+            } else {
+                mediaType = "episode";
+            }
+
+            // Attempt to find the corresponding item in the database
+            var exists = true;
+            if (mediaType.equals("movie")) {
+                // Fetch the movie subtitle from the database
+                MovieSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
+
+                // If the file does not exist in the database, send an alert and continue to the next file
+                if (subtitle == null) {
+                    // Send a warning
+                    logger.warn("Data inconsistency found: Movie subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
+                    sendWarning(new EmbedBuilder()
+                            .setTitle("Data Inconsistency Found")
+                            .setDescription("A inconsistency in the database has been found. The following movie subtitle file " +
+                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setColor(Color.YELLOW)
+                    );
+                }
+
+                // Ensure that the file was not in the list of database entries
+                movieSubtitlesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
+            } else {
+                // Fetch the episode subtitle from the database
+                EpisodeSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
+
+                // If the file does not exist in the database, send an alert and continue to the next file
+                if (subtitle == null) {
+                    // Send a warning
+                    logger.warn("Data inconsistency found: Episode subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
+                    sendWarning(new EmbedBuilder()
+                            .setTitle("Data Inconsistency Found")
+                            .setDescription("A inconsistency in the database has been found. The following episode subtitle file " +
+                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setColor(Color.YELLOW)
+                    );
+                }
+
+                // Ensure that the file was not in the list of database entries
+                episodeSubtitlesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
+            }
+
+        } catch (Exception e) {
+            // Remove the entry for this file from the database lists if it exists
+            movieSubtitlesInDatabase.removeIf(subtitle -> subtitle.filename.equals(file.getName()));
+            episodeSubtitlesInDatabase.removeIf(subtitle -> subtitle.filename.equals(file.getName()));
+
+            // Log the error and send a warning in Discord
+            logger.error("Unable to get information about this media subtitle file: " + file.getAbsolutePath(), e);
+            sendWarning(new EmbedBuilder()
+                    .setTitle("Error fetching media information")
+                    .setDescription("An error occurred while fetching information about the following media during the " +
+                            "database consistency checker. Please make sure this media file is not corrupted.\n```" + file.getAbsolutePath() + "```")
                     .setColor(Color.YELLOW)
             );
         }

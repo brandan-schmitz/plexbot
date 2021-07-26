@@ -7,6 +7,8 @@ import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
 import net.celestialdata.plexbot.dataobjects.BlacklistedCharacters;
 import net.celestialdata.plexbot.dataobjects.MediaInfoData;
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
+import net.celestialdata.plexbot.entities.Episode;
+import net.celestialdata.plexbot.entities.Movie;
 import net.celestialdata.plexbot.enumerators.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -238,6 +240,14 @@ public class FileUtilities {
 
         // Strip accents and return the sanitized string
         return StringUtils.stripAccents(input);
+    }
+
+    public MediaInfoData getMediaInfo(Movie movie) {
+        return getMediaInfo(movieFolder + movie.folderName + "/" + movie.filename);
+    }
+
+    public MediaInfoData getMediaInfo(Episode episode) {
+        return getMediaInfo(tvFolder + episode.show.foldername + "/Season " + episode.season + "/" + episode.filename);
     }
 
     public MediaInfoData getMediaInfo(String pathToVideo) {

@@ -161,12 +161,21 @@ public class ResolutionChecker extends BotProcess {
                 emitter.fail(new InterruptedException("Unable to backup old video file"));
             }
 
+            // Rename old subtitle files to use the .bak extension
+            var subtitleList = new ArrayList<>(entityUtilities.getSubtitlesByMovie(oldMovie.id));
+            subtitleList.forEach(subtitle -> fileUtilities.moveMedia(movieFolder + oldMovie.folderName + "/" + subtitle.filename,
+                    movieFolder + oldMovie.folderName + "/" + subtitle.filename + ".bak", true));
+
             movieDownloadProcessor.get().processDownload(omdbResult).runSubscriptionOn(managedExecutor.get()).subscribe().with(
                     progress -> {},
                     this::reportError,
                     () -> {
-                        // Delete the old file
+                        // Delete the old files
                         fileUtilities.deleteFile(movieFolder + oldMovie.folderName + "/" + oldMovie.filename + ".bak");
+                        subtitleList.forEach(subtitle -> {
+                            fileUtilities.deleteFile(movieFolder + oldMovie.folderName + "/" + subtitle.filename + ".bak");
+                            entityUtilities.deleteMovieSubtitle(subtitle.id);
+                        });
 
                         // Send a upgrade notification
                         new MessageBuilder()
