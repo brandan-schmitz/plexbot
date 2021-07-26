@@ -104,6 +104,10 @@ public class EntityUtilities {
         episode.isOptimized = episodeFileData.isOptimized();
 
         entityManager.merge(episode).persist();
+
+        if (!episode.isOptimized) {
+            addOrUpdateEncodingQueueItem("episode", episode.id);
+        }
     }
 
     @Transactional
@@ -188,6 +192,10 @@ public class EntityUtilities {
 
         // If the movie is already listed in the database, update it versus adding a new one
         entityManager.merge(movie).persist();
+
+        if (!movie.isOptimized) {
+            addOrUpdateEncodingQueueItem("movie", movie.id);
+        }
     }
 
 
