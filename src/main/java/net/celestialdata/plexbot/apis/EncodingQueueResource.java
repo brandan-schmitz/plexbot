@@ -1,8 +1,11 @@
 package net.celestialdata.plexbot.apis;
 
 import net.celestialdata.plexbot.entities.EncodingQueueItem;
+import net.celestialdata.plexbot.entities.EntityUtilities;
+import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -13,10 +16,37 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 public class EncodingQueueResource {
 
+    @Inject
+    EntityUtilities entityUtilities;
+
+    @Inject
+    FileUtilities fileUtilities;
+
     @GET
     @Path("/next")
+    @Transactional
     public EncodingQueueItem next() {
-        return (EncodingQueueItem) EncodingQueueItem.listAll().get(0);
+        EncodingQueueItem item;
+        boolean isOptimized;
+
+        do {
+            // Fetch the next item from the DB queue
+            item = (EncodingQueueItem) EncodingQueueItem.listAll().get(0);
+
+            // Fetch the media information and ensure it is not already optimized
+            if (item.type.equals("movie")) {
+                isOptimized = fileUtilities.getMediaInfo(entityUtilities.getMovie(item.mediaId)).isOptimized();
+            } else {
+                isOptimized = fileUtilities.getMediaInfo(entityUtilities.getEpisode(item.mediaId)).isOptimized();
+            }
+
+            // If the file has been optimized, remove it from the queue
+            if (isOptimized) {
+                item.delete();
+            }
+        } while (isOptimized);
+
+        return item;
     }
 
     @GET
