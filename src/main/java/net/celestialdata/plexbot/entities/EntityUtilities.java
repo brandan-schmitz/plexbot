@@ -58,6 +58,21 @@ public class EntityUtilities {
     }
 
     @Transactional
+    public List<MovieSubtitle> getSubtitlesByMovie(String movieId) {
+        Movie movie = Movie.findById(movieId);
+        return MovieSubtitle.list("movie", movie);
+    }
+
+    @Transactional
+    public void deleteMovieSubtitle(int subtitleId) {
+        MovieSubtitle entity = MovieSubtitle.findById(subtitleId);
+
+        if (entity != null) {
+            entity.delete();
+        }
+    }
+
+    @Transactional
     public List<Episode> getAllEpisodes() {
         return Episode.listAll();
     }
@@ -65,6 +80,21 @@ public class EntityUtilities {
     @Transactional
     public List<EpisodeSubtitle> getAllEpisodeSubtitles() {
         return EpisodeSubtitle.listAll();
+    }
+
+    @Transactional
+    public List<EpisodeSubtitle> getSubtitlesByEpisode(String episodeId) {
+        Episode episode = Episode.findById(episodeId);
+        return EpisodeSubtitle.list("episode", episode);
+    }
+
+    @Transactional
+    public void deleteEpisodeSubtitle(int subtitleId) {
+        EpisodeSubtitle entity = EpisodeSubtitle.findById(subtitleId);
+
+        if (entity != null) {
+            entity.delete();
+        }
     }
 
     @Transactional

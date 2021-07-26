@@ -39,6 +39,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -591,6 +592,18 @@ public class ImportMediaProcessor extends BotProcess {
                             fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + entityUtilities.getEpisode(parsedId).filename);
                         }
 
+                        // Ensure that old subtitles are deleted if the media file is being overwritten
+                        if (overwrite && !filesAreSubtitles) {
+                            // Fetch a list of subtitles matching this episode
+                            var subtitleList = new ArrayList<>(entityUtilities.getSubtitlesByEpisode(parsedId));
+
+                            // Delete the file from the filesystem and database
+                            subtitleList.forEach(subtitle -> {
+                                fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + subtitle.filename);
+                                entityUtilities.deleteEpisodeSubtitle(subtitle.id);
+                            });
+                        }
+
                         // Move the item into place
                         fileUtilities.moveMedia(importFolder + "episodes/" + file.getName(),
                                 tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename, overwrite);
@@ -764,6 +777,18 @@ public class ImportMediaProcessor extends BotProcess {
                         // Ensure that old media files get deleted if they are being replaced by a file of a different type
                         if (overwrite && !filesAreSubtitles && !entityUtilities.getMovie(parsedId).filename.equalsIgnoreCase(itemFilename)) {
                             fileUtilities.deleteFile(movieFolder + foldername + "/" + entityUtilities.getMovie(parsedId).filename);
+                        }
+
+                        // Ensure that old subtitles are deleted if the media file is being overwritten
+                        if (overwrite && !filesAreSubtitles) {
+                            // Fetch a list of subtitles matching this episode
+                            var subtitleList = new ArrayList<>(entityUtilities.getSubtitlesByMovie(parsedId));
+
+                            // Delete the file from the filesystem and database
+                            subtitleList.forEach(subtitle -> {
+                                fileUtilities.deleteFile(movieFolder + foldername + "/" + subtitle.filename);
+                                entityUtilities.deleteMovieSubtitle(subtitle.id);
+                            });
                         }
 
                         // Move the item into place
