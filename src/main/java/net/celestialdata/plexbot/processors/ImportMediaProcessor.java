@@ -791,6 +791,31 @@ public class ImportMediaProcessor extends BotProcess {
                             });
                         }
 
+                        // Ensure that old folders and media is deleted if the title has been updated
+                        if (overwrite && !filesAreSubtitles && !entityUtilities.getMovie(parsedId).title.equals(omdbResponse.title)) {
+                            // Fetch the old movie details from the database
+                            var oldMovie = entityUtilities.getMovie(parsedId);
+
+                            // Get any subtitles that are associated with the movie so they can get their filenames updated
+                            var subtitleList = new ArrayList<>(entityUtilities.getSubtitlesByMovie(parsedId));
+
+                            // Move any subtitles for the movie to the new folder
+                            subtitleList.forEach(subtitle -> {
+                                // Save old subtitle filename for later use when moving the file
+                                var oldSubtitleFilename = subtitle.filename;
+
+                                // Update to use the new filename in the database
+                                subtitle.filename = subtitle.filename.replace(oldMovie.folderName, foldername);
+
+                                // Move the file to the new folder and use the updated filename
+                                fileUtilities.moveMedia(movieFolder + oldMovie.folderName + "/" + oldSubtitleFilename,
+                                        movieFolder + foldername + "/" + subtitle.filename, true);
+                            });
+
+                            // Delete the old folder and any remaining files
+                            FileUtils.deleteQuietly(new File(movieFolder + entityUtilities.getMovie(parsedId).folderName));
+                        }
+
                         // Move the item into place
                         fileUtilities.moveMedia(importFolder + "movies/" + file.getName(),
                                 movieFolder + foldername + "/" + itemFilename, overwrite);
