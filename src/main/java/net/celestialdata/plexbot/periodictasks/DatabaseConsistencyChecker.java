@@ -312,7 +312,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
             } catch (StringIndexOutOfBoundsException e) {
                 // If the file is corrupted, send the proper warnings
                 logger.warn("Corrupted File Detected: " + file.getAbsolutePath());
-                entityUtilities.addCorruptedMediaItem(mediaType, file.getAbsolutePath());
+                entityUtilities.addCorruptedMediaItem(mediaType, file);
 
                 // Ensure that the file was not in the list of database entries
                 moviesInDatabase.removeIf(item -> item.filename.equals(file.getName()));

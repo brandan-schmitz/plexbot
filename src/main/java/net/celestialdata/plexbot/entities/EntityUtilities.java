@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 @ApplicationScoped
@@ -355,8 +356,8 @@ public class EntityUtilities {
     }
 
     @Transactional
-    public boolean corruptedMediaItemExists(String mediaId) {
-        return CorruptedMediaItem.count("path", mediaId) == 1;
+    public boolean corruptedMediaItemExists(String path) {
+        return CorruptedMediaItem.count("path", path) == 1;
     }
 
     @Transactional
@@ -365,14 +366,16 @@ public class EntityUtilities {
     }
 
     @Transactional
-    public void addCorruptedMediaItem(String mediaType, String path) {
-        if (!corruptedMediaItemExists(path)) {
+    public void addCorruptedMediaItem(String mediaType, File mediaFile) {
+        if (!corruptedMediaItemExists(mediaFile.getAbsolutePath())) {
             CorruptedMediaItem corruptedMediaItem = new CorruptedMediaItem();
             var corruptedMessage = new MessageBuilder()
                     .setEmbed(new EmbedBuilder()
                             .setTitle("Corrupted Media File Detected:")
                             .setDescription("While analyzing the following file, it was determined that the file is corrupted.  " +
-                                    "This file should be replaced with a non-corrupted version.\n```" + path + "```")
+                                    "This file should be replaced with a non-corrupted version.")
+                            .addInlineField("Media Type:", "```" + mediaType + "```")
+                            .addInlineField("Media Filename:", "```" + mediaFile.getName() + "```")
                             .setColor(Color.RED))
                     .addComponents(ActionRow.of(
                             Button.create("recheck-corrupted-file", ButtonStyle.DANGER, "Check Again")
@@ -382,7 +385,7 @@ public class EntityUtilities {
 
             corruptedMediaItem.messageId = corruptedMessage.getIdAsString();
             corruptedMediaItem.type = mediaType;
-            corruptedMediaItem.path = path;
+            corruptedMediaItem.path = mediaFile.getAbsolutePath();
 
             entityManager.merge(corruptedMediaItem).persist();
         }
