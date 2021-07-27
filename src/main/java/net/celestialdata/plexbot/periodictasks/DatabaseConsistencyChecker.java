@@ -396,8 +396,10 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 if (!episode.isOptimized) {
                     entityUtilities.addOrUpdateEncodingQueueItem("episode", episode.id);
                 }
-            }
 
+                // Remove the episode from the list of episodes in the database
+                episodesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
+            }
         } catch (Exception e) {
             // Remove the entry for this file from the database lists if it exists
             moviesInDatabase.removeIf(movie -> movie.filename.equals(file.getName()));
