@@ -375,7 +375,7 @@ public class EntityUtilities {
                             .setDescription("While analyzing the following file, it was determined that the file is corrupted.  " +
                                     "This file should be replaced with a non-corrupted version.")
                             .addInlineField("Media Type:", "```" + mediaType + "```")
-                            .addInlineField("Media Filename:", "```" + mediaFile.getName() + "```")
+                            .addField("Media Filename:", "```" + mediaFile.getName() + "```")
                             .setColor(Color.RED))
                     .addComponents(ActionRow.of(
                             Button.create("recheck-corrupted-file", ButtonStyle.DANGER, "Check Again")

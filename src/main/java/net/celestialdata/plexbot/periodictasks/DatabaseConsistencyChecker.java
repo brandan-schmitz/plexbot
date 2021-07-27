@@ -325,7 +325,6 @@ public class DatabaseConsistencyChecker extends BotProcess {
             var exists = true;
             if (mediaType.equals("movie")) {
                 Movie movie;
-
                 try {
                     // Fetch the movie from the database
                     movie = Movie.find("filename", file.getName()).singleResult();
@@ -334,8 +333,10 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     logger.warn("Data inconsistency found: Movie " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
-                            .setDescription("A inconsistency in the database has been found. The following movie file " +
-                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setDescription("A inconsistency in the database has been found. The following file exists in the filesystem, " +
+                                    "however it does not exist in the database. You should use the importer to re-import this file to add it to the database.")
+                            .addInlineField("Media Type:", "```Movie```")
+                            .addField("Media Filename:", "```" + file.getName() + "```")
                             .setColor(Color.YELLOW)
                     );
 
@@ -372,8 +373,10 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     logger.warn("Data inconsistency found: Episode " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
-                            .setDescription("A inconsistency in the database has been found. The following episode file " +
-                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setDescription("A inconsistency in the database has been found. The following file exists in the filesystem, " +
+                                    "however it does not exist in the database. You should use the importer to re-import this file to add it to the database.")
+                            .addInlineField("Media Type:", "```Episode```")
+                            .addField("Media Filename:", "```" + file.getName() + "```")
                             .setColor(Color.YELLOW)
                     );
 
@@ -440,8 +443,10 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     logger.warn("Data inconsistency found: Movie subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
-                            .setDescription("A inconsistency in the database has been found. The following movie subtitle file " +
-                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setDescription("A inconsistency in the database has been found. The following file exists in the filesystem, " +
+                                    "however it does not exist in the database. You should use the importer to re-import this file to add it to the database.")
+                            .addInlineField("Media Type:", "```Movie Subtitle```")
+                            .addField("Media Filename:", "```" + file.getName() + "```")
                             .setColor(Color.YELLOW)
                     );
                 }
@@ -457,8 +462,10 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     logger.warn("Data inconsistency found: Episode subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
-                            .setDescription("A inconsistency in the database has been found. The following episode subtitle file " +
-                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setDescription("A inconsistency in the database has been found. The following file exists in the filesystem, " +
+                                    "however it does not exist in the database. You should use the importer to re-import this file to add it to the database.")
+                            .addInlineField("Media Type:", "```Episode Subtitle```")
+                            .addField("Media Filename:", "```" + file.getName() + "```")
                             .setColor(Color.YELLOW)
                     );
                 }
