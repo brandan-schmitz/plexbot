@@ -15,6 +15,7 @@ import org.jboss.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
 import java.awt.*;
 import java.io.File;
@@ -279,12 +280,13 @@ public class DatabaseConsistencyChecker extends BotProcess {
             // Attempt to find the corresponding item in the database
             var exists = true;
             if (mediaType.equals("movie")) {
-                // Fetch the movie from the database
-                Movie movie = Movie.find("filename", file.getName()).singleResult();
+                Movie movie;
 
-                // If the file does not exist in the database, send an alert and continue to the next file
-                if (movie == null) {
-                    // Send a warning
+                try {
+                    // Fetch the movie from the database
+                    movie = Movie.find("filename", file.getName()).singleResult();
+                } catch (NoResultException e) {
+                    // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Movie " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
@@ -316,12 +318,13 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 // Remove the movie from the list of movies in the database
                 moviesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
             } else {
-                // Fetch the episode from the database
-                Episode episode = Episode.find("filename", file.getName()).singleResult();
+                Episode episode;
 
-                // If the file does not exist in the database, send an alert and continue to the next file
-                if (episode == null) {
-                    // Send a warning
+                try {
+                    // Fetch the episode from the database
+                    episode = Episode.find("filename", file.getName()).singleResult();
+                } catch (NoResultException e) {
+                    // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Episode " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
@@ -382,12 +385,11 @@ public class DatabaseConsistencyChecker extends BotProcess {
             // Attempt to find the corresponding item in the database
             var exists = true;
             if (mediaType.equals("movie")) {
-                // Fetch the movie subtitle from the database
-                MovieSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
-
-                // If the file does not exist in the database, send an alert and continue to the next file
-                if (subtitle == null) {
-                    // Send a warning
+                try {
+                    // Fetch the movie subtitle from the database
+                    MovieSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
+                } catch (NoResultException e) {
+                    // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Movie subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
@@ -400,12 +402,11 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 // Ensure that the file was not in the list of database entries
                 movieSubtitlesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
             } else {
-                // Fetch the episode subtitle from the database
-                EpisodeSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
-
-                // If the file does not exist in the database, send an alert and continue to the next file
-                if (subtitle == null) {
-                    // Send a warning
+                try {
+                    // Fetch the episode subtitle from the database
+                    EpisodeSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
+                } catch (NoResultException e) {
+                    // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Episode subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
