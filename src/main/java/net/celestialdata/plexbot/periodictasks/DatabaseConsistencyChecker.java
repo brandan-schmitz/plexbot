@@ -2,19 +2,24 @@ package net.celestialdata.plexbot.periodictasks;
 
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
+import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
+import net.celestialdata.plexbot.dataobjects.MediaInfoData;
 import net.celestialdata.plexbot.entities.*;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.jboss.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
 import java.awt.*;
 import java.io.File;
@@ -44,6 +49,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
     @LoggerName("net.celestialdata.plexbot.periodictasks.DatabaseConsistencyChecker")
     Logger logger;
+
+    @ConfigProperty(name = "ChannelSettings.corruptedNotificationChannel")
+    String corruptedNotificationChannel;
 
     @ConfigProperty(name = "FolderSettings.movieFolder")
     String movieFolder;
@@ -77,6 +85,30 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 episodesInDatabase.size() + moviesInDatabase.size() + mediaFiles.size() + subtitleFiles.size() +
                 movieSubtitlesInDatabase.size() + episodeSubtitlesInDatabase.size())) * 100);
         updateProcessString("Database Consistency Checker - " + total + "%");
+    }
+
+    // Create a listener for button clicks on corrupted media notification messages
+    public void init(@Observes StartupEvent event) {
+        TextChannel upgradeChannel = discordApi.getTextChannelById(corruptedNotificationChannel).orElseThrow();
+        upgradeChannel.addButtonClickListener(clickEvent -> {
+            if (clickEvent.getButtonInteraction().getCustomId().equals("recheck-corrupted-file")) {
+                // Get the ID of the message triggering this event
+                var messageId = String.valueOf(clickEvent.getButtonInteraction().getMessageId());
+
+                // Fetch the corrupted media item from the database
+                CorruptedMediaItem corruptedMediaItem = entityUtilities.getCorruptedMediaItemByMessage(messageId);
+
+                // Attempt to load the file at the path given
+                File file = new File(corruptedMediaItem.path);
+
+                // Delete the existing entry for the corrupted media file. If it is still corrupted, a new
+                // message will be sent to the channel.
+                entityUtilities.deleteCorruptedMediaItemByMessage(messageId);
+
+                // Verify the media file
+                verifyMediaFile(file);
+            }
+        });
     }
 
     @Scheduled(every = "168h", delay = 10, delayUnit = TimeUnit.SECONDS)
@@ -274,22 +306,37 @@ public class DatabaseConsistencyChecker extends BotProcess {
             }
 
             // Load media info about this file
-            var mediaInfo = fileUtilities.getMediaInfo(file.getAbsolutePath());
+            MediaInfoData mediaInfo;
+            try {
+                mediaInfo = fileUtilities.getMediaInfo(file.getAbsolutePath());
+            } catch (StringIndexOutOfBoundsException e) {
+                // If the file is corrupted, send the proper warnings
+                logger.warn("Corrupted File Detected: " + file.getAbsolutePath());
+                entityUtilities.addCorruptedMediaItem(mediaType, file);
+
+                // Ensure that the file was not in the list of database entries
+                moviesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
+
+                // Continue to the next file
+                return;
+            }
 
             // Attempt to find the corresponding item in the database
             var exists = true;
             if (mediaType.equals("movie")) {
-                // Fetch the movie from the database
-                Movie movie = Movie.find("filename", file.getName()).singleResult();
-
-                // If the file does not exist in the database, send an alert and continue to the next file
-                if (movie == null) {
-                    // Send a warning
+                Movie movie;
+                try {
+                    // Fetch the movie from the database
+                    movie = Movie.find("filename", file.getName()).singleResult();
+                } catch (NoResultException e) {
+                    // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Movie " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
-                            .setDescription("A inconsistency in the database has been found. The following movie file " +
-                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setDescription("A inconsistency in the database has been found. The following file exists in the filesystem, " +
+                                    "however it does not exist in the database. You should use the importer to re-import this file to add it to the database.")
+                            .addInlineField("Media Type:", "```Movie```")
+                            .addField("Media Filename:", "```" + file.getName() + "```")
                             .setColor(Color.YELLOW)
                     );
 
@@ -316,17 +363,20 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 // Remove the movie from the list of movies in the database
                 moviesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
             } else {
-                // Fetch the episode from the database
-                Episode episode = Episode.find("filename", file.getName()).singleResult();
+                Episode episode;
 
-                // If the file does not exist in the database, send an alert and continue to the next file
-                if (episode == null) {
-                    // Send a warning
+                try {
+                    // Fetch the episode from the database
+                    episode = Episode.find("filename", file.getName()).singleResult();
+                } catch (NoResultException e) {
+                    // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Episode " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
-                            .setDescription("A inconsistency in the database has been found. The following episode file " +
-                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setDescription("A inconsistency in the database has been found. The following file exists in the filesystem, " +
+                                    "however it does not exist in the database. You should use the importer to re-import this file to add it to the database.")
+                            .addInlineField("Media Type:", "```Episode```")
+                            .addField("Media Filename:", "```" + file.getName() + "```")
                             .setColor(Color.YELLOW)
                     );
 
@@ -349,8 +399,10 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 if (!episode.isOptimized) {
                     entityUtilities.addOrUpdateEncodingQueueItem("episode", episode.id);
                 }
-            }
 
+                // Remove the episode from the list of episodes in the database
+                episodesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
+            }
         } catch (Exception e) {
             // Remove the entry for this file from the database lists if it exists
             moviesInDatabase.removeIf(movie -> movie.filename.equals(file.getName()));
@@ -362,7 +414,8 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     .setTitle("Error fetching media information")
                     .setDescription("An error occurred while fetching information about the following media during the " +
                             "database consistency checker. Please make sure this media file is not corrupted.\n```" + file.getAbsolutePath() + "```")
-                    .setColor(Color.YELLOW)
+                    .setFooter("Error message: " + e.getMessage())
+                    .setColor(Color.RED)
             );
         }
     }
@@ -382,17 +435,18 @@ public class DatabaseConsistencyChecker extends BotProcess {
             // Attempt to find the corresponding item in the database
             var exists = true;
             if (mediaType.equals("movie")) {
-                // Fetch the movie subtitle from the database
-                MovieSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
-
-                // If the file does not exist in the database, send an alert and continue to the next file
-                if (subtitle == null) {
-                    // Send a warning
+                try {
+                    // Fetch the movie subtitle from the database
+                    MovieSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
+                } catch (NoResultException e) {
+                    // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Movie subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
-                            .setDescription("A inconsistency in the database has been found. The following movie subtitle file " +
-                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setDescription("A inconsistency in the database has been found. The following file exists in the filesystem, " +
+                                    "however it does not exist in the database. You should use the importer to re-import this file to add it to the database.")
+                            .addInlineField("Media Type:", "```Movie Subtitle```")
+                            .addField("Media Filename:", "```" + file.getName() + "```")
                             .setColor(Color.YELLOW)
                     );
                 }
@@ -400,17 +454,18 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 // Ensure that the file was not in the list of database entries
                 movieSubtitlesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
             } else {
-                // Fetch the episode subtitle from the database
-                EpisodeSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
-
-                // If the file does not exist in the database, send an alert and continue to the next file
-                if (subtitle == null) {
-                    // Send a warning
+                try {
+                    // Fetch the episode subtitle from the database
+                    EpisodeSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
+                } catch (NoResultException e) {
+                    // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Episode subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
                     sendWarning(new EmbedBuilder()
                             .setTitle("Data Inconsistency Found")
-                            .setDescription("A inconsistency in the database has been found. The following episode subtitle file " +
-                                    "is in the filesystem but cannot be found on the database.\n```" + file.getAbsolutePath() + "```")
+                            .setDescription("A inconsistency in the database has been found. The following file exists in the filesystem, " +
+                                    "however it does not exist in the database. You should use the importer to re-import this file to add it to the database.")
+                            .addInlineField("Media Type:", "```Episode Subtitle```")
+                            .addField("Media Filename:", "```" + file.getName() + "```")
                             .setColor(Color.YELLOW)
                     );
                 }
@@ -418,7 +473,6 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 // Ensure that the file was not in the list of database entries
                 episodeSubtitlesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
             }
-
         } catch (Exception e) {
             // Remove the entry for this file from the database lists if it exists
             movieSubtitlesInDatabase.removeIf(subtitle -> subtitle.filename.equals(file.getName()));
@@ -430,7 +484,8 @@ public class DatabaseConsistencyChecker extends BotProcess {
                     .setTitle("Error fetching media information")
                     .setDescription("An error occurred while fetching information about the following media during the " +
                             "database consistency checker. Please make sure this media file is not corrupted.\n```" + file.getAbsolutePath() + "```")
-                    .setColor(Color.YELLOW)
+                    .setFooter("Error message: " + e.getMessage())
+                    .setColor(Color.RED)
             );
         }
     }

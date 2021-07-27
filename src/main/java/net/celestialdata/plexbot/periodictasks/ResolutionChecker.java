@@ -16,6 +16,7 @@ import net.celestialdata.plexbot.entities.UpgradableMovie;
 import net.celestialdata.plexbot.processors.MovieDownloadProcessor;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -31,6 +32,7 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.awt.*;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -176,6 +178,12 @@ public class ResolutionChecker extends BotProcess {
                             fileUtilities.deleteFile(movieFolder + oldMovie.folderName + "/" + subtitle.filename + ".bak");
                             entityUtilities.deleteMovieSubtitle(subtitle.id);
                         });
+
+                        // If the old file used a different title for the movie title, then delete the old folder as
+                        // the upgraded movie would have been placed in a new folder with the new title used as its name
+                        if (!oldMovie.title.equals(omdbResult.title)) {
+                            FileUtils.deleteQuietly(new File(movieFolder + oldMovie.folderName));
+                        }
 
                         // Send a upgrade notification
                         new MessageBuilder()

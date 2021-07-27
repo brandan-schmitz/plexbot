@@ -12,12 +12,16 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.component.ActionRow;
 import org.javacord.api.entity.message.component.Button;
+import org.javacord.api.entity.message.component.ButtonStyle;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 @ApplicationScoped
@@ -25,6 +29,9 @@ public class EntityUtilities {
 
     @ConfigProperty(name = "ChannelSettings.movieWaitlistChannel")
     String movieWaitlistChannel;
+
+    @ConfigProperty(name = "ChannelSettings.corruptedNotificationChannel")
+    String corruptedNotificationChannel;
 
     @ConfigProperty(name = "ChannelSettings.upgradeApprovalChannel")
     String upgradeApprovalChannel;
@@ -346,6 +353,57 @@ public class EntityUtilities {
         upgradableMovie.messageId = upgradeMessage.getId();
 
         upgradableMovie.persist();
+    }
+
+    @Transactional
+    public boolean corruptedMediaItemExists(String path) {
+        return CorruptedMediaItem.count("path", path) == 1;
+    }
+
+    @Transactional
+    public CorruptedMediaItem getCorruptedMediaItemByMessage(String messageId) {
+        return CorruptedMediaItem.find("messageId", messageId).firstResult();
+    }
+
+    @Transactional
+    public void addCorruptedMediaItem(String mediaType, File mediaFile) {
+        if (!corruptedMediaItemExists(mediaFile.getAbsolutePath())) {
+            CorruptedMediaItem corruptedMediaItem = new CorruptedMediaItem();
+            var corruptedMessage = new MessageBuilder()
+                    .setEmbed(new EmbedBuilder()
+                            .setTitle("Corrupted Media File Detected:")
+                            .setDescription("While analyzing the following file, it was determined that the file is corrupted.  " +
+                                    "This file should be replaced with a non-corrupted version.")
+                            .addInlineField("Media Type:", "```" + mediaType + "```")
+                            .addField("Media Filename:", "```" + mediaFile.getName() + "```")
+                            .setColor(Color.RED))
+                    .addComponents(ActionRow.of(
+                            Button.create("recheck-corrupted-file", ButtonStyle.DANGER, "Check Again")
+                    ))
+                    .send(discordApi.getTextChannelById(corruptedNotificationChannel).orElseThrow())
+                    .exceptionally(ExceptionLogger.get()).join();
+
+            corruptedMediaItem.messageId = corruptedMessage.getIdAsString();
+            corruptedMediaItem.type = mediaType;
+            corruptedMediaItem.path = mediaFile.getAbsolutePath();
+
+            entityManager.merge(corruptedMediaItem).persist();
+        }
+    }
+
+    @Transactional
+    public void deleteCorruptedMediaItemByMessage (String messageId) {
+        CorruptedMediaItem corruptedMediaItem = CorruptedMediaItem.find("messageId", messageId).firstResult();
+
+        // Delete the message from the channel
+        discordApi.getTextChannelById(corruptedNotificationChannel).ifPresent(textChannel ->
+                textChannel.getMessageById(messageId).join()
+                        .delete().exceptionally(ExceptionLogger.get()
+                )
+        );
+
+        // Delete the corrupted media item from the database
+        corruptedMediaItem.delete();
     }
 
     @Transactional

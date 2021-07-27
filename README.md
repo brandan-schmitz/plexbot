@@ -227,6 +227,9 @@ ChannelSettings:
   # The ID of the channel for notifications about movies that have been upgraded to a better resolution
   upgradeNotificationChannel: 012345678901234567
 
+  # The ID of the channel for notifications about media files that have been determined to be corrupted
+  corruptedNotificationChannel: 012345678901234567
+
   # The ID of the channel where the bots status message will be located
   botStatusChannel: 012345678901234567
 
