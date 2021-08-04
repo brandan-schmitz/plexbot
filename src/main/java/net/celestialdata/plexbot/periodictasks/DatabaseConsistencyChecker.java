@@ -5,7 +5,13 @@ import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.dataobjects.MediaInfoData;
-import net.celestialdata.plexbot.entities.*;
+import net.celestialdata.plexbot.db.daos.*;
+import net.celestialdata.plexbot.db.entities.CorruptedMediaItem;
+import net.celestialdata.plexbot.db.entities.Episode;
+import net.celestialdata.plexbot.db.entities.EpisodeSubtitle;
+import net.celestialdata.plexbot.db.entities.Movie;
+import net.celestialdata.plexbot.db.entities.MovieSubtitle;
+import net.celestialdata.plexbot.db.entities.Show;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.apache.commons.io.FileUtils;
@@ -72,7 +78,22 @@ public class DatabaseConsistencyChecker extends BotProcess {
     FileUtilities fileUtilities;
 
     @Inject
-    EntityUtilities entityUtilities;
+    CorruptedMediaItemDao corruptedMediaItemDao;
+
+    @Inject
+    EncodingQueueItemDao encodingQueueItemDao;
+
+    @Inject
+    EpisodeDao episodeDao;
+
+    @Inject
+    EpisodeSubtitleDao episodeSubtitleDao;
+
+    @Inject
+    MovieDao movieDao;
+
+    @Inject
+    MovieSubtitleDao movieSubtitleDao;
 
     // Helper method to send a warning message to the bot owner
     private void sendWarning(EmbedBuilder message) {
@@ -93,17 +114,17 @@ public class DatabaseConsistencyChecker extends BotProcess {
         upgradeChannel.addButtonClickListener(clickEvent -> {
             if (clickEvent.getButtonInteraction().getCustomId().equals("recheck-corrupted-file")) {
                 // Get the ID of the message triggering this event
-                var messageId = String.valueOf(clickEvent.getButtonInteraction().getMessageId());
+                var messageId = clickEvent.getButtonInteraction().getMessageId();
 
                 // Fetch the corrupted media item from the database
-                CorruptedMediaItem corruptedMediaItem = entityUtilities.getCorruptedMediaItemByMessage(messageId);
+                CorruptedMediaItem corruptedMediaItem = corruptedMediaItemDao.getByMessageId(messageId);
 
                 // Attempt to load the file at the path given
-                File file = new File(corruptedMediaItem.path);
+                File file = new File(corruptedMediaItem.absolutePath);
 
                 // Delete the existing entry for the corrupted media file. If it is still corrupted, a new
                 // message will be sent to the channel.
-                entityUtilities.deleteCorruptedMediaItemByMessage(messageId);
+                corruptedMediaItemDao.deleteByMessageId(messageId);
 
                 // Verify the media file
                 verifyMediaFile(file);
@@ -118,10 +139,10 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
         // Get the lists of media in the database
         showsInDatabase = Show.listAll();
-        episodesInDatabase = Episode.listAll();
-        episodeSubtitlesInDatabase = EpisodeSubtitle.listAll();
-        moviesInDatabase = Movie.listAll();
-        movieSubtitlesInDatabase = MovieSubtitle.listAll();
+        episodesInDatabase = episodeDao.listALl();
+        episodeSubtitlesInDatabase = episodeSubtitleDao.listALl();
+        moviesInDatabase = movieDao.listALl();
+        movieSubtitlesInDatabase = movieSubtitleDao.listALl();
 
         // Fetch a list of all media files in the filesystem
         mediaFiles = FileUtils.listFiles(new File(movieFolder), mediaFileExtensions, true);
@@ -312,7 +333,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
             } catch (StringIndexOutOfBoundsException e) {
                 // If the file is corrupted, send the proper warnings
                 logger.warn("Corrupted File Detected: " + file.getAbsolutePath());
-                entityUtilities.addCorruptedMediaItem(mediaType, file);
+                corruptedMediaItemDao.create(mediaType, file);
 
                 // Ensure that the file was not in the list of database entries
                 moviesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
@@ -327,7 +348,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 Movie movie;
                 try {
                     // Fetch the movie from the database
-                    movie = Movie.find("filename", file.getName()).singleResult();
+                    movie = movieDao.getByFilename(file.getName());
                 } catch (NoResultException e) {
                     // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Movie " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
@@ -357,7 +378,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 // If the episode is not optimized, ensure it is in the queue
                 if (!movie.isOptimized) {
-                    entityUtilities.addOrUpdateEncodingQueueItem("movie", movie.id);
+                    encodingQueueItemDao.create("movie", movie.id);
                 }
 
                 // Remove the movie from the list of movies in the database
@@ -367,7 +388,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 try {
                     // Fetch the episode from the database
-                    episode = Episode.find("filename", file.getName()).singleResult();
+                    episode = episodeDao.getByFilename(file.getName());
                 } catch (NoResultException e) {
                     // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Episode " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
@@ -397,7 +418,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 // If the episode is not optimized, ensure it is in the queue
                 if (!episode.isOptimized) {
-                    entityUtilities.addOrUpdateEncodingQueueItem("episode", episode.id);
+                    encodingQueueItemDao.create("episode", episode.tmdbId);
                 }
 
                 // Remove the episode from the list of episodes in the database
@@ -437,7 +458,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
             if (mediaType.equals("movie")) {
                 try {
                     // Fetch the movie subtitle from the database
-                    MovieSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
+                    MovieSubtitle subtitle = movieSubtitleDao.getByFilename(file.getName());
                 } catch (NoResultException e) {
                     // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Movie subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
@@ -456,7 +477,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
             } else {
                 try {
                     // Fetch the episode subtitle from the database
-                    EpisodeSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
+                    EpisodeSubtitle subtitle = episodeSubtitleDao.getByFilename(file.getName());
                 } catch (NoResultException e) {
                     // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Episode subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");

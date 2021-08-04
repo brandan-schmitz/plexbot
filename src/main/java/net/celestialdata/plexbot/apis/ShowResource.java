@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.apis;
 
-import net.celestialdata.plexbot.entities.Show;
+import net.celestialdata.plexbot.db.entities.Show;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import javax.ws.rs.*;

@@ -1,14 +1,14 @@
 package net.celestialdata.plexbot.utilities;
 
 import io.smallrye.mutiny.Multi;
-import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
-import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbExtendedEpisode;
-import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
+import net.celestialdata.plexbot.clients.models.tmdb.TmdbEpisode;
+import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
+import net.celestialdata.plexbot.clients.models.tmdb.TmdbShow;
 import net.celestialdata.plexbot.dataobjects.BlacklistedCharacters;
 import net.celestialdata.plexbot.dataobjects.MediaInfoData;
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
-import net.celestialdata.plexbot.entities.Episode;
-import net.celestialdata.plexbot.entities.Movie;
+import net.celestialdata.plexbot.db.entities.Episode;
+import net.celestialdata.plexbot.db.entities.Movie;
 import net.celestialdata.plexbot.enumerators.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -136,7 +136,7 @@ public class FileUtilities {
         return success;
     }
 
-    public boolean createFolder(OmdbResult mediaItem) {
+    public boolean createFolder(TmdbMovie mediaItem) {
         boolean success = true;
 
         try {
@@ -176,15 +176,15 @@ public class FileUtilities {
         return success;
     }
 
-    public String generatePathname(OmdbResult mediaItem) {
-        return sanitizeFilesystemNames(mediaItem.title + " (" + mediaItem.year + ") {imdb-" + mediaItem.imdbID + "}");
+    public String generatePathname(TmdbMovie mediaItem) {
+        return sanitizeFilesystemNames(mediaItem.title + " (" + mediaItem.getYear() + ") {tmdb-" + mediaItem.tmdbId + "}");
     }
 
-    public String generatePathname(TvdbSeries mediaItem) {
-        return sanitizeFilesystemNames(mediaItem.name + " {tvdb-" + mediaItem.id + "}");
+    public String generatePathname(TmdbShow mediaItem) {
+        return sanitizeFilesystemNames(mediaItem.name + " {tmdb-" + mediaItem.tmdbId + "}");
     }
 
-    public String generateMovieFilename(OmdbResult mediaItem, FileType fileType) {
+    public String generateMovieFilename(TmdbMovie mediaItem, FileType fileType) {
         return generatePathname(mediaItem) + fileType.getExtension();
     }
 
@@ -213,17 +213,17 @@ public class FileUtilities {
         return suffixBuilder.toString();
     }
 
-    public String generateMovieSubtitleFilename(OmdbResult linkedMovie, ParsedSubtitleFilename parsedFilename) {
+    public String generateMovieSubtitleFilename(TmdbMovie linkedMovie, ParsedSubtitleFilename parsedFilename) {
         return generatePathname(linkedMovie) + subtitleSuffixBuilder(parsedFilename);
     }
 
-    public String generateEpisodeFilename(TvdbExtendedEpisode mediaItem, FileType fileType, String seasonAndEpisode, TvdbSeries series) {
+    public String generateEpisodeFilename(TmdbEpisode mediaItem, FileType fileType, String seasonAndEpisode, TmdbShow show) {
         if (mediaItem.name == null || mediaItem.name.isBlank()) {
-            return sanitizeFilesystemNames(series.name + " - " + seasonAndEpisode) + fileType.getExtension();
-        } else return sanitizeFilesystemNames(series.name + " - " + seasonAndEpisode + " - " + mediaItem.name) + fileType.getExtension();
+            return sanitizeFilesystemNames(show.name + " - " + seasonAndEpisode) + fileType.getExtension();
+        } else return sanitizeFilesystemNames(show.name + " - " + seasonAndEpisode + " - " + mediaItem.name) + fileType.getExtension();
     }
 
-    public String generateEpisodeSubtitleFilename(TvdbSeries linkedShow, String seasonAndEpisode, ParsedSubtitleFilename parsedFilename) {
+    public String generateEpisodeSubtitleFilename(TmdbShow linkedShow, String seasonAndEpisode, ParsedSubtitleFilename parsedFilename) {
         return sanitizeFilesystemNames(linkedShow.name + " - " + seasonAndEpisode) + subtitleSuffixBuilder(parsedFilename);
     }
 

@@ -2,15 +2,12 @@ package net.celestialdata.plexbot.processors;
 
 import io.quarkus.arc.log.LoggerName;
 import io.smallrye.mutiny.Uni;
-import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
-import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResponseEnum;
-import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbResultTypeEnum;
-import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbSearchTypeEnum;
-import net.celestialdata.plexbot.clients.services.OmdbService;
+import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
+import net.celestialdata.plexbot.clients.models.tmdb.TmdbSourceIdType;
+import net.celestialdata.plexbot.clients.services.TmdbService;
+import net.celestialdata.plexbot.db.daos.MovieDao;
 import net.celestialdata.plexbot.discord.MessageFormatter;
-import net.celestialdata.plexbot.entities.EntityUtilities;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
-import net.celestialdata.plexbot.processors.MovieDownloadProcessor;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.context.ManagedExecutor;
@@ -58,13 +55,10 @@ public class RequestMovieCommandProcessor extends BotProcess {
 
     @Inject
     @RestClient
-    OmdbService omdbService;
+    TmdbService tmdbService;
 
     @Inject
     MessageFormatter messageFormatter;
-
-    @Inject
-    EntityUtilities entityUtilities;
 
     @Inject
     DiscordApi discordApi;
@@ -74,6 +68,9 @@ public class RequestMovieCommandProcessor extends BotProcess {
 
     @Inject
     Instance<ManagedExecutor> managedExecutor;
+
+    @Inject
+    MovieDao movieDao;
 
     private ActionRow determineSelectionButtons(int pos, int size) {
         if (size == 1) {
@@ -103,20 +100,21 @@ public class RequestMovieCommandProcessor extends BotProcess {
         }
     }
 
-    public Uni<OmdbResult> handleMovieSelection(List<OmdbResult> movieList) {
+    public Uni<TmdbMovie> handleMovieSelection(List<TmdbMovie> movieList) {
         return Uni.createFrom().emitter(uniEmitter -> {
             var selectScreens = new ArrayList<EmbedBuilder>();
 
             // Build the screens for each movie
-            for (OmdbResult movie : movieList) {
+            for (TmdbMovie movie : movieList) {
                 selectScreens.add(new EmbedBuilder()
-                        .setTitle("Choose your movie")
+                        .setTitle("Select Movie")
                         .setDescription("It looks like your search returned " + movieList.size() + " results. " +
                                 "Please use the buttons below to navigate and select the correct movie.\n\u200b")
                         .addInlineField("Title:", "```" + movie.title + "```")
-                        .addInlineField("Year:", "```" + movie.year + "```")
-                        .addInlineField("IMDb ID:", "```" + movie.imdbID + "```")
-                        .addField("Plot:", "```" + movie.plot + "```")
+                        .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
+                        .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
+                        .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
+                        .addField("Overview:", "```" + movie.getOverview() + "```")
                         .setImage(movie.getPoster())
                         .setColor(Color.BLUE)
                 );
@@ -201,8 +199,8 @@ public class RequestMovieCommandProcessor extends BotProcess {
         String idArgument = "";
 
         // Variables that store items related to the search and selection process
-        List<OmdbResult> searchResultList = new ArrayList<>();
-        OmdbResult selectedMovie;
+        List<TmdbMovie> searchResultList = new ArrayList<>();
+        TmdbMovie selectedMovie;
 
         // Split command arguments by the space character
         var args = parameterString.split("\\s+");
@@ -243,73 +241,104 @@ public class RequestMovieCommandProcessor extends BotProcess {
             3. Title
         */
         if (!idArgument.isEmpty()) {
-            // Search by the ID given
-            var result = omdbService.getById(idArgument, omdbApiKey);
+            // Verify that the ID is either a IMDB or TMDB ID
+            if (idArgument.matches("^tt[0-9]{7,8}")) {
+                // Fetch any results matching this ID
+                var results = tmdbService.findByExternalId(idArgument, TmdbSourceIdType.IMDB);
 
-            // Add the result to the list of results if it was successful otherwise display an error
-            if (result.response == OmdbResponseEnum.TRUE) {
-                searchResultList.add(result);
-            } else if (result.type != OmdbResultTypeEnum.MOVIE) {
-                replyMessage.edit(messageFormatter.errorMessage(
-                        "The IMDb code you provided was for a TV series or episode. Please provide a code for a movie only."
-                )).exceptionally(ExceptionLogger.get());
-                endProcess();
-                return;
+                // Ensure that the search was successful
+                if (results.isSuccessful()) {
+                    // Fetch the list of movies that was returned
+                    var movieResults = results.movies;
+
+                    // Add the movie results to the search list
+                    searchResultList.addAll(movieResults);
+                } else {
+                    // Display that the search was not successful and exit
+                    replyMessage.edit("The ID you provided is not a recognized IMDB or TMDB ID for a movie. " +
+                            "Please verify you are using a valid ID.");
+                    endProcess();
+                    return;
+                }
+            } else if (idArgument.matches("^[0-9]{1,12}")) {
+                // Fetch the movie using the provided TMDB ID
+                var result = tmdbService.getMovie(Long.parseLong(idArgument));
+
+                // Verify that the result was successful
+                if (result.isSuccessful()) {
+                    // Add the result to the search list
+                    searchResultList.add(result);
+                } else {
+                    // Display that the search was not successful and exit
+                    replyMessage.edit("The ID you provided is not a recognized IMDB or TMDB ID for a movie. " +
+                            "Please verify you are using a valid ID.");
+                    endProcess();
+                    return;
+                }
             } else {
-                replyMessage.edit(messageFormatter.errorMessage(
-                        "An invalid IMDb code was provided and it returned no search results. Please verify your code and try again."
-                )).exceptionally(ExceptionLogger.get());
+                // Display that the search was not successful and exit
+                replyMessage.edit("The ID you provided is not a recognized IMDB or TMDB ID for a movie. " +
+                        "Please verify you are using a valid ID.");
                 endProcess();
                 return;
             }
         } else if (!yearArgument.isEmpty()) {
             // Verify that there is a movie title to accompany the year otherwise display an error
             if (titleArgument.isEmpty()) {
-                replyMessage.edit(messageFormatter.errorMessage(
-                        "You must provide a movie title in addition to a year."
-                )).exceptionally(ExceptionLogger.get());
+                replyMessage.edit(messageFormatter.errorMessage("You must provide a movie title in addition to a year."));
                 endProcess();
                 return;
             } else {
                 // Search by title and filter by year. If no results were found display an error
-                var result = omdbService.search(titleArgument, OmdbSearchTypeEnum.MOVIE, yearArgument, omdbApiKey);
-                if (result.response == OmdbResponseEnum.TRUE) {
-                    searchResultList = result.search;
+                var results = tmdbService.searchForMovie(titleArgument, yearArgument);
+
+                // Verify the search was successful and add the results to the search list if it was
+                if (results.isSuccessful()) {
+                    searchResultList.addAll(results.results);
                 } else {
-                    replyMessage.edit(messageFormatter.errorMessage(
-                            "No results returned. Please adjust your search parameters and try again."
-                    )).exceptionally(ExceptionLogger.get());
+                    // Display that the search was not successful and exit
+                    replyMessage.edit(messageFormatter.errorMessage("No results returned. Please adjust your search parameters and try again."));
                     endProcess();
                     return;
                 }
             }
         } else {
-            // Search by title, if no results were found display an error
-            var result = omdbService.search(titleArgument, OmdbSearchTypeEnum.MOVIE, omdbApiKey);
-            if (result.response == OmdbResponseEnum.TRUE) {
-                searchResultList = result.search;
+            // Fetch a list of movies matching the search title
+            var results = tmdbService.searchForMovie(titleArgument);
+
+            // Verify that the search was successful and add the results to the search list if it was
+            if (results.isSuccessful()) {
+                searchResultList.addAll(results.results);
             } else {
-                replyMessage.edit(messageFormatter.errorMessage(
-                        "No results returned. Please adjust your search parameters and try again."
-                )).exceptionally(ExceptionLogger.get());
+                // Display that the search was not successful and exit
+                replyMessage.edit(messageFormatter.errorMessage("No results returned. Please adjust your search parameters and try again."));
                 endProcess();
                 return;
             }
         }
 
-        // Filter out items that are not movies. If there are no items left after filtering then send an error
-        searchResultList.removeIf(r -> r.type != OmdbResultTypeEnum.MOVIE);
-        if (searchResultList.size() == 0) {
-            replyMessage.edit(messageFormatter.errorMessage(
-                    "No results returned. Please adjust your search parameters and try again."
-            )).exceptionally(ExceptionLogger.get());
+        // Stop if there were not results found in the search process
+        if (searchResultList.isEmpty()) {
+            replyMessage.edit(messageFormatter.errorMessage("No results returned. Please adjust your search parameters and try again."));
             endProcess();
             return;
         }
 
         // Fetch more detailed information about each movie returned in the results from above
         for (int i = 0; i < searchResultList.size(); i++) {
-            searchResultList.set(i, omdbService.getById(searchResultList.get(i).imdbID, omdbApiKey));
+            // Fetch more detailed information about this movie that is not included in the base search results
+            var result = tmdbService.getMovie(searchResultList.get(i).tmdbId);
+
+            // Ensure that the data retrieval was successful and update the movie in the results list if it was
+            if (result.isSuccessful()) {
+                searchResultList.set(i, result);
+            } else {
+                // Display a message that there was an error and exit
+                replyMessage.edit(messageFormatter.errorMessage("There was an error while processing the list of search results. " +
+                        "Please try again later."));
+                endProcess();
+                return;
+            }
         }
 
         // Send the list of results to the movie selection handler method and await its result
@@ -350,7 +379,7 @@ public class RequestMovieCommandProcessor extends BotProcess {
         }
 
         // Verify that the movie requested does not already exist in the system
-        if (entityUtilities.movieExists(selectedMovie.imdbID)) {
+        if (movieDao.exists(selectedMovie.tmdbId)) {
             replyMessage.edit(messageFormatter.errorMessage(
                     "This movie already exists in the system."
             )).exceptionally(ExceptionLogger.get());
@@ -359,7 +388,7 @@ public class RequestMovieCommandProcessor extends BotProcess {
         }
 
         // Process the download of this movie using the movie download processor
-        OmdbResult finalSelectedMovie = selectedMovie;
+        TmdbMovie finalSelectedMovie = selectedMovie;
         movieDownloadProcessor.get().processDownload(selectedMovie, replyMessage, incomingMessage.getAuthor().getId()).runSubscriptionOn(managedExecutor.get()).subscribe().with(
                 progress -> {
                     for (Map.Entry<MovieDownloadSteps, EmbedBuilder> entry : progress.entrySet()) {

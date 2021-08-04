@@ -1,7 +1,9 @@
 package net.celestialdata.plexbot.apis;
 
-import net.celestialdata.plexbot.entities.EncodingQueueItem;
-import net.celestialdata.plexbot.entities.EntityUtilities;
+import net.celestialdata.plexbot.db.daos.EncodingQueueItemDao;
+import net.celestialdata.plexbot.db.daos.EpisodeDao;
+import net.celestialdata.plexbot.db.daos.MovieDao;
+import net.celestialdata.plexbot.db.entities.EncodingQueueItem;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -17,27 +19,32 @@ import javax.ws.rs.core.MediaType;
 public class EncodingQueueResource {
 
     @Inject
-    EntityUtilities entityUtilities;
+    FileUtilities fileUtilities;
 
     @Inject
-    FileUtilities fileUtilities;
+    MovieDao movieDao;
+
+    @Inject
+    EpisodeDao episodeDao;
+
+    @Inject
+    EncodingQueueItemDao encodingQueueItemDao;
 
     @GET
     @Path("/next")
-    @Transactional
     public EncodingQueueItem next() {
         EncodingQueueItem item;
         boolean isOptimized;
 
         do {
             // Fetch the next item from the DB queue
-            item = (EncodingQueueItem) EncodingQueueItem.listAll().get(0);
+            item = encodingQueueItemDao.listALl().get(0);
 
             // Fetch the media information and ensure it is not already optimized
-            if (item.type.equals("movie")) {
-                isOptimized = fileUtilities.getMediaInfo(entityUtilities.getMovie(item.mediaId)).isOptimized();
+            if (item.mediaType.equals("movie")) {
+                isOptimized = fileUtilities.getMediaInfo(movieDao.getByTmdbId(item.tmdbId)).isOptimized();
             } else {
-                isOptimized = fileUtilities.getMediaInfo(entityUtilities.getEpisode(item.mediaId)).isOptimized();
+                isOptimized = fileUtilities.getMediaInfo(episodeDao.getByTmdbId(item.tmdbId)).isOptimized();
             }
 
             // If the file has been optimized, remove it from the queue
@@ -52,17 +59,14 @@ public class EncodingQueueResource {
     @GET
     @Path("/{id}")
     public EncodingQueueItem get(@PathParam("id") int id) {
-        return EncodingQueueItem.findById(id);
+        return encodingQueueItemDao.get(id);
     }
 
     @DELETE
     @Path("/{id}")
-    @Transactional
     public void delete(@PathParam("id") int id) {
-        EncodingQueueItem entity = EncodingQueueItem.findById(id);
-        if (entity == null) {
-            throw new NotFoundException();
-        }
-        entity.delete();
+        if (encodingQueueItemDao.exists(id)) {
+            encodingQueueItemDao.delete(id);
+        } else throw new NotFoundException();
     }
 }

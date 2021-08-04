@@ -1,8 +1,14 @@
 package net.celestialdata.plexbot.discord.commands;
 
 import io.quarkus.arc.log.LoggerName;
+import net.celestialdata.plexbot.db.daos.ShowDao;
+import net.celestialdata.plexbot.db.daos.EpisodeDao;
+import net.celestialdata.plexbot.db.daos.EpisodeSubtitleDao;
+import net.celestialdata.plexbot.db.daos.MovieDao;
+import net.celestialdata.plexbot.db.daos.MovieSubtitleDao;
 import net.celestialdata.plexbot.discord.commandhandler.api.Command;
-import net.celestialdata.plexbot.entities.*;
+import net.celestialdata.plexbot.db.entities.Episode;
+import net.celestialdata.plexbot.db.entities.Movie;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.entity.message.Message;
@@ -28,7 +34,19 @@ public class StatsCommand implements Command<Message> {
     String tvFolder;
 
     @Inject
-    EntityUtilities entityUtilities;
+    MovieDao movieDao;
+
+    @Inject
+    MovieSubtitleDao movieSubtitleDao;
+
+    @Inject
+    EpisodeDao episodeDao;
+
+    @Inject
+    EpisodeSubtitleDao episodeSubtitleDao;
+
+    @Inject
+    ShowDao showDao;
 
     @Override
     public void handleFailure(Throwable error) {
@@ -46,11 +64,11 @@ public class StatsCommand implements Command<Message> {
 
 
         // Fetch lists of all the media on the server
-        var movies = entityUtilities.getAllMovies();
-        var movieSubtitles = entityUtilities.getAllMovieSubtitles();
-        var episodes = entityUtilities.getAllEpisodes();
-        var episodeSubtitles = entityUtilities.getAllEpisodeSubtitles();
-        var shows = entityUtilities.getAllShows();
+        var movies = movieDao.listALl();
+        var movieSubtitles = movieSubtitleDao.listALl();
+        var episodes = episodeDao.listALl();
+        var episodeSubtitles = episodeSubtitleDao.listALl();
+        var shows = showDao.listAll();
 
         // Create counters for some of the stats
         long totalDuration = 0;

@@ -126,8 +126,10 @@ FolderSettings:
       - "?"
       - "*"
       - "."
+      - "%"
       - "’"
       - "…"
+      - "½"
     replace:
       - original: "·"
         replacement: "-"
@@ -214,7 +216,7 @@ SyncthingSettings:
 ################
 ApiKeys:
   # The API key for all requests to the OMDb API for getting IMDB OmdbMovie ID's.
-  # You can get an API ket for this at http://www.omdbapi.com/ however it is recommended to purchase
+  # You can get an API key for this at http://www.omdbapi.com/ however it is recommended to purchase
   # at least the Basic plan through https://www.patreon.com/join/omdb to avoid API key limits.
   omdbApiKey: somerandomeapikeygoeshereotherwiseitwontwork
 

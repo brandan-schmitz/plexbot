@@ -4,8 +4,10 @@ import io.quarkus.arc.log.LoggerName;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
-import net.celestialdata.plexbot.entities.EncodingWorkItem;
-import net.celestialdata.plexbot.entities.EntityUtilities;
+import net.celestialdata.plexbot.db.daos.EncodingWorkItemDao;
+import net.celestialdata.plexbot.db.daos.EpisodeDao;
+import net.celestialdata.plexbot.db.daos.MovieDao;
+import net.celestialdata.plexbot.db.entities.EncodingWorkItem;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
@@ -48,7 +50,13 @@ public class BotStatusDisplay {
     Instance<String> botVersion;
 
     @Inject
-    EntityUtilities entityUtilities;
+    EncodingWorkItemDao encodingWorkItemDao;
+
+    @Inject
+    MovieDao movieDao;
+
+    @Inject
+    EpisodeDao episodeDao;
 
     void initialize(@Observes StartupEvent startupEvent) {
         // Clear the past 100 messages in the channel. If the channel does not exist, throw an error then quit the application.
@@ -106,7 +114,7 @@ public class BotStatusDisplay {
         }
 
         // Create the string usd within the embed that displays running media optimizations
-        List<EncodingWorkItem> workItems = EncodingWorkItem.listAll();
+        List<EncodingWorkItem> workItems = encodingWorkItemDao.listALl();
         if (workItems.isEmpty()) {
             encodingStatusBuilder.append("Idle");
         } else {
@@ -118,11 +126,11 @@ public class BotStatusDisplay {
                 var itemTitle = "";
 
                 // Create the title for this item
-                if (workItem.type.equals("episode")) {
-                    var episode = entityUtilities.getEpisode(workItem.mediaId);
+                if (workItem.mediaType.equals("episode")) {
+                    var episode = episodeDao.getByTmdbId(workItem.tmdbId);
                     itemTitle = episode.show.name + " " + generateSeasonString(episode.season) + generateEpisodeString(episode.number);
-                } else if (workItem.type.equals("movie")) {
-                    var movie = entityUtilities.getMovie(workItem.mediaId);
+                } else if (workItem.mediaType.equals("movie")) {
+                    var movie = movieDao.getByTmdbId(workItem.tmdbId);
                     itemTitle = movie.title + " (" + movie.year + ")";
                 }
 
@@ -139,8 +147,8 @@ public class BotStatusDisplay {
         statusMessage.edit(new EmbedBuilder()
                 .setTitle("Bot Status")
                 .setDescription("The processes that are currently being run by the bot are displayed below.")
-                .addField("Tasks:", "```" + statusBuilder.toString() + "```")
-                .addField("Optimizations:", "```" + encodingStatusBuilder.toString() + "```")
+                .addField("Tasks:", "```" + statusBuilder + "```")
+                .addField("Optimizations:", "```" + encodingStatusBuilder + "```")
                 .setFooter("Plexbot v" + botVersion.get() + " - " + DateTimeFormatter.ofLocalizedDateTime(
                         FormatStyle.MEDIUM).format(ZonedDateTime.now()) + " CST"
                 )

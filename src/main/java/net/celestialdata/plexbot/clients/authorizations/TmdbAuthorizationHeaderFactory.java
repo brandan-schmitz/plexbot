@@ -8,12 +8,12 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.core.MultivaluedMap;
 
 @ApplicationScoped
-public class RDBAuthorizationHeaderFactory implements ClientHeadersFactory {
+public class TmdbAuthorizationHeaderFactory implements ClientHeadersFactory {
 
     @Override
     public MultivaluedMap<String, String> update(MultivaluedMap<String, String> incomingHeaders, MultivaluedMap<String, String> clientOutgoingHeaders) {
         MultivaluedMap<String, String> result = new MultivaluedMapImpl<>();
-        result.add("Authorization", "Bearer " + ConfigProvider.getConfig().getValue("ApiKeys.realDebridKey", String.class));
+        result.add("Authorization", "Bearer " + ConfigProvider.getConfig().getValue("ApiKeys.tmdbApiToken", String.class));
         return result;
     }
 }

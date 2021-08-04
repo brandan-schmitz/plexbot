@@ -1,11 +1,11 @@
 package net.celestialdata.plexbot.periodictasks;
 
 import io.quarkus.scheduler.Scheduled;
-import net.celestialdata.plexbot.clients.services.OmdbService;
+import net.celestialdata.plexbot.clients.services.TmdbService;
 import net.celestialdata.plexbot.clients.services.YtsService;
+import net.celestialdata.plexbot.db.daos.MovieDao;
 import net.celestialdata.plexbot.discord.MessageFormatter;
-import net.celestialdata.plexbot.entities.EntityUtilities;
-import net.celestialdata.plexbot.entities.WaitlistMovie;
+import net.celestialdata.plexbot.db.entities.WaitlistMovie;
 import net.celestialdata.plexbot.processors.MovieDownloadProcessor;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -40,14 +40,11 @@ public class WaitlistChecker extends BotProcess {
     String newMovieNotificationChannel;
 
     @Inject
-    EntityUtilities entityUtilities;
-
-    @Inject
     MessageFormatter messageFormatter;
 
     @Inject
     @RestClient
-    OmdbService omdbService;
+    TmdbService tmdbService;
 
     @Inject
     @RestClient
@@ -62,6 +59,12 @@ public class WaitlistChecker extends BotProcess {
     @Inject
     Instance<MovieDownloadProcessor> movieDownloadProcessor;
 
+    @Inject
+    MovieDao movieDao;
+
+    @Inject
+    WaitlistMovieDao waitlistMovieDao;
+
     @Scheduled(every = "6h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void runCheck() {
         configureProcess("Waitlist Checker");
@@ -69,24 +72,24 @@ public class WaitlistChecker extends BotProcess {
 
         try {
             // Fetch all the items in the database
-            List<WaitlistMovie> movies = WaitlistMovie.listAll();
+            List<WaitlistMovie> movies = waitlistMovieDao.listAll();
 
             // Process all movies to see if one is now available for download on YTS
             for (WaitlistMovie movie : movies) {
                 updateProcessString("Waitlist Checker - " + decimalFormatter.format(((double) progress / movies.size()) * 100) + "%");
                 try {
                     // If the movie is already in the system, remove if from the waitlist
-                    if (entityUtilities.movieExists(movie.id)) {
-                        entityUtilities.deleteWaitlistMovie(movie.id);
+                    if (waitlistMovieDao.existsByTmdbId(movie.tmdbId)) {
+                        waitlistMovieDao.delete(movie.id);
                         progress++;
                         continue;
                     }
 
                     // Search on YTS for the movie
-                    var ytsResponse = ytsService.search(movie.id);
+                    var ytsResponse = ytsService.search(movie.imdbId);
 
                     // Get the information about the movie on imdb
-                    var movieInfo = omdbService.getById(movie.id, omdbApiKey);
+                    var movieInfo = tmdbService.getMovie(movie.tmdbId);
 
                     // If the search failed or the movie was not found, continue to the next movie
                     if (!ytsResponse.status.equals("ok") || ytsResponse.results.resultCount == 0) {
@@ -103,13 +106,12 @@ public class WaitlistChecker extends BotProcess {
                                                 textChannel.getMessageById(movie.messageId).join()
                                                         .edit(messageFormatter.waitlistNotification(movieInfo))),
                                 () -> {
-                                    discordApi.getUserById(movie.requestedBy).join()
-                                            .sendMessage(messageFormatter.newMovieUserNotification(movieInfo));
+                                    discordApi.getUserById(movie.requestedBy).join().sendMessage(messageFormatter.newMovieUserNotification(movieInfo));
                                     new MessageBuilder()
                                             .setEmbed(messageFormatter.newMovieNotification(movieInfo))
                                             .send(discordApi.getTextChannelById(newMovieNotificationChannel).orElseThrow()).exceptionally(ExceptionLogger.get()
                                     ).exceptionally(ExceptionLogger.get()).join();
-                                    entityUtilities.deleteWaitlistMovie(movie.id);
+                                    waitlistMovieDao.delete(movie.id);
                                 }
                         );
                     }
