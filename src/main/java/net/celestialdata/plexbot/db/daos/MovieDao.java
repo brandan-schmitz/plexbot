@@ -1,14 +1,25 @@
 package net.celestialdata.plexbot.db.daos;
 
+import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
 import net.celestialdata.plexbot.db.entities.Movie;
+import net.celestialdata.plexbot.enumerators.FileType;
+import net.celestialdata.plexbot.utilities.FileUtilities;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.List;
 
 @SuppressWarnings({"unused"})
 @ApplicationScoped
 public class MovieDao {
+
+    @ConfigProperty(name = "FolderSettings.movieFolder")
+    String movieFolder;
+
+    @Inject
+    FileUtilities fileUtilities;
 
     public List<Movie> listALl() {
         return Movie.listAll();
@@ -40,6 +51,28 @@ public class MovieDao {
 
     public boolean existsByImdbId(String imdbId) {
         return Movie.count("imdbId", imdbId) == 1;
+    }
+
+    public Movie createOrUpdate(TmdbMovie movieData, String filename) {
+        var movieFileData = fileUtilities.getMediaInfo(movieFolder + fileUtilities.generatePathname(movieData) + "/" + filename);
+        var fileType = FileType.determineFiletype(filename);
+
+        Movie entity = new Movie();
+        entity.tmdbId = movieData.tmdbId;
+        entity.imdbId = movieData.imdbId;
+        entity.title = movieData.title;
+        entity.year = movieData.getYear();
+        entity.filename = filename;
+        entity.filetype = fileType.getTypeString();
+        entity.folderName = fileUtilities.generatePathname(movieData);
+        entity.resolution = movieFileData.resolution();
+        entity.height = movieFileData.height;
+        entity.width = movieFileData.width;
+        entity.duration = movieFileData.duration;
+        entity.codec = movieFileData.codec;
+        entity.isOptimized = movieFileData.isOptimized();
+
+        return createOrUpdate(entity);
     }
 
     @SuppressWarnings("DuplicatedCode")

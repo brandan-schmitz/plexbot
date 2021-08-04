@@ -1,7 +1,6 @@
 package net.celestialdata.plexbot.db.entities;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
-import net.celestialdata.plexbot.db.entities.Episode;
 
 import javax.persistence.*;
 

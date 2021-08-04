@@ -1,7 +1,6 @@
 package net.celestialdata.plexbot.db.daos;
 
 import net.celestialdata.plexbot.clients.services.TmdbService;
-import net.celestialdata.plexbot.db.entities.CorruptedMediaItem;
 import net.celestialdata.plexbot.db.entities.Movie;
 import net.celestialdata.plexbot.db.entities.UpgradableMovie;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -10,7 +9,6 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.component.ActionRow;
 import org.javacord.api.entity.message.component.Button;
-import org.javacord.api.entity.message.component.ButtonStyle;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 
@@ -18,7 +16,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.awt.*;
-import java.io.File;
 import java.util.List;
 
 @SuppressWarnings({"unused"})

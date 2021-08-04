@@ -47,9 +47,6 @@ public class RequestMovieCommandProcessor extends BotProcess {
     @ConfigProperty(name = "BotSettings.prefix")
     String commandPrefix;
 
-    @ConfigProperty(name = "ApiKeys.omdbApiKey")
-    String omdbApiKey;
-
     @ConfigProperty(name = "ChannelSettings.newMovieNotificationChannel")
     String newMovieNotificationChannel;
 
@@ -379,7 +376,7 @@ public class RequestMovieCommandProcessor extends BotProcess {
         }
 
         // Verify that the movie requested does not already exist in the system
-        if (movieDao.exists(selectedMovie.tmdbId)) {
+        if (movieDao.existsByTmdbId(selectedMovie.tmdbId)) {
             replyMessage.edit(messageFormatter.errorMessage(
                     "This movie already exists in the system."
             )).exceptionally(ExceptionLogger.get());

@@ -6,12 +6,7 @@ import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.dataobjects.MediaInfoData;
 import net.celestialdata.plexbot.db.daos.*;
-import net.celestialdata.plexbot.db.entities.CorruptedMediaItem;
-import net.celestialdata.plexbot.db.entities.Episode;
-import net.celestialdata.plexbot.db.entities.EpisodeSubtitle;
-import net.celestialdata.plexbot.db.entities.Movie;
-import net.celestialdata.plexbot.db.entities.MovieSubtitle;
-import net.celestialdata.plexbot.db.entities.Show;
+import net.celestialdata.plexbot.db.entities.*;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.apache.commons.io.FileUtils;
@@ -95,6 +90,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
     @Inject
     MovieSubtitleDao movieSubtitleDao;
 
+    @Inject
+    ShowDao showDao;
+
     // Helper method to send a warning message to the bot owner
     private void sendWarning(EmbedBuilder message) {
         discordApi.getUserById(ownerId).join().sendMessage(message);
@@ -138,7 +136,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
         configureProcess("Database Consistency Checker - na%");
 
         // Get the lists of media in the database
-        showsInDatabase = Show.listAll();
+        showsInDatabase = showDao.listALl();
         episodesInDatabase = episodeDao.listALl();
         episodeSubtitlesInDatabase = episodeSubtitleDao.listALl();
         moviesInDatabase = movieDao.listALl();

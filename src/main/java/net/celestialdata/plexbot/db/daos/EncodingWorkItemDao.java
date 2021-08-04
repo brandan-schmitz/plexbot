@@ -1,6 +1,5 @@
 package net.celestialdata.plexbot.db.daos;
 
-import net.celestialdata.plexbot.db.entities.EncodingQueueItem;
 import net.celestialdata.plexbot.db.entities.EncodingWorkItem;
 
 import javax.enterprise.context.ApplicationScoped;

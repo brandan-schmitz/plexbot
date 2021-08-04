@@ -3,9 +3,9 @@ package net.celestialdata.plexbot.periodictasks;
 import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.clients.services.TmdbService;
 import net.celestialdata.plexbot.clients.services.YtsService;
-import net.celestialdata.plexbot.db.daos.MovieDao;
-import net.celestialdata.plexbot.discord.MessageFormatter;
+import net.celestialdata.plexbot.db.daos.WaitlistMovieDao;
 import net.celestialdata.plexbot.db.entities.WaitlistMovie;
+import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.processors.MovieDownloadProcessor;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -33,9 +33,6 @@ public class WaitlistChecker extends BotProcess {
     @ConfigProperty(name = "ChannelSettings.movieWaitlistChannel")
     String movieWaitlistChannel;
 
-    @ConfigProperty(name = "ApiKeys.omdbApiKey")
-    String omdbApiKey;
-
     @ConfigProperty(name = "ChannelSettings.newMovieNotificationChannel")
     String newMovieNotificationChannel;
 
@@ -60,9 +57,6 @@ public class WaitlistChecker extends BotProcess {
     Instance<MovieDownloadProcessor> movieDownloadProcessor;
 
     @Inject
-    MovieDao movieDao;
-
-    @Inject
     WaitlistMovieDao waitlistMovieDao;
 
     @Scheduled(every = "6h", delay = 10, delayUnit = TimeUnit.SECONDS)
@@ -72,7 +66,7 @@ public class WaitlistChecker extends BotProcess {
 
         try {
             // Fetch all the items in the database
-            List<WaitlistMovie> movies = waitlistMovieDao.listAll();
+            List<WaitlistMovie> movies = waitlistMovieDao.listALl();
 
             // Process all movies to see if one is now available for download on YTS
             for (WaitlistMovie movie : movies) {

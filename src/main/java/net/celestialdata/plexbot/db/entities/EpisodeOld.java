@@ -27,7 +27,7 @@ public class EpisodeOld extends PanacheEntityBase {
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "episode_show", referencedColumnName = "show_id", nullable = false)
-    public Show show;
+    public ShowOld show;
 
     @Column(name = "episode_filename")
     public String filename;

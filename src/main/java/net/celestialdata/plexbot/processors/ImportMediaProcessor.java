@@ -8,10 +8,7 @@ import net.celestialdata.plexbot.clients.services.SyncthingService;
 import net.celestialdata.plexbot.clients.services.TmdbService;
 import net.celestialdata.plexbot.dataobjects.ParsedMediaFilename;
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
-import net.celestialdata.plexbot.db.daos.EpisodeDao;
-import net.celestialdata.plexbot.db.daos.EpisodeSubtitleDao;
-import net.celestialdata.plexbot.db.daos.MovieDao;
-import net.celestialdata.plexbot.db.daos.MovieSubtitleDao;
+import net.celestialdata.plexbot.db.daos.*;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.enumerators.FileType;
 import net.celestialdata.plexbot.utilities.BotProcess;
@@ -116,6 +113,12 @@ public class ImportMediaProcessor extends BotProcess {
     @Inject
     EpisodeSubtitleDao episodeSubtitleDao;
 
+    @Inject
+    ShowDao showDao;
+
+    @Inject
+    WaitlistMovieDao waitlistMovieDao;
+
     @Override
     public void configureProcess(String processString, Message replyMessage) {
         // Configure the UncaughtExceptionHandler
@@ -217,7 +220,7 @@ public class ImportMediaProcessor extends BotProcess {
                 return;
             }
 
-            // Create the objects to hold the collections of media media files
+            // Create the objects to hold the collections of media files
             Collection<File> episodeMediaFiles;
             Collection<File> movieMediaFiles;
             Collection<File> episodeSubtitleFiles;
@@ -450,7 +453,7 @@ public class ImportMediaProcessor extends BotProcess {
                         continue;
                     }
 
-                    // Verify the ID is a tvdb ID and not a IMDb ID
+                    // Verify the ID is a tvdb ID and not an IMDb ID
                     var parsedId = filesAreSubtitles ? ((ParsedSubtitleFilename) parsedFilename).id : ((ParsedMediaFilename) parsedFilename).id;
                     if (parsedId.matches("[^0-9].*")) {
                         new MessageBuilder()
@@ -493,7 +496,8 @@ public class ImportMediaProcessor extends BotProcess {
                     }
 
                     // Get the first result in the list as that should be the matching episode
-                    var episodeResponse = findResponse.episodes.get(0);
+                    var episodeResponse = tmdbService.getEpisode(findResponse.episodes.get(0).showId,
+                            findResponse.episodes.get(0).seasonNum, findResponse.episodes.get(0).number);
 
                     // Fetch information about this episodes show in TMDB
                     var showResponse = tmdbService.getShow(episodeResponse.showId);
@@ -531,11 +535,8 @@ public class ImportMediaProcessor extends BotProcess {
                     // Create the show folder
                     fileUtilities.createFolder(tvFolder + showFoldername);
 
-                    // Add the show to the database
-                    entityUtilities.addOrUpdateSeries(showResponse, showFoldername);
-
-                    // Fetch the show from the database
-                    var show = entityUtilities.findSeries(showResponse.tmdbId);
+                    // Add or fetch the show from the database
+                    var show = showDao.create(showResponse.tmdbId, showResponse.name, showFoldername);
 
                     // Create the season folder
                     fileUtilities.createFolder(tvFolder + showFoldername + "/" + seasonFoldername);
@@ -594,12 +595,12 @@ public class ImportMediaProcessor extends BotProcess {
                     // Add the item to the database
                     if (filesAreSubtitles) {
                         var linkedEpisode = episodeDao.getByTmdbId(episodeResponse.tmdbId);
-                        entityUtilities.addOrUpdateEpisodeSubtitle(itemFilename, (ParsedSubtitleFilename) parsedFilename, linkedEpisode);
+                        episodeSubtitleDao.create(linkedEpisode, (ParsedSubtitleFilename) parsedFilename, itemFilename);
                     } else {
-                        entityUtilities.addOrUpdateEpisode(episodeResponse, itemFilename, show);
+                        episodeDao.createOrUpdate(episodeResponse, Long.parseLong(parsedId), itemFilename, show);
                     }
 
-                    // Send a message showing the episode has been added to the server if it is a episode
+                    // Send a message showing the episode has been added to the server if it is an episode
                     if (!filesAreSubtitles) {
                         new MessageBuilder()
                                 .setEmbed(messageFormatter.newEpisodeNotification(episodeResponse, showResponse))
@@ -678,9 +679,9 @@ public class ImportMediaProcessor extends BotProcess {
 
                         // Verify that the search was successful, and if so select the first result as that should be the correct movie
                         if (results.isSuccessful() && !results.movies.isEmpty()) {
-                            movieResponse = results.movies.get(0);
+                            movieResponse = tmdbService.getMovie(results.movies.get(0).tmdbId);
                         } else {
-                            // Display a error for this file since it could mot match to a movie
+                            // Display an error for this file since it could not be matched to a movie
                             new MessageBuilder()
                                     .setEmbed(messageFormatter.warningMessage("Unable to match the following file to a TMDB Movie: " + file.getName()))
                                     .send(replyMessage.getChannel())
@@ -698,7 +699,7 @@ public class ImportMediaProcessor extends BotProcess {
                         if (result.isSuccessful()) {
                             movieResponse = result;
                         } else {
-                            // Display a error for this file since it could mot match to a movie
+                            // Display an error for this file since it could not be matched to a movie
                             new MessageBuilder()
                                     .setEmbed(messageFormatter.warningMessage("Unable to match the following file to a TMDB Movie: " + file.getName()))
                                     .send(replyMessage.getChannel())
@@ -791,12 +792,12 @@ public class ImportMediaProcessor extends BotProcess {
                     // Add the item to the database
                     if (filesAreSubtitles) {
                         var linkedMovie = movieDao.getByTmdbId(movieResponse.tmdbId);
-                        entityUtilities.addOrUpdateMovieSubtitle(itemFilename, (ParsedSubtitleFilename) parsedFilename, linkedMovie);
+                        movieSubtitleDao.create(linkedMovie, (ParsedSubtitleFilename) parsedFilename, itemFilename);
                     } else {
-                        entityUtilities.addOrUpdateMovie(movieResponse, itemFilename);
+                        movieDao.createOrUpdate(movieResponse, itemFilename);
                     }
 
-                    // Send a message showing the episode has been added to the server if it is a episode
+                    // Send a message showing the episode has been added to the server if it is an episode
                     if (!filesAreSubtitles) {
                         new MessageBuilder()
                                 .setEmbed(messageFormatter.newMovieNotification(movieResponse))
@@ -805,15 +806,15 @@ public class ImportMediaProcessor extends BotProcess {
                                 .join();
                     }
 
-                    // If the item was a movie and it was in the waitlist, remove it from the waitlist and send a notification to the requesting user
-                    if (!filesAreSubtitles && entityUtilities.waitlistMovieExists(movieResponse.tmdbId)) {
-                        var requestingUser = entityUtilities.getWaitlistMovie(movieResponse.tmdbId).requestedBy;
+                    // If the item was a movie and was in the waitlist, remove it from the waitlist and send a notification to the requesting user
+                    if (!filesAreSubtitles && waitlistMovieDao.existsByTmdbId(movieResponse.tmdbId)) {
+                        var requestingUser = waitlistMovieDao.getByTmdbId(movieResponse.tmdbId).requestedBy;
                         new MessageBuilder()
                                 .setEmbed(messageFormatter.newMovieUserNotification(movieResponse))
                                 .send(discordApi.getUserById(requestingUser).join())
                                 .exceptionally(ExceptionLogger.get())
                                 .join();
-                        entityUtilities.deleteWaitlistMovie(movieResponse.tmdbId);
+                        waitlistMovieDao.deleteByTmdbId(movieResponse.tmdbId);
                     }
 
                     // Increment progress

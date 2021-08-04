@@ -1,5 +1,6 @@
 package net.celestialdata.plexbot.db.daos;
 
+import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
 import net.celestialdata.plexbot.db.entities.Episode;
 import net.celestialdata.plexbot.db.entities.EpisodeSubtitle;
 
@@ -33,6 +34,11 @@ public class EpisodeSubtitleDao {
 
     public boolean existsByFilename(String filename) {
         return EpisodeSubtitle.count("filename", filename) == 1;
+    }
+
+    public EpisodeSubtitle create(Episode episode, ParsedSubtitleFilename parsedSubtitleFilename, String finalFilename) {
+        return create(episode, parsedSubtitleFilename.language, finalFilename, parsedSubtitleFilename.fileType.getTypeString(),
+                parsedSubtitleFilename.isForced, parsedSubtitleFilename.isSDH, parsedSubtitleFilename.isCC);
     }
 
     @Transactional

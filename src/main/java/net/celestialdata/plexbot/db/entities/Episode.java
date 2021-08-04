@@ -30,7 +30,7 @@ public class Episode extends PanacheEntityBase {
     public Integer number;
 
     @Column(name = "episode_season")
-    public String season;
+    public Integer season;
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "episode_show", referencedColumnName = "show_id", nullable = false)

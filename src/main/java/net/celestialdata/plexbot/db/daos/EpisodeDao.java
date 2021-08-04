@@ -1,14 +1,26 @@
 package net.celestialdata.plexbot.db.daos;
 
+import net.celestialdata.plexbot.clients.models.tmdb.TmdbEpisode;
 import net.celestialdata.plexbot.db.entities.Episode;
+import net.celestialdata.plexbot.db.entities.Show;
+import net.celestialdata.plexbot.enumerators.FileType;
+import net.celestialdata.plexbot.utilities.FileUtilities;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.List;
 
 @SuppressWarnings({"unused"})
 @ApplicationScoped
 public class EpisodeDao {
+
+    @ConfigProperty(name = "FolderSettings.tvFolder")
+    String tvFolder;
+
+    @Inject
+    FileUtilities fileUtilities;
 
     public List<Episode> listALl() {
         return Episode.listAll();
@@ -40,6 +52,30 @@ public class EpisodeDao {
 
     public boolean existsByTvdbId(long tvdbId) {
         return Episode.count("tvdbId", tvdbId) == 1;
+    }
+
+    public Episode createOrUpdate(TmdbEpisode episodeData, long tvdbId, String filename, Show show) {
+        var episodeFileData = fileUtilities.getMediaInfo(tvFolder + show.foldername + "/Season " + episodeData.seasonNum + "/" + filename);
+        var fileType = FileType.determineFiletype(filename);
+
+        Episode entity = new Episode();
+        entity.tmdbId = episodeData.tmdbId;
+        entity.tvdbId = tvdbId;
+        entity.title = episodeData.name;
+        entity.date = episodeData.date;
+        entity.number = episodeData.number;
+        entity.season = episodeData.seasonNum;
+        entity.show = show;
+        entity.filename = filename;
+        entity.filetype = fileType.getTypeString();
+        entity.height = episodeFileData.height;
+        entity.width = episodeFileData.width;
+        entity.duration = episodeFileData.duration;
+        entity.codec = episodeFileData.codec;
+        entity.resolution = episodeFileData.resolution();
+        entity.isOptimized = episodeFileData.isOptimized();
+
+        return createOrUpdate(entity);
     }
 
     @SuppressWarnings("DuplicatedCode")

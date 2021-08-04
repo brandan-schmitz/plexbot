@@ -85,8 +85,8 @@ public class BotStatusDisplay {
         ).exceptionally(ExceptionLogger.get());
     }
 
-    private String generateSeasonString(String seasonNumber) {
-        if (Integer.parseInt(seasonNumber) <= 9) {
+    private String generateSeasonString(int seasonNumber) {
+        if (seasonNumber <= 9) {
             return "s0" + seasonNumber;
         } else return "s" + seasonNumber;
     }

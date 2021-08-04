@@ -19,7 +19,7 @@ public class MovieSubtitleOld extends PanacheEntityBase {
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "subtitle_movie", referencedColumnName = "movie_id")
-    public Movie movie;
+    public MovieOld movie;
 
     @Column(name = "subtitle_filename", nullable = false, unique = true)
     public String filename;

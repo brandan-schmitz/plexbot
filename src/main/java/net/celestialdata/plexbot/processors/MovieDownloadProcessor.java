@@ -12,6 +12,7 @@ import net.celestialdata.plexbot.clients.services.PlexService;
 import net.celestialdata.plexbot.clients.services.RdbService;
 import net.celestialdata.plexbot.clients.services.YtsService;
 import net.celestialdata.plexbot.db.daos.MovieDao;
+import net.celestialdata.plexbot.db.daos.WaitlistMovieDao;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.enumerators.FileType;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
@@ -74,6 +75,9 @@ public class MovieDownloadProcessor extends BotProcess {
     @Inject
     MovieDao movieDao;
 
+    @Inject
+    WaitlistMovieDao waitlistMovieDao;
+
     private long requestedBy = 0;
 
     public Multi<Map<MovieDownloadSteps, EmbedBuilder>> processDownload(TmdbMovie movieToDownload, Message statusMessage, Long requestedBy) {
@@ -114,7 +118,7 @@ public class MovieDownloadProcessor extends BotProcess {
                 // Verify that the search returned results, otherwise add movie to the waiting list and then fail
                 if (ytsResponse.results.resultCount == 0) {
                     // If the movie is already in the waitlist, fail with a message stating that
-                    if (entityUtilities.waitlistMovieExists(movieToDownload.getImdbId())) {
+                    if (waitlistMovieDao.existsByTmdbId(movieToDownload.tmdbId)) {
                         processEmitter.fail(new InterruptedException("Already in waitlist"));
                         endProcess();
                         return;
@@ -122,7 +126,7 @@ public class MovieDownloadProcessor extends BotProcess {
 
                     // Add the movie to the waitlist
                     if (requestedBy != 0) {
-                        entityUtilities.addWaitlistMovie(movieToDownload, requestedBy);
+                        waitlistMovieDao.create(movieToDownload, requestedBy);
                     }
 
                     // Fail the process
@@ -446,8 +450,7 @@ public class MovieDownloadProcessor extends BotProcess {
                 for (String filename : filenames) {
                     if (FileType.isVideo(filename)) {
                         try {
-                            movieDao.createOrUpdate();
-                            entityUtilities.addOrUpdateMovie(movieToDownload, filename);
+                            movieDao.createOrUpdate(movieToDownload, filename);
                         } catch (StringIndexOutOfBoundsException e) {
                             processEmitter.fail(new InterruptedException("File is corrupted: " + filename));
                             endProcess();

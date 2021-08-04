@@ -1,14 +1,10 @@
 package net.celestialdata.plexbot.discord.commands;
 
 import io.quarkus.arc.log.LoggerName;
-import net.celestialdata.plexbot.db.daos.ShowDao;
-import net.celestialdata.plexbot.db.daos.EpisodeDao;
-import net.celestialdata.plexbot.db.daos.EpisodeSubtitleDao;
-import net.celestialdata.plexbot.db.daos.MovieDao;
-import net.celestialdata.plexbot.db.daos.MovieSubtitleDao;
-import net.celestialdata.plexbot.discord.commandhandler.api.Command;
+import net.celestialdata.plexbot.db.daos.*;
 import net.celestialdata.plexbot.db.entities.Episode;
 import net.celestialdata.plexbot.db.entities.Movie;
+import net.celestialdata.plexbot.discord.commandhandler.api.Command;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.entity.message.Message;
@@ -68,9 +64,9 @@ public class StatsCommand implements Command<Message> {
         var movieSubtitles = movieSubtitleDao.listALl();
         var episodes = episodeDao.listALl();
         var episodeSubtitles = episodeSubtitleDao.listALl();
-        var shows = showDao.listAll();
+        var shows = showDao.listALl();
 
-        // Create counters for some of the stats
+        // Create counters for the stats
         long totalDuration = 0;
 
         // Calculate the duration of all movies in minutes

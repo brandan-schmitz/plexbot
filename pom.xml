@@ -15,9 +15,9 @@
     <quarkus.application.name>${project.artifactId}</quarkus.application.name>
     <quarkus.application.version>${project.version}</quarkus.application.version>
     <quarkus.native.enable-jni>true</quarkus.native.enable-jni>
-    <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
+    <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-    <quarkus.platform.version>2.0.3.Final</quarkus.platform.version>
+    <quarkus.platform.version>2.1.1.Final</quarkus.platform.version>
     <quarkus.ssl.native>true</quarkus.ssl.native>
     <quarkus.swagger-ui.always-include>true</quarkus.swagger-ui.always-include>
     <version-date>07/26/2021</version-date>
@@ -121,6 +121,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+      <!--suppress MavenPackageUpdate -->
       <version>2.11.0</version>
     </dependency>
   </dependencies>
@@ -160,6 +161,10 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${compiler-plugin.version}</version>
+        <configuration>
+          <forceJavacCompilerUse>true</forceJavacCompilerUse>
+          <parameters>${maven.compiler.parameters}</parameters>
+        </configuration>
       </plugin>
     </plugins>
   </build>
