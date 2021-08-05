@@ -14,8 +14,8 @@ public class Show extends PanacheEntityBase {
     @Column(name = "show_id", nullable = false)
     public Integer id;
 
-    @Column(name = "show_tmdb_id", nullable = false, unique = true)
-    public Long tmdbId;
+    @Column(name = "show_tvdb_id", nullable = false, unique = true)
+    public Long tvdbId;
 
     @Column(name = "show_name", nullable = false)
     public String name;

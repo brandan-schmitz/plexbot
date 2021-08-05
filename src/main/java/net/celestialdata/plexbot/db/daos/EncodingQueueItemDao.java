@@ -21,8 +21,8 @@ public class EncodingQueueItemDao {
     }
 
     @Transactional
-    public EncodingQueueItem getByTmdbId(long tmdbId) {
-        return EncodingQueueItem.find("tmdbId", tmdbId).firstResult();
+    public EncodingQueueItem getByMediaId(long mediaId) {
+        return EncodingQueueItem.find("mediaId", mediaId).firstResult();
     }
 
     @Transactional
@@ -31,18 +31,18 @@ public class EncodingQueueItemDao {
     }
 
     @Transactional
-    public boolean existsByTmdbId(long tmdbId) {
-        return EncodingQueueItem.count("tmdbId", tmdbId) == 1;
+    public boolean existsByMediaId(long mediaId) {
+        return EncodingQueueItem.count("mediaId", mediaId) == 1;
     }
 
     @Transactional
-    public EncodingQueueItem create(String mediaType, long tmdbId) {
-        if (existsByTmdbId(tmdbId)) {
-            return getByTmdbId(tmdbId);
+    public EncodingQueueItem create(String mediaType, long mediaId) {
+        if (existsByMediaId(mediaId)) {
+            return getByMediaId(mediaId);
         } else {
             EncodingQueueItem entity = new EncodingQueueItem();
             entity.mediaType = mediaType;
-            entity.tmdbId = tmdbId;
+            entity.mediaId = mediaId;
             entity.persist();
 
             return entity;

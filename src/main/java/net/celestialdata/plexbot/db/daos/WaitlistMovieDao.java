@@ -85,7 +85,7 @@ public class WaitlistMovieDao {
 
             WaitlistMovie entity = new WaitlistMovie();
             entity.tmdbId = movie.tmdbId;
-            entity.imdbId = movie.imdbId;
+            entity.imdbId = movie.getImdbId();
             entity.title = movie.title;
             entity.year = movie.getYear();
             entity.requestedBy = requestedBy;
@@ -117,6 +117,10 @@ public class WaitlistMovieDao {
     @Transactional
     public void deleteByMessageId(long messageId) {
         WaitlistMovie entity = WaitlistMovie.find("messageId", messageId).firstResult();
+
+        discordApi.getTextChannelById(movieWaitlistChannel).ifPresent(textChannel ->
+                textChannel.getMessageById(entity.messageId).join().delete());
+
         entity.delete();
     }
 }

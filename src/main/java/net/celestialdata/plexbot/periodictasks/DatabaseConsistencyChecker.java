@@ -130,7 +130,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
         });
     }
 
-    @Scheduled(every = "168h", delay = 10, delayUnit = TimeUnit.SECONDS)
+    //@Scheduled(every = "168h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void verifyDatabase() {
         // Configure the process
         configureProcess("Database Consistency Checker - na%");
@@ -416,7 +416,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 // If the episode is not optimized, ensure it is in the queue
                 if (!episode.isOptimized) {
-                    encodingQueueItemDao.create("episode", episode.tmdbId);
+                    encodingQueueItemDao.create("episode", episode.tvdbId);
                 }
 
                 // Remove the episode from the list of episodes in the database

@@ -14,10 +14,7 @@ public class Episode extends PanacheEntityBase {
     @Column(name = "episode_id", nullable = false)
     public Integer id;
 
-    @Column(name = "episode_tmdb_id", nullable = false, unique = true)
-    public Long tmdbId;
-
-    @Column(name = "episode_tvdb_id")
+    @Column(name = "episode_tvdb_id", nullable = false, unique = true)
     public Long tvdbId;
 
     @Column(name = "episode_title")

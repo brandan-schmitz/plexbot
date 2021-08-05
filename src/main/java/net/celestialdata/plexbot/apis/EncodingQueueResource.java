@@ -41,9 +41,9 @@ public class EncodingQueueResource {
 
             // Fetch the media information and ensure it is not already optimized
             if (item.mediaType.equals("movie")) {
-                isOptimized = fileUtilities.getMediaInfo(movieDao.getByTmdbId(item.tmdbId)).isOptimized();
+                isOptimized = fileUtilities.getMediaInfo(movieDao.getByTmdbId(item.mediaId)).isOptimized();
             } else {
-                isOptimized = fileUtilities.getMediaInfo(episodeDao.getByTmdbId(item.tmdbId)).isOptimized();
+                isOptimized = fileUtilities.getMediaInfo(episodeDao.getByTvdbId(item.mediaId)).isOptimized();
             }
 
             // If the file has been optimized, remove it from the queue

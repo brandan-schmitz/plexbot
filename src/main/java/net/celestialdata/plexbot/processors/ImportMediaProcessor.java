@@ -6,6 +6,7 @@ import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
 import net.celestialdata.plexbot.clients.models.tmdb.TmdbSourceIdType;
 import net.celestialdata.plexbot.clients.services.SyncthingService;
 import net.celestialdata.plexbot.clients.services.TmdbService;
+import net.celestialdata.plexbot.clients.services.TvdbService;
 import net.celestialdata.plexbot.dataobjects.ParsedMediaFilename;
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
 import net.celestialdata.plexbot.db.daos.*;
@@ -14,6 +15,7 @@ import net.celestialdata.plexbot.enumerators.FileType;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.javacord.api.DiscordApi;
@@ -96,6 +98,10 @@ public class ImportMediaProcessor extends BotProcess {
     @Inject
     @RestClient
     SyncthingService syncthingService;
+
+    @Inject
+    @RestClient
+    TvdbService tvdbService;
 
     @Inject
     @RestClient
@@ -412,18 +418,6 @@ public class ImportMediaProcessor extends BotProcess {
         });
     }
 
-    private String generateSeasonString(int seasonNumber) {
-        if (seasonNumber <= 9) {
-            return "s0" + seasonNumber;
-        } else return "s" + seasonNumber;
-    }
-
-    private String generateEpisodeString(int episodeNumber) {
-        if (episodeNumber <= 9) {
-            return "e0" + episodeNumber;
-        } else return "e" + episodeNumber;
-    }
-
     @SuppressWarnings("DuplicatedCode")
     public Multi<Integer> processEpisodeItems(Collection<File> files, boolean filesAreSubtitles) {
         AtomicInteger progress = new AtomicInteger(0);
@@ -480,13 +474,14 @@ public class ImportMediaProcessor extends BotProcess {
                         continue;
                     }
 
-                    // Use the find endpoint on tmdb to get a list of matching TMDB episodes to a TVDB ID
-                    var findResponse = tmdbService.findByExternalId(parsedId, TmdbSourceIdType.TVDB.getValue());
+                    // Fetch information from TVDB about this item
+                    var episodeResponse = tvdbService.getEpisode(parsedId);
 
-                    // Check to see if the find was not successful
-                    if (!findResponse.isSuccessful() || findResponse.episodes.isEmpty()) {
+                    // Ensure that the request was successful
+                    if (!episodeResponse.status.equalsIgnoreCase("success")) {
                         new MessageBuilder()
-                                .setEmbed(messageFormatter.warningMessage("Unable to match the following file to a TMDB episode: " + file.getName()))
+                                .setEmbed(messageFormatter.warningMessage("Unable to match the following file to a TVDB episode: " + file.getName(),
+                                        episodeResponse.message))
                                 .send(replyMessage.getChannel())
                                 .exceptionally(ExceptionLogger.get())
                                 .join();
@@ -495,17 +490,14 @@ public class ImportMediaProcessor extends BotProcess {
                         continue;
                     }
 
-                    // Get the first result in the list as that should be the matching episode
-                    var episodeResponse = tmdbService.getEpisode(findResponse.episodes.get(0).showId,
-                            findResponse.episodes.get(0).seasonNum, findResponse.episodes.get(0).number);
-
-                    // Fetch information about this episodes show in TMDB
-                    var showResponse = tmdbService.getShow(findResponse.episodes.get(0).showId);
+                    // Fetch information about this episodes show in TVDB
+                    var showResponse = tvdbService.getSeries(episodeResponse.episode.seriesId);
 
                     // Ensure that this request was also successful
-                    if (!showResponse.isSuccessful()) {
+                    if (!showResponse.status.equalsIgnoreCase("success")) {
                         new MessageBuilder()
-                                .setEmbed(messageFormatter.warningMessage("Unable to match the following file to a TVDB series: " + file.getName()))
+                                .setEmbed(messageFormatter.warningMessage("Unable to match the following file to a TVDB series: " + file.getName(),
+                                        showResponse.message))
                                 .send(replyMessage.getChannel())
                                 .exceptionally(ExceptionLogger.get())
                                 .join();
@@ -514,39 +506,45 @@ public class ImportMediaProcessor extends BotProcess {
                         continue;
                     }
 
-                    // Create the strings used in the file/folder names for the episode and season numbers
-                    var episodeString = generateEpisodeString(episodeResponse.number);
-                    var seasonString = generateSeasonString(episodeResponse.seasonNum);
+                    // If the episode name is not present, check to see if TMDB has it
+                    if (StringUtils.isBlank(episodeResponse.episode.name)) {
+                        // Attempt to locate the episode on TMDB using its TVDB ID
+                        var findResponse = tmdbService.findByExternalId(parsedId, TmdbSourceIdType.TVDB.getValue());
+
+                        // Attempt to load the episode name if TMDB returned a result
+                        if (findResponse.isSuccessful() && findResponse.episodes.size() > 0 && !StringUtils.isBlank(findResponse.episodes.get(0).name)) {
+                            episodeResponse.episode.name = findResponse.episodes.get(0).name;
+                        }
+                    }
 
                     // Generate the season and show folder names
-                    var showFoldername = fileUtilities.generatePathname(showResponse);
-                    var seasonFoldername = "Season " + episodeResponse.seasonNum;
+                    var showFoldername = fileUtilities.generatePathname(showResponse.series);
+                    var seasonFoldername = "Season " + episodeResponse.episode.seasonNumber;
                     String itemFilename;
-
-                    // Generate the filename based on its type
-                    if (filesAreSubtitles) {
-                        itemFilename = fileUtilities.generateEpisodeSubtitleFilename(showResponse, seasonString + episodeString,
-                                (ParsedSubtitleFilename) parsedFilename);
-                    } else {
-                        itemFilename = fileUtilities.generateEpisodeFilename(episodeResponse, FileType.determineFiletype(file.getName()),
-                                seasonString + episodeString, showResponse);
-                    }
 
                     // Create the show folder
                     fileUtilities.createFolder(tvFolder + showFoldername);
 
                     // Add or fetch the show from the database
-                    var show = showDao.create(showResponse.tmdbId, showResponse.name, showFoldername);
+                    var show = showDao.create(showResponse.series.id, showResponse.series.name, showFoldername);
 
                     // Create the season folder
                     fileUtilities.createFolder(tvFolder + showFoldername + "/" + seasonFoldername);
 
+                    // Generate the filename based on its type
+                    if (filesAreSubtitles) {
+                        itemFilename = fileUtilities.generateEpisodeSubtitleFilename(episodeResponse.episode, show, (ParsedSubtitleFilename) parsedFilename);
+                    } else {
+                        itemFilename = fileUtilities.generateEpisodeFilename(episodeResponse.episode, show, FileType.determineFiletype(file.getName()));
+                    }
+
                     // Move the file into place as long as it is not overwriting a file without the proper flag. It only requires
                     // the overwrite flag if the file is not one that has been optimized.
-                    if (file.getAbsolutePath().contains(importFolder + "optimized/episodes")) {
+                    var isOptimizedMedia = file.getAbsolutePath().contains(importFolder + "optimized/episodes");
+                    if (isOptimizedMedia) {
                         // Ensure that old media files get deleted if they are being replaced by a file of a different type
-                        if (!filesAreSubtitles && !episodeDao.getByTmdbId(episodeResponse.tmdbId).filename.equalsIgnoreCase(itemFilename)) {
-                            fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + episodeDao.getByTmdbId(episodeResponse.tmdbId).filename);
+                        if (!filesAreSubtitles && !episodeDao.getByTvdbId(episodeResponse.episode.id).filename.equalsIgnoreCase(itemFilename)) {
+                            fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + episodeDao.getByTvdbId(episodeResponse.episode.id).filename);
                         }
 
                         // Move the item into place
@@ -554,7 +552,7 @@ public class ImportMediaProcessor extends BotProcess {
                                 tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename, true);
                     } else {
                         // Check if the item is in the database at all
-                        var existsInDatabase = filesAreSubtitles ? episodeSubtitleDao.existsByFilename(itemFilename) : episodeDao.existsByTmdbId(episodeResponse.tmdbId);
+                        var existsInDatabase = filesAreSubtitles ? episodeSubtitleDao.existsByFilename(itemFilename) : episodeDao.existsByTvdbId(episodeResponse.episode.id);
 
                         // Verify that the file does not exist. If it does and overwrite is not specified skip this file
                         if (Files.exists(Paths.get(tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename)) && !overwrite || existsInDatabase && !overwrite) {
@@ -571,14 +569,14 @@ public class ImportMediaProcessor extends BotProcess {
                         }
 
                         // Ensure that old media files get deleted if they are being replaced by a file of a different type
-                        if (overwrite && !filesAreSubtitles && !episodeDao.getByTmdbId(episodeResponse.tmdbId).filename.equalsIgnoreCase(itemFilename)) {
-                            fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + episodeDao.getByTmdbId(episodeResponse.tmdbId).filename);
+                        if (overwrite && !filesAreSubtitles && !episodeDao.getByTvdbId(episodeResponse.episode.id).filename.equalsIgnoreCase(itemFilename)) {
+                            fileUtilities.deleteFile(tvFolder + showFoldername + "/" + seasonFoldername + "/" + episodeDao.getByTvdbId(episodeResponse.episode.id).filename);
                         }
 
                         // Ensure that old subtitles are deleted if the media file is being overwritten
                         if (overwrite && !filesAreSubtitles) {
                             // Fetch a list of subtitles matching this episode
-                            var subtitleList = new ArrayList<>(episodeSubtitleDao.getByEpisode(episodeDao.getByTmdbId(episodeResponse.tmdbId)));
+                            var subtitleList = new ArrayList<>(episodeSubtitleDao.getByEpisode(episodeDao.getByTvdbId(episodeResponse.episode.id)));
 
                             // Delete the file from the filesystem and database
                             subtitleList.forEach(subtitle -> {
@@ -594,16 +592,27 @@ public class ImportMediaProcessor extends BotProcess {
 
                     // Add the item to the database
                     if (filesAreSubtitles) {
-                        var linkedEpisode = episodeDao.getByTmdbId(episodeResponse.tmdbId);
+                        var linkedEpisode = episodeDao.getByTvdbId(episodeResponse.episode.id);
                         episodeSubtitleDao.createOrUpdate(linkedEpisode.id, (ParsedSubtitleFilename) parsedFilename, itemFilename);
                     } else {
-                        episodeDao.createOrUpdate(episodeResponse, Long.parseLong(parsedId), itemFilename, show.id);
+                        episodeDao.createOrUpdate(episodeResponse.episode, itemFilename, show.id);
                     }
 
                     // Send a message showing the episode has been added to the server if it is an episode
-                    if (!filesAreSubtitles) {
+                    if (!filesAreSubtitles && !isOptimizedMedia) {
+                        // Attempt to locate the episode on TMDB in order to display an overview in the episode notification
+                        var findResponse = tmdbService.findByExternalId(String.valueOf(episodeResponse.episode.id),
+                                TmdbSourceIdType.TVDB.getValue());
+
+                        // Set the overview if the search was successful
+                        var overview = "";
+                        if (findResponse.isSuccessful() && findResponse.episodes.size() > 0 && !StringUtils.isBlank(findResponse.episodes.get(0).overview)) {
+                            overview = findResponse.episodes.get(0).overview;
+                        }
+
+                        // Send the notification message
                         new MessageBuilder()
-                                .setEmbed(messageFormatter.newEpisodeNotification(episodeResponse, showResponse))
+                                .setEmbed(messageFormatter.newEpisodeNotification(episodeResponse.episode, showResponse.series, overview))
                                 .send(discordApi.getTextChannelById(newEpisodeNotificationChannel).orElseThrow())
                                 .exceptionally(ExceptionLogger.get())
                                 .join();
@@ -740,7 +749,8 @@ public class ImportMediaProcessor extends BotProcess {
 
                     // Move the file into place as long as it is not overwriting a file without the proper flag. It only requires
                     // the overwrite flag if the file is not one that has been optimized.
-                    if (file.getAbsolutePath().contains(importFolder + "optimized/movies")) {
+                    var isOptimizedMedia = file.getAbsolutePath().contains(importFolder + "optimized/movies");
+                    if (isOptimizedMedia) {
                         // Ensure that old media files get deleted if they are being replaced by a file of a different type
                         if (!filesAreSubtitles && !movieDao.getByTmdbId(movieResponse.tmdbId).filename.equalsIgnoreCase(itemFilename)) {
                             fileUtilities.deleteFile(movieFolder + foldername + "/" + movieDao.getByTmdbId(movieResponse.tmdbId).filename);
@@ -797,8 +807,8 @@ public class ImportMediaProcessor extends BotProcess {
                         movieDao.createOrUpdate(movieResponse, itemFilename);
                     }
 
-                    // Send a message showing the episode has been added to the server if it is an episode
-                    if (!filesAreSubtitles) {
+                    // Send a message showing the episode has been added to the server if it is a movie
+                    if (!filesAreSubtitles && !isOptimizedMedia) {
                         new MessageBuilder()
                                 .setEmbed(messageFormatter.newMovieNotification(movieResponse))
                                 .send(discordApi.getTextChannelById(newMovieNotificationChannel).orElseThrow())

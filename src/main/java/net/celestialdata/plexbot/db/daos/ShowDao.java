@@ -21,8 +21,8 @@ public class ShowDao {
     }
 
     @Transactional
-    public Show getByTmdbId(long tmdbId) {
-        return Show.find("tmdbId", tmdbId).firstResult();
+    public Show getByTvdbId(long tvdbId) {
+        return Show.find("tvdbId", tvdbId).firstResult();
     }
 
     @Transactional
@@ -31,17 +31,17 @@ public class ShowDao {
     }
 
     @Transactional
-    public boolean existsByTmdbId(long tmdbId) {
-        return Show.count("tmdbId", tmdbId) == 1;
+    public boolean existsByTvdbId(long tvdbId) {
+        return Show.count("tvdbId", tvdbId) == 1;
     }
 
     @Transactional
-    public Show create(long tmdbId, String name, String foldername) {
-        if (existsByTmdbId(tmdbId)) {
-            return Show.find("tmdbId", tmdbId).firstResult();
+    public Show create(long tvdbId, String name, String foldername) {
+        if (existsByTvdbId(tvdbId)) {
+            return Show.find("tvdbId", tvdbId).firstResult();
         } else {
             Show entity = new Show();
-            entity.tmdbId = tmdbId;
+            entity.tvdbId = tvdbId;
             entity.name = name;
             entity.foldername = foldername;
             entity.persist();
@@ -54,7 +54,7 @@ public class ShowDao {
         Show entity = Show.findById(id);
         entity.name = updatedItem.name;
         entity.foldername = updatedItem.name;
-        entity.tmdbId = updatedItem.tmdbId;
+        entity.tvdbId = updatedItem.tvdbId;
         return entity;
     }
 

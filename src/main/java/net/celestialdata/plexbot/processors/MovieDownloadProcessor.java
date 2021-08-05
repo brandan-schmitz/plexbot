@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Dependent
 public class MovieDownloadProcessor extends BotProcess {
+
     @ConfigProperty(name = "BotSettings.ownerID")
     String botOwner;
 

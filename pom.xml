@@ -20,7 +20,7 @@
     <quarkus.platform.version>2.1.1.Final</quarkus.platform.version>
     <quarkus.ssl.native>true</quarkus.ssl.native>
     <quarkus.swagger-ui.always-include>true</quarkus.swagger-ui.always-include>
-    <version-date>08/05/2021</version-date>
+    <version-date>08/09/2021</version-date>
   </properties>
   <dependencyManagement>
     <dependencies>

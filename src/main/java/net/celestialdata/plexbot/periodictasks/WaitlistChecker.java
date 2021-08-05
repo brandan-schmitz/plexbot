@@ -3,6 +3,7 @@ package net.celestialdata.plexbot.periodictasks;
 import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.clients.services.TmdbService;
 import net.celestialdata.plexbot.clients.services.YtsService;
+import net.celestialdata.plexbot.db.daos.MovieDao;
 import net.celestialdata.plexbot.db.daos.WaitlistMovieDao;
 import net.celestialdata.plexbot.db.entities.WaitlistMovie;
 import net.celestialdata.plexbot.discord.MessageFormatter;
@@ -59,6 +60,9 @@ public class WaitlistChecker extends BotProcess {
     @Inject
     WaitlistMovieDao waitlistMovieDao;
 
+    @Inject
+    MovieDao movieDao;
+
     @Scheduled(every = "6h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void runCheck() {
         configureProcess("Waitlist Checker");
@@ -73,7 +77,7 @@ public class WaitlistChecker extends BotProcess {
                 updateProcessString("Waitlist Checker - " + decimalFormatter.format(((double) progress / movies.size()) * 100) + "%");
                 try {
                     // If the movie is already in the system, remove if from the waitlist
-                    if (waitlistMovieDao.existsByTmdbId(movie.tmdbId)) {
+                    if (movieDao.existsByTmdbId(movie.tmdbId)) {
                         waitlistMovieDao.delete(movie.id);
                         progress++;
                         continue;

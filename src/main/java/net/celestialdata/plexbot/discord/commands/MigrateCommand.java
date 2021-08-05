@@ -1,14 +1,14 @@
 package net.celestialdata.plexbot.discord.commands;
 
 import io.quarkus.arc.log.LoggerName;
-import net.celestialdata.plexbot.clients.models.tmdb.TmdbSourceIdType;
 import net.celestialdata.plexbot.clients.services.TmdbService;
-import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
+import net.celestialdata.plexbot.clients.services.TvdbService;
 import net.celestialdata.plexbot.db.daos.*;
 import net.celestialdata.plexbot.db.entities.*;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.discord.commandhandler.api.Command;
 import net.celestialdata.plexbot.enumerators.FileType;
+import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -28,11 +28,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,26 +38,27 @@ import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("unused")
 @ApplicationScoped
-public class MigrateCommand implements Command<Message> {
+public class MigrateCommand extends BotProcess implements Command<Message> {
+    private final DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
     private Message replyMessage;
     private ListenerManager<ButtonClickListener> cancelListener;
     private LocalDateTime lastUpdated = LocalDateTime.now().minus(5, ChronoUnit.SECONDS);
     private int total = 0;
-    private int progress = 0;
+    private int progress = 1;
     private boolean canceled = false;
 
     @LoggerName("net.celestialdata.plexbot.discord.commands.MigrateCommand")
     Logger logger;
 
-    @ConfigProperty(name = "FolderSettings.movieFolder")
-    String movieFolder;
-
     @ConfigProperty(name = "FolderSettings.tvFolder")
     String tvFolder;
+
+    @Inject
+    @RestClient
+    TvdbService tvdbService;
 
     @Inject
     @RestClient
@@ -80,15 +79,6 @@ public class MigrateCommand implements Command<Message> {
     @Inject
     EpisodeDao episodeDao;
 
-    @Inject
-    MovieDao movieDao;
-
-    @Inject
-    MovieSubtitleDao movieSubtitleDao;
-
-    @Inject
-    WaitlistMovieDao waitlistMovieDao;
-
     @Override
     public void handleFailure(Throwable error) {
         logger.error(error);
@@ -104,28 +94,17 @@ public class MigrateCommand implements Command<Message> {
         return ShowOld.listAll();
     }
 
-    @Transactional
-    public List<MovieOld> listAllOldMovies() {
-        return MovieOld.listAll();
-    }
-
-    @Transactional
-    public List<MovieSubtitleOld> listOldMovieSubtitlesByMovie(String movieId) {
-        MovieOld oldMovie = MovieOld.findById(movieId);
-        return MovieSubtitleOld.list("movie", oldMovie);
-    }
-
-    @Transactional
-    public List<WaitlistMovieOld> listOldWaitlistMovies() {
-        return WaitlistMovieOld.listAll();
-    }
-
     public void updateProgress() {
+        var percentage = (((double) (progress == 1 ? 0 : progress) / total) * 100);
+
+        // Update the bot status process string
+        updateProcessString("Migration Processor - " + decimalFormatter.format(percentage) + "%");
+
         if (lastUpdated.plus(3, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
             replyMessage.edit(new EmbedBuilder()
                     .setTitle("Migration Progress")
                     .setDescription("You requested that a data migration occur. Below is the progress of that migration.\n" +
-                            "```Migrating " + (progress == 0 ? 1 : progress) + " of " + total + " items```")
+                            "```Migrating " + progress + " of " + total + " items```")
                     .setColor(Color.BLUE)
                     .setFooter("Progress updated: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(ZonedDateTime.now()) + " CST")
             ).join();
@@ -159,9 +138,10 @@ public class MigrateCommand implements Command<Message> {
         replyMessage.edit(new EmbedBuilder()
                 .setTitle("Migration Canceled")
                 .setDescription("The migration has been canceled. You can resume the migration by running the migrate command again.")
-                .setColor(Color.BLUE)
+                .setColor(Color.BLACK)
         );
         cancelListener.remove();
+        endProcess();
     }
 
     private void resetToNewMessage(EmbedBuilder embedBuilder, long messageToReplyTo) {
@@ -192,6 +172,8 @@ public class MigrateCommand implements Command<Message> {
 
     @Override
     public void execute(Message incomingMessage, String prefix, String usedAlias, String parameterString) {
+        configureProcess("Migration Processor - initializing", replyMessage);
+
         replyMessage = new MessageBuilder()
                 .setEmbed(new EmbedBuilder()
                         .setTitle("Migration Started")
@@ -222,12 +204,10 @@ public class MigrateCommand implements Command<Message> {
         // Gather media lists
         List<EpisodeOld> oldEpisodes = listAllOldEpisodes();
         List<ShowOld> oldShows = listOldShows();
-        List<MovieOld> oldMovies = listAllOldMovies();
-        List<WaitlistMovieOld> oldWaitlistMovies = listOldWaitlistMovies();
 
         // Count total number of items that need to be migrated
-        progress = 0;
-        total = oldEpisodes.size() + oldShows.size() + oldMovies.size() + oldWaitlistMovies.size();
+        progress = 1;
+        total = oldEpisodes.size() + oldShows.size();
 
         // Update the progress to show it has started
         updateProgress();
@@ -245,6 +225,7 @@ public class MigrateCommand implements Command<Message> {
             // Stop if the process was canceled
             if (canceled) {
                 onCancel();
+                endProcess();
                 return;
             }
 
@@ -255,6 +236,7 @@ public class MigrateCommand implements Command<Message> {
         // Stop if the process was canceled
         if (canceled) {
             onCancel();
+            endProcess();
             return;
         }
 
@@ -271,58 +253,7 @@ public class MigrateCommand implements Command<Message> {
             // Stop if the process was canceled
             if (canceled) {
                 onCancel();
-                return;
-            }
-
-            // Update the progress
-            updateProgress();
-        }
-
-        // Stop if the process was canceled
-        if (canceled) {
-            onCancel();
-            return;
-        }
-
-        // Process movies and movie subtitles
-        for (MovieOld movie : oldMovies) {
-            try {
-                migrateOldMovie(movie);
-            } catch (Exception e) {
-                logger.error("Unable to process movie " + movie.filename, e);
-                sendErrorMessage("Movie " + movie.filename, e);
-                progress++;
-            }
-
-            // Stop if the process was canceled
-            if (canceled) {
-                onCancel();
-                return;
-            }
-
-            // Update the progress
-            updateProgress();
-        }
-
-        // Stop if the process was canceled
-        if (canceled) {
-            onCancel();
-            return;
-        }
-
-        // Process waitlist movies
-        for (WaitlistMovieOld movie : oldWaitlistMovies) {
-            try {
-                migrateOldWaitlistMovie(movie);
-            } catch (Exception e) {
-                logger.error("Unable to process waitlist movie " + movie.id, e);
-                sendErrorMessage("Waitlist movie " + movie.id, e);
-                progress++;
-            }
-
-            // Stop if the process was canceled
-            if (canceled) {
-                onCancel();
+                endProcess();
                 return;
             }
 
@@ -337,28 +268,26 @@ public class MigrateCommand implements Command<Message> {
                         "Any files that caused an error will need to be manually migrated.")
                 .setColor(Color.GREEN), incomingMessage.getId());
         cancelListener.remove();
+        endProcess();
     }
 
     public void migrateOldEpisode(EpisodeOld oldEpisode) {
-        // Find episode on tmdb
-        var findResponse = tmdbService.findByExternalId(oldEpisode.id, TmdbSourceIdType.TVDB.getValue());
+        // Find episode on tvdb
+        var episodeResponse = tvdbService.getEpisode(oldEpisode.id);
 
         // Verify episode was located
-        if (!findResponse.isSuccessful() || findResponse.episodes.isEmpty()) {
+        if (!episodeResponse.status.equalsIgnoreCase("success")) {
             logger.warn("Unable to find matching episode for " + oldEpisode.filename);
             sendErrorMessage("Episode " + oldEpisode.filename, "Unable to find matching episode.");
             progress++;
             return;
         }
 
-        // Load the episode information
-        var episodeInfo = findResponse.episodes.get(0);
-
         // Fetch information about the episodes show
-        var showResponse = tmdbService.getShow(episodeInfo.showId);
+        var showResponse = tvdbService.getSeries(episodeResponse.episode.seriesId);
 
         // Verify information was fetched
-        if (!showResponse.isSuccessful()) {
+        if (!showResponse.status.equalsIgnoreCase("success")) {
             logger.warn("Unable to load matching show for " + oldEpisode.filename);
             sendErrorMessage("Episode " + oldEpisode.filename, "Unable to load matching show.");
             progress++;
@@ -366,7 +295,7 @@ public class MigrateCommand implements Command<Message> {
         }
 
         // Create the new show folder if not exists
-        if (!fileUtilities.createFolder(showResponse)) {
+        if (!fileUtilities.createFolder(showResponse.series)) {
             logger.warn("Failed to create show folder for episode " + oldEpisode.filename);
             sendErrorMessage("Episode " + oldEpisode.filename, "Failed to create show folder.");
             progress++;
@@ -374,29 +303,31 @@ public class MigrateCommand implements Command<Message> {
         }
 
         // Ensure the show is in the database
-        var show = showDao.create(showResponse.tmdbId, showResponse.name, fileUtilities.generatePathname(showResponse));
+        var show = showDao.create(showResponse.series.id, showResponse.series.name, fileUtilities.generatePathname(showResponse.series));
 
         // Create the season folder if not exists
-        if (!fileUtilities.createFolder(tvFolder + show.foldername + "/Season " + episodeInfo.seasonNum)) {
-            logger.warn("Failed to create season folder: " + tvFolder + show.foldername + "/Season " + episodeInfo.seasonNum);
+        if (!fileUtilities.createFolder(tvFolder + show.foldername + "/Season " + episodeResponse.episode.seasonNumber)) {
+            logger.warn("Failed to create season folder: " + tvFolder + show.foldername + "/Season " + episodeResponse.episode.seasonNumber);
             sendErrorMessage("Episode " + oldEpisode.filename, "Failed to create season folder.");
             progress++;
             return;
         }
 
         // Move the episode into place
-        var filename = fileUtilities.generateEpisodeFilename(episodeInfo, show, FileType.determineFiletype(oldEpisode.filename));
+        var filename = fileUtilities.generateEpisodeFilename(episodeResponse.episode, show, FileType.determineFiletype(oldEpisode.filename));
         var sourceFile = tvFolder + oldEpisode.show.foldername + "/Season " + oldEpisode.season + "/" + oldEpisode.filename;
-        var destinationFile = tvFolder + show.foldername + "/Season " + episodeInfo.seasonNum + "/" + filename;
-        if (!moveMedia(sourceFile, destinationFile)) {
-            logger.warn("Failed to move episode " + oldEpisode.filename);
-            sendErrorMessage("Episode " + oldEpisode.filename, "Failed to move episode file.");
-            progress++;
-            return;
+        var destinationFile = tvFolder + show.foldername + "/Season " + episodeResponse.episode.seasonNumber + "/" + filename;
+        if (!destinationFile.equals(sourceFile)) {
+            if (!fileUtilities.moveMedia(sourceFile, destinationFile, true)) {
+                logger.warn("Failed to move episode " + oldEpisode.filename);
+                sendErrorMessage("Episode " + oldEpisode.filename, "Failed to move episode file.");
+                progress++;
+                return;
+            }
         }
 
         // Add the episode to the database
-        episodeDao.createOrUpdate(episodeInfo, Long.parseLong(oldEpisode.id), filename, show.id);
+        episodeDao.createOrUpdate(episodeResponse.episode, filename, show.id);
 
         // Delete the old episode from the database
         deleteOldEpisode(oldEpisode.id);
@@ -427,170 +358,6 @@ public class MigrateCommand implements Command<Message> {
         progress++;
     }
 
-    void migrateOldMovie(MovieOld oldMovie) {
-        // Find movie on tmdb
-        var findResponse = tmdbService.findByExternalId(oldMovie.id, TmdbSourceIdType.IMDB.getValue());
-
-        // Verify movie was located
-        if (!findResponse.isSuccessful() || findResponse.movies.isEmpty()) {
-            logger.warn("Unable to find matching movie for " + oldMovie.filename);
-            sendErrorMessage("Movie " + oldMovie.filename, "Unable to find matching movie.");
-            progress++;
-            return;
-        }
-
-        // Load detailed the movie information
-        var movieResponse = tmdbService.getMovie(findResponse.movies.get(0).tmdbId);
-
-        // Verify movie details were fetched
-        if (!movieResponse.isSuccessful()) {
-            logger.warn("Unable to find matching tmdb movie for " + oldMovie.filename);
-            sendErrorMessage("Movie " + oldMovie.filename, "Unable to find matching tmdb movie.");
-            progress++;
-            return;
-        }
-
-        // Create the movie folder if not exists
-        if (!fileUtilities.createFolder(movieResponse)) {
-            logger.warn("Failed to create folder for: " + movieResponse.title + " {tmdb-" + movieResponse.tmdbId + "}");
-            sendErrorMessage("Movie " + oldMovie.filename, "Failed to create folder.");
-            progress++;
-            return;
-        }
-
-        // Create the filename and paths
-        var filename = fileUtilities.generateMovieFilename(movieResponse, FileType.determineFiletype(oldMovie.filename));
-        var sourceFile = movieFolder + oldMovie.folderName + "/" + oldMovie.filename;
-        var destinationFile = movieFolder + fileUtilities.generatePathname(movieResponse) + "/" + filename;
-
-        // Delete the file if it exists
-        if (Files.exists(Paths.get(sourceFile))) {
-            if (!moveMedia(sourceFile, destinationFile)) {
-                logger.warn("Failed to move movie " + oldMovie.filename);
-                sendErrorMessage("Movie " + oldMovie.filename, "Failed to move file.");
-                progress++;
-                return;
-            }
-        } else {
-            // Fail if the movie is not already registered in the new table
-            if (!movieDao.existsByTmdbId(movieResponse.tmdbId)) {
-                logger.warn("Missing movie file: " + oldMovie.filename);
-                sendErrorMessage("Movie " + oldMovie.filename, "Unable to locate file.");
-                progress++;
-                return;
-            }
-        }
-
-        // Add the movie to the database
-        var movie = movieDao.createOrUpdate(movieResponse, filename);
-
-        // Fetch any subtitles that were associated with the movie
-        var oldSubtitles = listOldMovieSubtitlesByMovie(oldMovie.id);
-
-        // Process old subtitles if any exist
-        AtomicBoolean failed = new AtomicBoolean(false);
-        if (!oldSubtitles.isEmpty()) {
-            oldSubtitles.forEach(subtitle -> {
-                try {
-                    if (!migrateOldMovieSubtitle(subtitle, oldMovie.folderName, movie)) {
-                        failed.set(true);
-                    }
-                } catch (Exception e) {
-                    failed.set(true);
-                    logger.error("Unable to process movie subtitle " + subtitle.filename, e);
-                    sendErrorMessage("Movie subtitle " + subtitle.filename, e);
-                }
-            });
-        }
-
-        // Ensure that it did not fail processing subtitle files
-        if (failed.get()) {
-            logger.warn("Failed to movie due to failure in subtitle processing " + oldMovie.filename);
-            sendErrorMessage("Movie " + oldMovie.filename, "Failed to process subtitles for this movie.");
-        } else {
-            try {
-                // Clean and delete the movie folder
-                var directory = new File(movieFolder + oldMovie.folderName);
-                cleanDirectory(directory);
-                if (FileUtils.isEmptyDirectory(directory)) {
-                    FileUtils.deleteDirectory(directory);
-                }
-            } catch (IOException e) {
-                logger.warn("Unable to delete movie " + oldMovie.folderName + " folder as it is not empty.");
-                sendErrorMessage("Movie " + oldMovie.folderName, "Unable to delete non-empty folder.");
-                progress++;
-                return;
-            }
-
-            // Delete the old movie entry from the database
-            deleteOldMovie(oldMovie.id);
-        }
-
-        // Increment the progress counter
-        progress++;
-    }
-
-    boolean migrateOldMovieSubtitle(MovieSubtitleOld oldSubtitle, String oldMoveFolder, Movie linkedMovie) {
-        // Create a ParsedSubtitleFilename for simpler updating of the filename
-        ParsedSubtitleFilename parsedSubtitleFilename = new ParsedSubtitleFilename();
-        parsedSubtitleFilename.fileType = FileType.determineFiletype(oldSubtitle.filename);
-        parsedSubtitleFilename.language = oldSubtitle.language;
-        parsedSubtitleFilename.isForced = oldSubtitle.isForced;
-        parsedSubtitleFilename.isSDH = oldSubtitle.isSDH;
-        parsedSubtitleFilename.isCC = oldSubtitle.isCC;
-
-        // Move the subtitle file
-        var filename = linkedMovie.folderName + fileUtilities.subtitleSuffixBuilder(parsedSubtitleFilename);
-        var sourceFile = movieFolder + oldMoveFolder + "/" + oldSubtitle.filename;
-        var destinationFile = movieFolder + linkedMovie.folderName + "/" + filename;
-        if (!moveMedia(sourceFile, destinationFile)) {
-            logger.warn("Failed to move movie subtitle" + oldSubtitle.filename);
-            sendErrorMessage("Movie Subtitle " + oldSubtitle.filename, "Failed to move file.");
-            return false;
-        }
-
-        // Add the subtitle file to the database
-        movieSubtitleDao.createOrUpdate(linkedMovie.id, parsedSubtitleFilename, filename);
-
-        // Delete the old subtitle from the database
-        deleteOldMovieSubtitle(oldSubtitle.id);
-
-        return true;
-    }
-
-    void migrateOldWaitlistMovie(WaitlistMovieOld oldWaitlistMovie) {
-        // Find movie on tmdb
-        var findResponse = tmdbService.findByExternalId(oldWaitlistMovie.id, TmdbSourceIdType.IMDB.getValue());
-
-        // Verify movie was located
-        if (!findResponse.isSuccessful() || findResponse.movies.isEmpty()) {
-            logger.warn("Unable to find matching movie for " + oldWaitlistMovie.id);
-            sendErrorMessage("Waitlist movie " + oldWaitlistMovie.id, "Unable to find matching movie.");
-            progress++;
-            return;
-        }
-
-        // Load detailed the movie information
-        var movieResponse = tmdbService.getMovie(findResponse.movies.get(0).tmdbId);
-
-        // Verify movie details were fetched
-        if (!movieResponse.isSuccessful()) {
-            logger.warn("Unable to find matching tmdb movie for " + oldWaitlistMovie.id);
-            sendErrorMessage("Waitlist movie " + oldWaitlistMovie.id, "Unable to find matching tmdb movie.");
-            progress++;
-            return;
-        }
-
-        // Create the new waitlist item
-        waitlistMovieDao.create(movieResponse, oldWaitlistMovie.requestedBy);
-
-        // Delete the old waitlist item
-        deleteOldWaitlistMovie(oldWaitlistMovie.id);
-
-        // Increment the progress counter
-        progress++;
-    }
-
     @Transactional
     public void deleteOldEpisode(String id) {
         EpisodeOld entity = EpisodeOld.findById(id);
@@ -601,44 +368,5 @@ public class MigrateCommand implements Command<Message> {
     public void deleteOldShow(String id) {
         ShowOld entity = ShowOld.findById(id);
         entity.delete();
-    }
-
-    @Transactional
-    public void deleteOldMovie(String id) {
-        MovieOld entity = MovieOld.findById(id);
-        entity.delete();
-    }
-
-    @Transactional
-    public void deleteOldMovieSubtitle(int id) {
-        MovieSubtitleOld entity = MovieSubtitleOld.findById(id);
-        entity.delete();
-    }
-
-    @Transactional
-    public void deleteOldWaitlistMovie(String id) {
-        WaitlistMovieOld entity = WaitlistMovieOld.findById(id);
-        entity.delete();
-    }
-
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean moveMedia(String source, String destination) {
-        boolean success = true;
-
-        try {
-            // Copy the file to the destination
-            Files.copy(
-                    Paths.get(source),
-                    Paths.get(destination),
-                    StandardCopyOption.REPLACE_EXISTING
-            );
-
-            // Delete the source file if the copy was successful
-            Files.delete(Paths.get(source));
-        } catch (Exception e) {
-            success = false;
-        }
-
-        return success;
     }
 }

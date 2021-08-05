@@ -23,6 +23,6 @@ public class EncodingWorkItem extends PanacheEntityBase {
     @Column(name = "item_type", nullable = false)
     public String mediaType;
 
-    @Column(name = "item_tmdb_id", nullable = false, unique = true)
-    public Long tmdbId;
+    @Column(name = "item_media_id", nullable = false, unique = true)
+    public Long mediaId;
 }

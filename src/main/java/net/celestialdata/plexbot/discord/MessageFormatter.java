@@ -1,10 +1,11 @@
 package net.celestialdata.plexbot.discord;
 
-import net.celestialdata.plexbot.clients.models.tmdb.TmdbEpisode;
 import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
-import net.celestialdata.plexbot.clients.models.tmdb.TmdbShow;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbEpisode;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
 import net.celestialdata.plexbot.dataobjects.BotEmojis;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
+import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -126,7 +127,7 @@ public class MessageFormatter {
     public EmbedBuilder downloadFinishedMessage(TmdbMovie movie) {
         return new EmbedBuilder()
                 .setTitle("Movie Added")
-                .addInlineField("Title:", "```" + movie.title + "```")
+                .addField("Title:", "```" + movie.title + "```")
                 .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
                 .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
                 .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
@@ -140,23 +141,34 @@ public class MessageFormatter {
     public EmbedBuilder newMovieNotification(TmdbMovie movie) {
         return new EmbedBuilder()
                 .setTitle("Movie Added")
-                .addInlineField("Title:", "```" + movie.title + "```")
+                .addField("Title:", "```" + movie.title + "```")
                 .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
+                .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
+                .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
                 .addField("Overview:", "```" + movie.getOverview() + "```")
                 .setImage(movie.getPoster())
                 .setColor(Color.GREEN);
     }
 
-    public EmbedBuilder newEpisodeNotification(TmdbEpisode episode, TmdbShow show) {
-        return new EmbedBuilder()
+    public EmbedBuilder newEpisodeNotification(TvdbEpisode episode, TvdbSeries show, String episodeOverview) {
+        // Create the base embedded message
+        var embed = new EmbedBuilder()
                 .setTitle("Episode Added")
-                .addInlineField("Show Name:", "```" + show.name + "```")
-                .addInlineField("Season #:", "```" + episode.seasonNum + "```")
+                .addField("Show Name:", "```" + show.name + "```")
+                .addField("Episode Name:", "```" + episode.name + "```")
+                .addInlineField("Season #:", "```" + episode.seasonNumber + "```")
                 .addInlineField("Episode #:", "```" + episode.number + "```")
-                .addInlineField("Episode Name:", "```" + episode.name + "```")
-                .addField("Episode Overview:", "```" + episode.overview + "```")
+                .addInlineField("TVDB ID:", "```" + episode.id + "```")
                 .setImage(episode.getImage())
                 .setColor(Color.GREEN);
+
+        // Add an episode overview if one is provided
+        if (!StringUtils.isBlank(episodeOverview)) {
+            embed.addField("Episode Overview:", "```" + episodeOverview + "```");
+        }
+
+        // Return the embed message
+        return embed;
     }
 
     public EmbedBuilder newMovieUserNotification(TmdbMovie movie) {
@@ -164,8 +176,10 @@ public class MessageFormatter {
                 .setTitle("Movie Added")
                 .setDescription("You requested the following movie be added to Celestial Movies Plex Server. This message " +
                         "is to notify you that the movie is now available on Plex.")
-                .addInlineField("Title:", "```" + movie.title + "```")
+                .addField("Title:", "```" + movie.title + "```")
                 .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
+                .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
+                .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
                 .addField("Overview:", "```" + movie.getOverview() + "```")
                 .setImage(movie.getPoster())
                 .setColor(Color.GREEN);
@@ -174,9 +188,10 @@ public class MessageFormatter {
     public EmbedBuilder waitlistNotification(TmdbMovie movie) {
         return new EmbedBuilder()
                 .setTitle("Movie Requested")
-                .addInlineField("Title:", "```" + movie.title + "```")
+                .addField("Title:", "```" + movie.title + "```")
                 .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
                 .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
+                .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
                 .addField("Overview:", "```" + movie.getOverview() + "```")
                 .setImage(movie.getPoster())
                 .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)

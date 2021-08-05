@@ -127,10 +127,10 @@ public class BotStatusDisplay {
 
                 // Create the title for this item
                 if (workItem.mediaType.equals("episode")) {
-                    var episode = episodeDao.getByTmdbId(workItem.tmdbId);
+                    var episode = episodeDao.getByTvdbId(workItem.mediaId);
                     itemTitle = episode.show.name + " " + generateSeasonString(episode.season) + generateEpisodeString(episode.number);
                 } else if (workItem.mediaType.equals("movie")) {
-                    var movie = movieDao.getByTmdbId(workItem.tmdbId);
+                    var movie = movieDao.getByTmdbId(workItem.mediaId);
                     itemTitle = movie.title + " (" + movie.year + ")";
                 }
 

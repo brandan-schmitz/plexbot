@@ -21,8 +21,8 @@ public class EncodingWorkItemDao {
     }
 
     @Transactional
-    public EncodingWorkItem getByTmdbId(long tmdbId) {
-        return EncodingWorkItem.find("tmdbId", tmdbId).firstResult();
+    public EncodingWorkItem getByMediaId(long mediaId) {
+        return EncodingWorkItem.find("mediaId", mediaId).firstResult();
     }
 
     @Transactional
@@ -31,20 +31,20 @@ public class EncodingWorkItemDao {
     }
 
     @Transactional
-    public boolean existsByTmdbId(long tmdbId) {
-        return EncodingWorkItem.count("tmdbId", tmdbId) == 1;
+    public boolean existsByMediaId(long mediaId) {
+        return EncodingWorkItem.count("mediaId", mediaId) == 1;
     }
 
     @Transactional
-    public EncodingWorkItem create(String progress, String workerAgentName, String mediaType, long tmdbId) {
-        if (existsByTmdbId(tmdbId)) {
-            return getByTmdbId(tmdbId);
+    public EncodingWorkItem create(String progress, String workerAgentName, String mediaType, long mediaId) {
+        if (existsByMediaId(mediaId)) {
+            return getByMediaId(mediaId);
         } else {
             EncodingWorkItem entity = new EncodingWorkItem();
             entity.progress = progress;
             entity.workerAgentName = workerAgentName;
             entity.mediaType = mediaType;
-            entity.tmdbId = tmdbId;
+            entity.mediaId = mediaId;
             entity.persist();
 
             return entity;
@@ -53,8 +53,8 @@ public class EncodingWorkItemDao {
 
     @Transactional
     public EncodingWorkItem create(EncodingWorkItem entity) {
-        if (existsByTmdbId(entity.tmdbId)) {
-            return update(getByTmdbId(entity.tmdbId).id, entity);
+        if (existsByMediaId(entity.mediaId)) {
+            return update(getByMediaId(entity.mediaId).id, entity);
         } else {
             entity.persist();
             return entity;
@@ -67,7 +67,7 @@ public class EncodingWorkItemDao {
         entity.progress = updatedItem.progress;
         entity.workerAgentName = updatedItem.workerAgentName;
         entity.mediaType = updatedItem.mediaType;
-        entity.tmdbId = updatedItem.tmdbId;
+        entity.mediaId = updatedItem.mediaId;
         return entity;
     }
 

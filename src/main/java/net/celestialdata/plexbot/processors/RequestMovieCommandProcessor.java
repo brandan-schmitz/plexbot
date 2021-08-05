@@ -107,7 +107,7 @@ public class RequestMovieCommandProcessor extends BotProcess {
                         .setTitle("Select Movie")
                         .setDescription("It looks like your search returned " + movieList.size() + " results. " +
                                 "Please use the buttons below to navigate and select the correct movie.\n\u200b")
-                        .addInlineField("Title:", "```" + movie.title + "```")
+                        .addField("Title:", "```" + movie.title + "```")
                         .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
                         .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
                         .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
@@ -180,7 +180,7 @@ public class RequestMovieCommandProcessor extends BotProcess {
     public void runCommand(Message incomingMessage, String parameterString) {
         this.incomingMessage = incomingMessage;
 
-        // Reply to the command message and save that message so it can be modified later
+        // Reply to the command message and save that message so that it can be modified later
         replyMessage = incomingMessage.reply(new EmbedBuilder()
                 .setTitle("Processing Request")
                 .setDescription("I am processing your command request. Please stand-by for this process to be completed.")
@@ -314,14 +314,14 @@ public class RequestMovieCommandProcessor extends BotProcess {
             }
         }
 
-        // Stop if there were not results found in the search process
+        // Stop if there were no results found in the search process
         if (searchResultList.isEmpty()) {
             replyMessage.edit(messageFormatter.errorMessage("No results returned. Please adjust your search parameters and try again."));
             endProcess();
             return;
         }
 
-        // Fetch more detailed information about each movie returned in the results from above
+        // Fetch more detailed information about each movie in the results from above
         for (int i = 0; i < searchResultList.size(); i++) {
             // Fetch more detailed information about this movie that is not included in the base search results
             var result = tmdbService.getMovie(searchResultList.get(i).tmdbId);
@@ -344,13 +344,18 @@ public class RequestMovieCommandProcessor extends BotProcess {
             selectedMovie = handleMovieSelection(searchResultList).onFailure().invoke(returnedError -> {
                 selectionFailed.set(true);
                 if (returnedError instanceof InterruptedException) {
-                    if (returnedError.getMessage().endsWith("movie.")) {
-                        replyMessage.edit(new EmbedBuilder()
-                                .setTitle("Command Timed Out")
-                                .setDescription("The bot is no longer processing your request as you let it sit too long before selecting a movie. " +
-                                        "Please run the command again if you wish to restart your request.")
-                                .setFooter("Exited: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(ZonedDateTime.now()) + " CST")
-                                .setColor(Color.BLACK));
+                    if (returnedError.getMessage().equals("Timeout occurred while waiting for user to select a movie.")) {
+                        discordApi.getMessageById(replyMessage.getId(), incomingMessage.getChannel()).join().delete().join();
+                        replyMessage = new MessageBuilder()
+                                .setEmbed(new EmbedBuilder()
+                                        .setTitle("Command Timed Out")
+                                        .setDescription("The bot is no longer processing your request as you let it sit too long before selecting a movie. " +
+                                                "Please run the command again if you wish to restart your request.")
+                                        .setFooter("Timed out on " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(ZonedDateTime.now()) + " CST")
+                                        .setColor(Color.BLACK))
+                                .replyTo(incomingMessage)
+                                .send(incomingMessage.getChannel())
+                                .join();
                         endProcess();
                     } else if (returnedError.getMessage().equals("User has canceled the selection process.")) {
                         replyMessage.edit(new EmbedBuilder()

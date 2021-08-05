@@ -69,7 +69,7 @@ public class MovieDao {
 
         if (existsByTmdbId(movieData.tmdbId)) {
             Movie entity = Movie.find("tmdbId", movieData.tmdbId).firstResult();
-            entity.imdbId = movieData.imdbId;
+            entity.imdbId = movieData.getImdbId();
             entity.title = movieData.title;
             entity.year = movieData.getYear();
             entity.filename = filename;
@@ -85,7 +85,7 @@ public class MovieDao {
         } else {
             Movie entity = new Movie();
             entity.tmdbId = movieData.tmdbId;
-            entity.imdbId = movieData.imdbId;
+            entity.imdbId = movieData.getImdbId();
             entity.title = movieData.title;
             entity.year = movieData.getYear();
             entity.filename = filename;

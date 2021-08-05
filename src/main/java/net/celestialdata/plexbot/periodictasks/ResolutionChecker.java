@@ -159,7 +159,7 @@ public class ResolutionChecker extends BotProcess {
                 moveStatus = true;
             }
 
-            // Ensure the file was rename to the .bak extension properly
+            // Ensure the file was renamed to the .bak extension properly
             if (!moveStatus) {
                 emitter.fail(new InterruptedException("Unable to backup old video file"));
             }
@@ -259,7 +259,7 @@ public class ResolutionChecker extends BotProcess {
                         continue;
                     }
 
-                    // Compare the selected torrent to see if its better than what is on the server.
+                    // Compare the selected torrent to see if it is better than what is on the server.
                     // Add the movie to the upgrade requests if it is a better resolution than what currently exists.
                     if (Integer.parseInt(selectedTorrent.quality.replace("p", "")) > movie.resolution) {
                         // Get information about the movie from OMDb

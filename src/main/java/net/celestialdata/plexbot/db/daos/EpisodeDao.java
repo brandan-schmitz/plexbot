@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.db.daos;
 
-import net.celestialdata.plexbot.clients.models.tmdb.TmdbEpisode;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbEpisode;
 import net.celestialdata.plexbot.db.entities.Episode;
 import net.celestialdata.plexbot.db.entities.Show;
 import net.celestialdata.plexbot.enumerators.FileType;
@@ -33,11 +33,6 @@ public class EpisodeDao {
     }
 
     @Transactional
-    public Episode getByTmdbId(long tmdbId) {
-        return Episode.find("tmdbId", tmdbId).firstResult();
-    }
-
-    @Transactional
     public Episode getByTvdbId(long tvdbId) {
         return Episode.find("tvdbId", tvdbId).firstResult();
     }
@@ -53,29 +48,24 @@ public class EpisodeDao {
     }
 
     @Transactional
-    public boolean existsByTmdbId(long tmdbId) {
-        return Episode.count("tmdbId", tmdbId) == 1;
-    }
-
-    @Transactional
     public boolean existsByTvdbId(long tvdbId) {
         return Episode.count("tvdbId", tvdbId) == 1;
     }
 
     @SuppressWarnings("DuplicatedCode")
     @Transactional
-    public Episode createOrUpdate(TmdbEpisode episodeData, long tvdbId, String filename, int show) {
+    public Episode createOrUpdate(TvdbEpisode episodeData, String filename, int show) {
         Show showData = Show.findById(show);
-        var episodeFileData = fileUtilities.getMediaInfo(tvFolder + showData.foldername + "/Season " + episodeData.seasonNum + "/" + filename);
+        var episodeFileData = fileUtilities.getMediaInfo(tvFolder + showData.foldername + "/Season " + episodeData.seasonNumber + "/" + filename);
         var fileType = FileType.determineFiletype(filename);
 
-        if (existsByTmdbId(episodeData.tmdbId)) {
-            Episode entity = Episode.find("tmdbId", episodeData.tmdbId).firstResult();
-            entity.tvdbId = tvdbId;
+        if (existsByTvdbId(episodeData.id)) {
+            Episode entity = Episode.find("tvdbId", episodeData.id).firstResult();
+            entity.tvdbId = episodeData.id;
             entity.title = episodeData.name;
-            entity.date = episodeData.date;
+            entity.date = episodeData.aired;
             entity.number = episodeData.number;
-            entity.season = episodeData.seasonNum;
+            entity.season = episodeData.seasonNumber;
             entity.show = showData;
             entity.filename = filename;
             entity.filetype = fileType.getTypeString();
@@ -88,12 +78,11 @@ public class EpisodeDao {
             return entity;
         } else {
             Episode entity = new Episode();
-            entity.tmdbId = episodeData.tmdbId;
-            entity.tvdbId = tvdbId;
+            entity.tvdbId = episodeData.id;
             entity.title = episodeData.name;
-            entity.date = episodeData.date;
+            entity.date = episodeData.aired;
             entity.number = episodeData.number;
-            entity.season = episodeData.seasonNum;
+            entity.season = episodeData.seasonNumber;
             entity.show = showData;
             entity.filename = filename;
             entity.filetype = fileType.getTypeString();

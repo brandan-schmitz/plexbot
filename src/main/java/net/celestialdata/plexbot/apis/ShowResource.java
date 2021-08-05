@@ -18,8 +18,8 @@ public class ShowResource {
     ShowDao showDao;
 
     @GET
-    @Path("/{tmdb_id}")
-    public Show get(@PathParam("tmdb_id") long tmdbId) {
-        return showDao.getByTmdbId(tmdbId);
+    @Path("/{tvdb_id}")
+    public Show get(@PathParam("tvdb_id") long tvdbId) {
+        return showDao.getByTvdbId(tvdbId);
     }
 }

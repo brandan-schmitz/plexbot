@@ -1,9 +1,9 @@
 package net.celestialdata.plexbot.utilities;
 
 import io.smallrye.mutiny.Multi;
-import net.celestialdata.plexbot.clients.models.tmdb.TmdbEpisode;
 import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
-import net.celestialdata.plexbot.clients.models.tmdb.TmdbShow;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbEpisode;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
 import net.celestialdata.plexbot.dataobjects.BlacklistedCharacters;
 import net.celestialdata.plexbot.dataobjects.MediaInfoData;
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
@@ -11,16 +11,17 @@ import net.celestialdata.plexbot.db.entities.Episode;
 import net.celestialdata.plexbot.db.entities.Movie;
 import net.celestialdata.plexbot.db.entities.Show;
 import net.celestialdata.plexbot.enumerators.FileType;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import uk.co.caprica.vlcjinfo.MediaInfoFile;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -29,7 +30,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 @ApplicationScoped
 public class FileUtilities {
 
@@ -92,10 +93,6 @@ public class FileUtilities {
         });
     }
 
-    public Multi<Long> downloadFile(String url, String outputFilename) {
-        return downloadFile(url, outputFilename, null);
-    }
-
     public boolean isFolderEmpty(String folder) {
         var path = Paths.get(folder);
 
@@ -113,25 +110,31 @@ public class FileUtilities {
     public boolean moveMedia(String source, String destination, boolean overwrite) {
         boolean success = true;
 
-        try {
-            // Copy the file to the destination
-            if (overwrite) {
-                Files.copy(
-                        Paths.get(source),
-                        Paths.get(destination),
-                        StandardCopyOption.REPLACE_EXISTING
-                );
-            } else {
-                Files.copy(
-                        Paths.get(source),
-                        Paths.get(destination)
-                );
+        // If the file exists and the overwrite flag is false, then do not write the file
+        if (Files.exists(Paths.get(destination)) && !overwrite) {
+            success = false;
+        } else {
+            // Attempt to move the file
+            try (
+                    FileChannel inputChannel = new FileInputStream(source).getChannel();
+                    FileChannel outputChannel = new FileOutputStream(destination, false).getChannel()
+            ) {
+                ByteBuffer buffer = ByteBuffer.allocateDirect(1048576);
+                while (inputChannel.read(buffer) != -1) {
+                    buffer.flip();
+                    outputChannel.write(buffer);
+                    buffer.clear();
+                }
+            } catch (IOException e) {
+                success = false;
             }
 
-            // Delete the source file if the copy was successful
-            Files.delete(Paths.get(source));
-        } catch (Exception e) {
-            success = false;
+            // If the file was moved successfully, delete the original
+            try {
+                FileUtils.delete(new File(source));
+            } catch (IOException e) {
+                success = false;
+            }
         }
 
         return success;
@@ -151,7 +154,8 @@ public class FileUtilities {
         return success;
     }
 
-    public boolean createFolder(TmdbShow show) {
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean createFolder(TvdbSeries show) {
         boolean success = true;
 
         try {
@@ -195,8 +199,8 @@ public class FileUtilities {
         return sanitizeFilesystemNames(mediaItem.title + " (" + mediaItem.getYear() + ") {tmdb-" + mediaItem.tmdbId + "}");
     }
 
-    public String generatePathname(TmdbShow mediaItem) {
-        return sanitizeFilesystemNames(mediaItem.name + " {tmdb-" + mediaItem.tmdbId + "}");
+    public String generatePathname(TvdbSeries mediaItem) {
+        return sanitizeFilesystemNames(mediaItem.name + " {tvdb-" + mediaItem.id + "}");
     }
 
     public String generateMovieFilename(TmdbMovie mediaItem, FileType fileType) {
@@ -232,20 +236,14 @@ public class FileUtilities {
         return generatePathname(linkedMovie) + subtitleSuffixBuilder(parsedFilename);
     }
 
-    public String generateEpisodeFilename(TmdbEpisode mediaItem, FileType fileType, String seasonAndEpisode, TmdbShow show) {
-        if (mediaItem.name == null || mediaItem.name.isBlank()) {
-            return sanitizeFilesystemNames(show.name + " - " + seasonAndEpisode) + fileType.getExtension();
-        } else return sanitizeFilesystemNames(show.name + " - " + seasonAndEpisode + " - " + mediaItem.name) + fileType.getExtension();
-    }
-
-    public String generateEpisodeFilename(TmdbEpisode episode, Show show, FileType fileType) {
+    private String buildSeasonAndEpisodeString(TvdbEpisode episode, Show show) {
         StringBuilder seasonAndEpisodeString = new StringBuilder();
 
         // Build the season part of the string
-        if (episode.seasonNum > 9) {
+        if (episode.seasonNumber > 9) {
             seasonAndEpisodeString.append("s");
         } else seasonAndEpisodeString.append("s0");
-        seasonAndEpisodeString.append(episode.seasonNum);
+        seasonAndEpisodeString.append(episode.seasonNumber);
 
         // Build the episode part of the string
         if (episode.number > 9) {
@@ -253,14 +251,17 @@ public class FileUtilities {
         } else seasonAndEpisodeString.append("e0");
         seasonAndEpisodeString.append(episode.number);
 
-        // Return the built filename
-        if (StringUtils.isBlank(episode.name)) {
-            return sanitizeFilesystemNames(show.name + " - " + seasonAndEpisodeString) + fileType.getExtension();
-        } else return sanitizeFilesystemNames(show.name + " - " + seasonAndEpisodeString + " - " + episode.name) + fileType.getExtension();
+        return seasonAndEpisodeString.toString();
     }
 
-    public String generateEpisodeSubtitleFilename(TmdbShow linkedShow, String seasonAndEpisode, ParsedSubtitleFilename parsedFilename) {
-        return sanitizeFilesystemNames(linkedShow.name + " - " + seasonAndEpisode) + subtitleSuffixBuilder(parsedFilename);
+    public String generateEpisodeFilename(TvdbEpisode episode, Show show, FileType fileType) {
+        if (StringUtils.isBlank(episode.name)) {
+            return sanitizeFilesystemNames(show.name + " - " + buildSeasonAndEpisodeString(episode, show)) + fileType.getExtension();
+        } else return sanitizeFilesystemNames(show.name + " - " + buildSeasonAndEpisodeString(episode, show) + " - " + episode.name) + fileType.getExtension();
+    }
+
+    public String generateEpisodeSubtitleFilename(TvdbEpisode linkedEpisode, Show linkedShow, ParsedSubtitleFilename parsedFilename) {
+        return sanitizeFilesystemNames(linkedShow.name + " - " + buildSeasonAndEpisodeString(linkedEpisode, linkedShow)) + subtitleSuffixBuilder(parsedFilename);
     }
 
     public String sanitizeFilesystemNames(String input) {

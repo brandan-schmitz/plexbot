@@ -7,6 +7,9 @@ import net.celestialdata.plexbot.clients.models.rdb.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUser;
 import net.celestialdata.plexbot.clients.models.syncthing.SyncthingCompletionResponse;
 import net.celestialdata.plexbot.clients.models.tmdb.*;
+import net.celestialdata.plexbot.clients.models.tvdb.TvdbLoginRequestBody;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.*;
+import net.celestialdata.plexbot.clients.models.tvdb.responses.TvdbAuthResponse;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovie;
 import net.celestialdata.plexbot.clients.services.*;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -28,6 +31,14 @@ public class ResourceTester {
     @Inject
     @RestClient
     RdbService rdbService;
+
+    @Inject
+    @RestClient
+    TvdbAuthorizationService tvdbAuthorizationService;
+
+    @Inject
+    @RestClient
+    TvdbService tvdbService;
 
     @Inject
     @RestClient
@@ -151,6 +162,77 @@ public class ResourceTester {
     @Consumes("application/x-www-form-urlencoded")
     public RdbUnrestrictedLink unrestrictLink(@FormParam("link") String link) {
         return rdbService.unrestrictLink(link);
+    }
+
+    @POST
+    @Path("/tvdb/login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public TvdbAuthResponse login(TvdbLoginRequestBody loginBody) {
+        return tvdbAuthorizationService.login(loginBody);
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("/tvdb/episodes/{id}")
+    public TvdbEpisode getEpisode(@PathParam("id") String id) {
+        return tvdbService.getEpisode(id).episode;
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("/tvdb/episodes/{id}/extended")
+    public TvdbExtendedEpisode getExtendedEpisode(@PathParam("id") String id) {
+        return tvdbService.getExtendedEpisode(id).extendedEpisode;
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("/tvdb/movies/{id}")
+    public TvdbMovie getMovie(@PathParam("id") String id) {
+        return tvdbService.getMovie(id).movie;
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("/tvdb/movies/{id}/extended")
+    public TvdbExtendedMovie getExtendedMovie(@PathParam("id") String id) {
+        return tvdbService.getExtendedMovie(id).extendedMovie;
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("/tvdb/seasons/{id}")
+    public TvdbSeason getSeason(@PathParam("id") String id) {
+        return tvdbService.getSeason(id).season;
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("/tvdb/seasons/{id}/extended")
+    public TvdbExtendedSeason getExtendedSeason(@PathParam("id") String id) {
+        return tvdbService.getExtendedSeason(id).extendedSeason;
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("/tvdb/series/{id}")
+    public TvdbSeries getSeries(@PathParam("id") Long id) {
+        return tvdbService.getSeries(id).series;
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("/tvdb/series/{id}/extended")
+    public TvdbExtendedSeries getExtendedSeries(@PathParam("id") String id) {
+        return tvdbService.getExtendedSeries(id).extendedSeries;
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("/tvdb/series/{id}/episodes/official")
+    public List<TvdbEpisode> getSeriesEpisodes(@PathParam("id") String id) {
+        return tvdbService.getSeriesEpisodes(id).seriesEpisodes.episodes;
     }
 
     @GET

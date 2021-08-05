@@ -59,7 +59,8 @@ public class UpgradableMovieDao {
 
     @Transactional
     public boolean existsByMovie(Movie movie) {
-        return UpgradableMovie.count("movie", movie) == 1;
+        Movie linkedMovie = Movie.findById(movie.id);
+        return UpgradableMovie.count("movie", linkedMovie) == 1;
     }
 
     @Transactional
@@ -89,7 +90,7 @@ public class UpgradableMovieDao {
                     .send(discordApi.getTextChannelById(upgradeApprovalChannel).orElseThrow())
                     .exceptionally(ExceptionLogger.get()).join();
 
-            entity.movie = upgradeMovie;
+            entity.movie = Movie.findById(upgradeMovie.id);
             entity.newResolution = newResolution;
             entity.messageId = upgradeMessage.getId();
             entity.persist();

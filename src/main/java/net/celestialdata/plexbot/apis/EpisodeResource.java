@@ -24,9 +24,9 @@ public class EpisodeResource {
     EpisodeSubtitleDao episodeSubtitleDao;
 
     @GET
-    @Path("/{tmdb_id}")
-    public Episode get(@PathParam("tmdb_id") long tmdbId) {
-        return episodeDao.getByTmdbId(tmdbId);
+    @Path("/{tvdb_id}")
+    public Episode get(@PathParam("tvdb_id") long tvdbId) {
+        return episodeDao.getByTvdbId(tvdbId);
     }
 
     @GET
