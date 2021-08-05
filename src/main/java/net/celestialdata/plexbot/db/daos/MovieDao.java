@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.List;
 
-@SuppressWarnings({"unused"})
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 @ApplicationScoped
 public class MovieDao {
 
@@ -21,112 +21,84 @@ public class MovieDao {
     @Inject
     FileUtilities fileUtilities;
 
+    @Transactional
     public List<Movie> listALl() {
         return Movie.listAll();
     }
 
+    @Transactional
     public Movie get(int id) {
         return Movie.findById(id);
     }
 
+    @Transactional
     public Movie getByTmdbId(long tmdbId) {
         return Movie.find("tmdbId", tmdbId).firstResult();
     }
 
+    @Transactional
     public Movie getByImdbId(String imdbId) {
         return Movie.find("imdbId", imdbId).firstResult();
     }
 
+    @Transactional
     public Movie getByFilename(String filename) {
         return Movie.find("filename", filename).firstResult();
     }
 
+    @Transactional
     public boolean exists(int id) {
         return Movie.count("id", id) == 1;
     }
 
+    @Transactional
     public boolean existsByTmdbId(long tmdbId) {
         return Movie.count("tmdbId", tmdbId) == 1;
     }
 
+    @Transactional
     public boolean existsByImdbId(String imdbId) {
         return Movie.count("imdbId", imdbId) == 1;
     }
 
+    @SuppressWarnings("DuplicatedCode")
+    @Transactional
     public Movie createOrUpdate(TmdbMovie movieData, String filename) {
         var movieFileData = fileUtilities.getMediaInfo(movieFolder + fileUtilities.generatePathname(movieData) + "/" + filename);
         var fileType = FileType.determineFiletype(filename);
 
-        Movie entity = new Movie();
-        entity.tmdbId = movieData.tmdbId;
-        entity.imdbId = movieData.imdbId;
-        entity.title = movieData.title;
-        entity.year = movieData.getYear();
-        entity.filename = filename;
-        entity.filetype = fileType.getTypeString();
-        entity.folderName = fileUtilities.generatePathname(movieData);
-        entity.resolution = movieFileData.resolution();
-        entity.height = movieFileData.height;
-        entity.width = movieFileData.width;
-        entity.duration = movieFileData.duration;
-        entity.codec = movieFileData.codec;
-        entity.isOptimized = movieFileData.isOptimized();
-
-        return createOrUpdate(entity);
-    }
-
-    @SuppressWarnings("DuplicatedCode")
-    @Transactional
-    public Movie createOrUpdate(Movie movie) {
-        if (movie.id != null && exists(movie.id)) {
-            Movie entity = Movie.findById(movie.id);
-            entity.tmdbId = movie.tmdbId;
-            entity.imdbId = movie.imdbId;
-            entity.title = movie.title;
-            entity.year = movie.year;
-            entity.resolution = movie.resolution;
-            entity.height = movie.height;
-            entity.width = movie.width;
-            entity.duration = movie.duration;
-            entity.codec = movie.codec;
-            entity.filename = movie.filename;
-            entity.filetype = movie.filetype;
-            entity.folderName = movie.folderName;
-            entity.isOptimized = movie.isOptimized;
-            return entity;
-        } else if (movie.tmdbId != null && existsByTmdbId(movie.tmdbId)) {
-            Movie entity = getByTmdbId(movie.tmdbId);
-            entity.imdbId = movie.imdbId;
-            entity.title = movie.title;
-            entity.year = movie.year;
-            entity.resolution = movie.resolution;
-            entity.height = movie.height;
-            entity.width = movie.width;
-            entity.duration = movie.duration;
-            entity.codec = movie.codec;
-            entity.filename = movie.filename;
-            entity.filetype = movie.filetype;
-            entity.folderName = movie.folderName;
-            entity.isOptimized = movie.isOptimized;
-            return entity;
-        } else if (movie.imdbId != null && existsByImdbId(movie.imdbId)) {
-            Movie entity = getByImdbId(movie.imdbId);
-            entity.tmdbId = movie.tmdbId;
-            entity.title = movie.title;
-            entity.year = movie.year;
-            entity.resolution = movie.resolution;
-            entity.height = movie.height;
-            entity.width = movie.width;
-            entity.duration = movie.duration;
-            entity.codec = movie.codec;
-            entity.filename = movie.filename;
-            entity.filetype = movie.filetype;
-            entity.folderName = movie.folderName;
-            entity.isOptimized = movie.isOptimized;
+        if (existsByTmdbId(movieData.tmdbId)) {
+            Movie entity = Movie.find("tmdbId", movieData.tmdbId).firstResult();
+            entity.imdbId = movieData.imdbId;
+            entity.title = movieData.title;
+            entity.year = movieData.getYear();
+            entity.filename = filename;
+            entity.filetype = fileType.getTypeString();
+            entity.folderName = fileUtilities.generatePathname(movieData);
+            entity.resolution = movieFileData.resolution();
+            entity.height = movieFileData.height;
+            entity.width = movieFileData.width;
+            entity.duration = movieFileData.duration;
+            entity.codec = movieFileData.codec;
+            entity.isOptimized = movieFileData.isOptimized();
             return entity;
         } else {
-            movie.persist();
-            return movie;
+            Movie entity = new Movie();
+            entity.tmdbId = movieData.tmdbId;
+            entity.imdbId = movieData.imdbId;
+            entity.title = movieData.title;
+            entity.year = movieData.getYear();
+            entity.filename = filename;
+            entity.filetype = fileType.getTypeString();
+            entity.folderName = fileUtilities.generatePathname(movieData);
+            entity.resolution = movieFileData.resolution();
+            entity.height = movieFileData.height;
+            entity.width = movieFileData.width;
+            entity.duration = movieFileData.duration;
+            entity.codec = movieFileData.codec;
+            entity.isOptimized = movieFileData.isOptimized();
+            entity.persist();
+            return entity;
         }
     }
 

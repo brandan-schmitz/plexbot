@@ -10,31 +10,35 @@ import java.util.List;
 @ApplicationScoped
 public class ShowDao {
 
+    @Transactional
     public List<Show> listALl() {
         return Show.listAll();
     }
 
+    @Transactional
     public Show get(int id) {
         return Show.findById(id);
     }
 
+    @Transactional
     public Show getByTmdbId(long tmdbId) {
         return Show.find("tmdbId", tmdbId).firstResult();
     }
 
+    @Transactional
     public boolean exists(int id) {
         return Show.count("id", id) == 1;
     }
 
+    @Transactional
     public boolean existsByTmdbId(long tmdbId) {
         return Show.count("tmdbId", tmdbId) == 1;
     }
 
-    @SuppressWarnings("DuplicatedCode")
     @Transactional
     public Show create(long tmdbId, String name, String foldername) {
         if (existsByTmdbId(tmdbId)) {
-            return getByTmdbId(tmdbId);
+            return Show.find("tmdbId", tmdbId).firstResult();
         } else {
             Show entity = new Show();
             entity.tmdbId = tmdbId;
@@ -48,9 +52,9 @@ public class ShowDao {
     @Transactional
     public Show update(int id, Show updatedItem) {
         Show entity = Show.findById(id);
-        entity.tmdbId = updatedItem.tmdbId;
         entity.name = updatedItem.name;
-        entity.foldername = updatedItem.foldername;
+        entity.foldername = updatedItem.name;
+        entity.tmdbId = updatedItem.tmdbId;
         return entity;
     }
 
@@ -68,7 +72,7 @@ public class ShowDao {
 
     @Transactional
     public void deleteByTvdbId(long tvdbId) {
-        Show entity = Show.find("tvdbId", tvdbId).firstResult();
+        Show entity = Show.find("tmdbId", tvdbId).firstResult();
         entity.delete();
     }
 }

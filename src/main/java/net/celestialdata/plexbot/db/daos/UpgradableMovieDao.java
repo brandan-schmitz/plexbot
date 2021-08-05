@@ -32,26 +32,32 @@ public class UpgradableMovieDao {
     @RestClient
     TmdbService tmdbService;
 
+    @Transactional
     public List<UpgradableMovie> listALl() {
         return UpgradableMovie.listAll();
     }
 
+    @Transactional
     public UpgradableMovie get(int id) {
         return UpgradableMovie.findById(id);
     }
 
+    @Transactional
     public UpgradableMovie getByMessageId(long messageId) {
         return UpgradableMovie.find("messageId", messageId).firstResult();
     }
 
+    @Transactional
     public UpgradableMovie getByMovie(Movie movie) {
         return UpgradableMovie.find("movie", movie).firstResult();
     }
 
+    @Transactional
     public boolean exists(int id) {
         return UpgradableMovie.count("id", id) == 1;
     }
 
+    @Transactional
     public boolean existsByMovie(Movie movie) {
         return UpgradableMovie.count("movie", movie) == 1;
     }

@@ -3,19 +3,15 @@ package net.celestialdata.plexbot.db.daos;
 import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
 import net.celestialdata.plexbot.db.entities.Movie;
 import net.celestialdata.plexbot.db.entities.WaitlistMovie;
+import net.celestialdata.plexbot.discord.MessageFormatter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.MessageBuilder;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import java.awt.*;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.List;
 
 @SuppressWarnings({"unused"})
@@ -28,38 +24,50 @@ public class WaitlistMovieDao {
     @Inject
     DiscordApi discordApi;
 
+    @Inject
+    MessageFormatter messageFormatter;
+
+    @Transactional
     public List<WaitlistMovie> listALl() {
         return WaitlistMovie.listAll();
     }
 
+    @Transactional
     public WaitlistMovie get(int id) {
         return WaitlistMovie.findById(id);
     }
 
+    @Transactional
     public WaitlistMovie getByTmdbId(long tmdbId) {
         return WaitlistMovie.find("tmdbId", tmdbId).firstResult();
     }
 
+    @Transactional
     public WaitlistMovie getByImdbId(String imdbId) {
         return WaitlistMovie.find("imdbId", imdbId).firstResult();
     }
 
+    @Transactional
     public Movie getByMessageId(Long messageId) {
         return WaitlistMovie.find("messageId", messageId).firstResult();
     }
 
+    @Transactional
     public boolean exists(int id) {
         return WaitlistMovie.count("id", id) == 1;
     }
 
+    @Transactional
     public boolean existsByTmdbId(long tmdbId) {
         return WaitlistMovie.count("tmdbId", tmdbId) == 1;
     }
 
+    @Transactional
     public boolean existsByImdbId(String imdbId) {
         return WaitlistMovie.count("imdbId", imdbId) == 1;
     }
 
+    @Transactional
     public boolean existsByMessageId(long messageId) {
         return WaitlistMovie.count("messageId", messageId) == 1;
     }
@@ -71,17 +79,7 @@ public class WaitlistMovieDao {
             return getByTmdbId(movie.tmdbId);
         } else {
             var waitlistMessage = new MessageBuilder()
-                    .setEmbed(new EmbedBuilder()
-                            .setTitle("Movie Requested")
-                            .addInlineField("Title:", "```" + movie.title + "```")
-                            .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
-                            .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
-                            .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
-                            .addField("Overview:", "```" + movie.getOverview() + "```")
-                            .setImage(movie.getPoster())
-                            .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                                    .format(ZonedDateTime.now()) + " CST")
-                            .setColor(Color.BLUE))
+                    .setEmbed(messageFormatter.waitlistNotification(movie))
                     .send(discordApi.getTextChannelById(movieWaitlistChannel).orElseThrow())
                     .exceptionally(ExceptionLogger.get()).join();
 
@@ -96,18 +94,6 @@ public class WaitlistMovieDao {
             entity.persist();
             return entity;
         }
-    }
-
-    @Transactional
-    public WaitlistMovie update(int id, WaitlistMovie updatedItem) {
-        WaitlistMovie entity = WaitlistMovie.findById(id);
-        entity.tmdbId = updatedItem.tmdbId;
-        entity.imdbId = updatedItem.imdbId;
-        entity.title = updatedItem.title;
-        entity.year = updatedItem.year;
-        entity.requestedBy = updatedItem.requestedBy;
-        entity.messageId = updatedItem.messageId;
-        return entity;
     }
 
     @Transactional

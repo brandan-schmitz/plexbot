@@ -6,14 +6,15 @@ import org.eclipse.microprofile.config.ConfigProvider;
 
 import javax.annotation.Nullable;
 
+@SuppressWarnings("unused")
 public class TmdbEpisode {
-
     @JsonAlias(value = "id")
     public Long tmdbId;
 
     @JsonAlias(value = "show_id")
     public Long showId;
 
+    @JsonAlias(value = "air_date")
     public String date;
 
     @JsonAlias(value = "episode_number")

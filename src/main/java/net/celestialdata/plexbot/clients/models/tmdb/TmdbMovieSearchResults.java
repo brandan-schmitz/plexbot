@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import javax.annotation.Nullable;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class TmdbMovieSearchResults {
 
     public Integer page;

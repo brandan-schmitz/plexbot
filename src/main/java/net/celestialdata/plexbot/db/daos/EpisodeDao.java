@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.List;
 
-@SuppressWarnings({"unused"})
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 @ApplicationScoped
 public class EpisodeDao {
 
@@ -22,120 +22,89 @@ public class EpisodeDao {
     @Inject
     FileUtilities fileUtilities;
 
+    @Transactional
     public List<Episode> listALl() {
         return Episode.listAll();
     }
 
+    @Transactional
     public Episode get(int id) {
         return Episode.findById(id);
     }
 
+    @Transactional
     public Episode getByTmdbId(long tmdbId) {
         return Episode.find("tmdbId", tmdbId).firstResult();
     }
 
+    @Transactional
     public Episode getByTvdbId(long tvdbId) {
         return Episode.find("tvdbId", tvdbId).firstResult();
     }
 
+    @Transactional
     public Episode getByFilename(String filename) {
         return Episode.find("filename", filename).firstResult();
     }
 
+    @Transactional
     public boolean exists(int id) {
         return Episode.count("id", id) == 1;
     }
 
+    @Transactional
     public boolean existsByTmdbId(long tmdbId) {
         return Episode.count("tmdbId", tmdbId) == 1;
     }
 
+    @Transactional
     public boolean existsByTvdbId(long tvdbId) {
         return Episode.count("tvdbId", tvdbId) == 1;
     }
 
-    public Episode createOrUpdate(TmdbEpisode episodeData, long tvdbId, String filename, Show show) {
-        var episodeFileData = fileUtilities.getMediaInfo(tvFolder + show.foldername + "/Season " + episodeData.seasonNum + "/" + filename);
-        var fileType = FileType.determineFiletype(filename);
-
-        Episode entity = new Episode();
-        entity.tmdbId = episodeData.tmdbId;
-        entity.tvdbId = tvdbId;
-        entity.title = episodeData.name;
-        entity.date = episodeData.date;
-        entity.number = episodeData.number;
-        entity.season = episodeData.seasonNum;
-        entity.show = show;
-        entity.filename = filename;
-        entity.filetype = fileType.getTypeString();
-        entity.height = episodeFileData.height;
-        entity.width = episodeFileData.width;
-        entity.duration = episodeFileData.duration;
-        entity.codec = episodeFileData.codec;
-        entity.resolution = episodeFileData.resolution();
-        entity.isOptimized = episodeFileData.isOptimized();
-
-        return createOrUpdate(entity);
-    }
-
     @SuppressWarnings("DuplicatedCode")
     @Transactional
-    public Episode createOrUpdate(Episode episode) {
-        if (episode.id != null && exists(episode.id)) {
-            Episode entity = Episode.findById(episode.id);
-            entity.tmdbId = episode.tmdbId;
-            entity.tvdbId = episode.tvdbId;
-            entity.title = episode.title;
-            entity.date = episode.date;
-            entity.number = episode.number;
-            entity.season = episode.season;
-            entity.show = episode.show;
-            entity.filename = episode.filename;
-            entity.filetype = episode.filetype;
-            entity.height = episode.height;
-            entity.width = episode.width;
-            entity.duration = episode.duration;
-            entity.codec = episode.codec;
-            entity.resolution = episode.resolution;
-            entity.isOptimized = episode.isOptimized;
-            return entity;
-        } else if (episode.tmdbId != null && existsByTmdbId(episode.tmdbId)) {
-            Episode entity = getByTmdbId(episode.tmdbId);
-            entity.tvdbId = episode.tvdbId;
-            entity.title = episode.title;
-            entity.date = episode.date;
-            entity.number = episode.number;
-            entity.season = episode.season;
-            entity.show = episode.show;
-            entity.filename = episode.filename;
-            entity.filetype = episode.filetype;
-            entity.height = episode.height;
-            entity.width = episode.width;
-            entity.duration = episode.duration;
-            entity.codec = episode.codec;
-            entity.resolution = episode.resolution;
-            entity.isOptimized = episode.isOptimized;
-            return entity;
-        } else if (episode.tvdbId != null && existsByTvdbId(episode.tvdbId)) {
-            Episode entity = getByTvdbId(episode.tvdbId);
-            entity.tmdbId = episode.tmdbId;
-            entity.title = episode.title;
-            entity.date = episode.date;
-            entity.number = episode.number;
-            entity.season = episode.season;
-            entity.show = episode.show;
-            entity.filename = episode.filename;
-            entity.filetype = episode.filetype;
-            entity.height = episode.height;
-            entity.width = episode.width;
-            entity.duration = episode.duration;
-            entity.codec = episode.codec;
-            entity.resolution = episode.resolution;
-            entity.isOptimized = episode.isOptimized;
+    public Episode createOrUpdate(TmdbEpisode episodeData, long tvdbId, String filename, int show) {
+        Show showData = Show.findById(show);
+        var episodeFileData = fileUtilities.getMediaInfo(tvFolder + showData.foldername + "/Season " + episodeData.seasonNum + "/" + filename);
+        var fileType = FileType.determineFiletype(filename);
+
+        if (existsByTmdbId(episodeData.tmdbId)) {
+            Episode entity = Episode.find("tmdbId", episodeData.tmdbId).firstResult();
+            entity.tvdbId = tvdbId;
+            entity.title = episodeData.name;
+            entity.date = episodeData.date;
+            entity.number = episodeData.number;
+            entity.season = episodeData.seasonNum;
+            entity.show = showData;
+            entity.filename = filename;
+            entity.filetype = fileType.getTypeString();
+            entity.height = episodeFileData.height;
+            entity.width = episodeFileData.width;
+            entity.duration = episodeFileData.duration;
+            entity.codec = episodeFileData.codec;
+            entity.resolution = episodeFileData.resolution();
+            entity.isOptimized = episodeFileData.isOptimized();
             return entity;
         } else {
-            episode.persist();
-            return episode;
+            Episode entity = new Episode();
+            entity.tmdbId = episodeData.tmdbId;
+            entity.tvdbId = tvdbId;
+            entity.title = episodeData.name;
+            entity.date = episodeData.date;
+            entity.number = episodeData.number;
+            entity.season = episodeData.seasonNum;
+            entity.show = showData;
+            entity.filename = filename;
+            entity.filetype = fileType.getTypeString();
+            entity.height = episodeFileData.height;
+            entity.width = episodeFileData.width;
+            entity.duration = episodeFileData.duration;
+            entity.codec = episodeFileData.codec;
+            entity.resolution = episodeFileData.resolution();
+            entity.isOptimized = episodeFileData.isOptimized();
+            entity.persist();
+            return entity;
         }
     }
 

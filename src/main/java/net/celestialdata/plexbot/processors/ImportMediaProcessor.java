@@ -455,7 +455,7 @@ public class ImportMediaProcessor extends BotProcess {
 
                     // Verify the ID is a tvdb ID and not an IMDb ID
                     var parsedId = filesAreSubtitles ? ((ParsedSubtitleFilename) parsedFilename).id : ((ParsedMediaFilename) parsedFilename).id;
-                    if (parsedId.matches("[^0-9].*")) {
+                    if (!parsedId.matches("^[0-9]{1,12}")) {
                         new MessageBuilder()
                                 .setEmbed(messageFormatter.warningMessage("The following file in the episodes import folder is not using a valid TVDB id. " +
                                         "Please make sure that only files using valid TVDB ids are in the episodes import folder.\n\n" + file.getName()))
@@ -481,7 +481,7 @@ public class ImportMediaProcessor extends BotProcess {
                     }
 
                     // Use the find endpoint on tmdb to get a list of matching TMDB episodes to a TVDB ID
-                    var findResponse = tmdbService.findByExternalId(parsedId, TmdbSourceIdType.TVDB);
+                    var findResponse = tmdbService.findByExternalId(parsedId, TmdbSourceIdType.TVDB.getValue());
 
                     // Check to see if the find was not successful
                     if (!findResponse.isSuccessful() || findResponse.episodes.isEmpty()) {
@@ -500,7 +500,7 @@ public class ImportMediaProcessor extends BotProcess {
                             findResponse.episodes.get(0).seasonNum, findResponse.episodes.get(0).number);
 
                     // Fetch information about this episodes show in TMDB
-                    var showResponse = tmdbService.getShow(episodeResponse.showId);
+                    var showResponse = tmdbService.getShow(findResponse.episodes.get(0).showId);
 
                     // Ensure that this request was also successful
                     if (!showResponse.isSuccessful()) {
@@ -595,9 +595,9 @@ public class ImportMediaProcessor extends BotProcess {
                     // Add the item to the database
                     if (filesAreSubtitles) {
                         var linkedEpisode = episodeDao.getByTmdbId(episodeResponse.tmdbId);
-                        episodeSubtitleDao.create(linkedEpisode, (ParsedSubtitleFilename) parsedFilename, itemFilename);
+                        episodeSubtitleDao.createOrUpdate(linkedEpisode.id, (ParsedSubtitleFilename) parsedFilename, itemFilename);
                     } else {
-                        episodeDao.createOrUpdate(episodeResponse, Long.parseLong(parsedId), itemFilename, show);
+                        episodeDao.createOrUpdate(episodeResponse, Long.parseLong(parsedId), itemFilename, show.id);
                     }
 
                     // Send a message showing the episode has been added to the server if it is an episode
@@ -659,7 +659,7 @@ public class ImportMediaProcessor extends BotProcess {
 
                     // Verify the ID is a IMDB ID or a TMDB ID
                     var parsedId = filesAreSubtitles ? ((ParsedSubtitleFilename) parsedFilename).id : ((ParsedMediaFilename) parsedFilename).id;
-                    if (!parsedId.matches("^tt[0-9]{7,8}") || !parsedId.matches("^[0-9]{1,12}")) {
+                    if (!parsedId.matches("^tt[0-9]{7,8}") && !parsedId.matches("^[0-9]{1,12}")) {
                         new MessageBuilder()
                                 .setEmbed(messageFormatter.warningMessage("The following file in the movies import folder is not using a valid IMDB or TMDB id. " +
                                         "Please make sure that only files using valid IMDB or TMDB IDs are in the movies import folder.\n\n" + file.getName()))
@@ -675,7 +675,7 @@ public class ImportMediaProcessor extends BotProcess {
                     TmdbMovie movieResponse;
                     if (parsedId.matches("^tt[0-9]{7,8}")) {
                         // Find the movie using the find endpoint since this is a IMDB ID
-                        var results = tmdbService.findByExternalId(parsedId, TmdbSourceIdType.IMDB);
+                        var results = tmdbService.findByExternalId(parsedId, TmdbSourceIdType.IMDB.getValue());
 
                         // Verify that the search was successful, and if so select the first result as that should be the correct movie
                         if (results.isSuccessful() && !results.movies.isEmpty()) {
@@ -792,7 +792,7 @@ public class ImportMediaProcessor extends BotProcess {
                     // Add the item to the database
                     if (filesAreSubtitles) {
                         var linkedMovie = movieDao.getByTmdbId(movieResponse.tmdbId);
-                        movieSubtitleDao.create(linkedMovie, (ParsedSubtitleFilename) parsedFilename, itemFilename);
+                        movieSubtitleDao.createOrUpdate(linkedMovie.id, (ParsedSubtitleFilename) parsedFilename, itemFilename);
                     } else {
                         movieDao.createOrUpdate(movieResponse, itemFilename);
                     }

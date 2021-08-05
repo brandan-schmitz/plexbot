@@ -27,22 +27,27 @@ public class CorruptedMediaItemDao {
     @Inject
     DiscordApi discordApi;
 
+    @Transactional
     public List<CorruptedMediaItem> listALl() {
         return CorruptedMediaItem.listAll();
     }
 
+    @Transactional
     public CorruptedMediaItem get(int id) {
         return CorruptedMediaItem.findById(id);
     }
 
+    @Transactional
     public CorruptedMediaItem getByMessageId(long messageId) {
         return CorruptedMediaItem.find("messageId", messageId).firstResult();
     }
 
+    @Transactional
     public CorruptedMediaItem getByAbsolutePath(String absolutePath) {
         return CorruptedMediaItem.find("absolutePath", absolutePath).firstResult();
     }
 
+    @Transactional
     public boolean existsByAbsolutePath(String absolutePath) {
         return CorruptedMediaItem.count("absolutePath", absolutePath) == 1;
     }

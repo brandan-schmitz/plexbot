@@ -177,7 +177,6 @@ public class MessageFormatter {
                 .addInlineField("Title:", "```" + movie.title + "```")
                 .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
                 .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
-                .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
                 .addField("Overview:", "```" + movie.getOverview() + "```")
                 .setImage(movie.getPoster())
                 .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)

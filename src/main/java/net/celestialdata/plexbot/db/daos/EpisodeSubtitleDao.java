@@ -8,71 +8,65 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 import java.util.List;
 
-@SuppressWarnings({"unused"})
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 @ApplicationScoped
 public class EpisodeSubtitleDao {
 
+    @Transactional
     public List<EpisodeSubtitle> listALl() {
         return EpisodeSubtitle.listAll();
     }
 
+    @Transactional
     public EpisodeSubtitle get(int id) {
         return EpisodeSubtitle.findById(id);
     }
 
+    @Transactional
     public EpisodeSubtitle getByFilename(String filename) {
         return EpisodeSubtitle.find("filename", filename).firstResult();
     }
 
+    @Transactional
     public List<EpisodeSubtitle> getByEpisode(Episode episode) {
         return EpisodeSubtitle.list("episode", episode);
     }
 
+    @Transactional
     public boolean exists(int id) {
         return EpisodeSubtitle.count("id", id) == 1;
     }
 
+    @Transactional
     public boolean existsByFilename(String filename) {
         return EpisodeSubtitle.count("filename", filename) == 1;
     }
 
-    public EpisodeSubtitle create(Episode episode, ParsedSubtitleFilename parsedSubtitleFilename, String finalFilename) {
-        return create(episode, parsedSubtitleFilename.language, finalFilename, parsedSubtitleFilename.fileType.getTypeString(),
-                parsedSubtitleFilename.isForced, parsedSubtitleFilename.isSDH, parsedSubtitleFilename.isCC);
-    }
-
+    @SuppressWarnings("DuplicatedCode")
     @Transactional
-    public EpisodeSubtitle create(Episode episode, String language, String filename, String filetype, boolean isForced, boolean isSdh, boolean isCc) {
-        if (existsByFilename(filename)) {
-            return getByFilename(filename);
+    public EpisodeSubtitle createOrUpdate(int linkedEpisode, ParsedSubtitleFilename parsedSubtitleFilename, String finalFilename) {
+        Episode episode = Episode.findById(linkedEpisode);
+        if (existsByFilename(finalFilename)) {
+            EpisodeSubtitle entity = EpisodeSubtitle.find("filename", finalFilename).firstResult();
+            entity.episode = episode;
+            entity.language = parsedSubtitleFilename.language;
+            entity.filetype = parsedSubtitleFilename.fileType.getTypeString();
+            entity.isForced = parsedSubtitleFilename.isForced;
+            entity.isSDH = parsedSubtitleFilename.isSDH;
+            entity.isCC = parsedSubtitleFilename.isCC;
+            return entity;
         } else {
             EpisodeSubtitle entity = new EpisodeSubtitle();
-            entity.language = language;
             entity.episode = episode;
-            entity.filename = filename;
-            entity.filetype = filetype;
-            entity.isForced = isForced;
-            entity.isSDH = isSdh;
-            entity.isCC = isCc;
+            entity.language = parsedSubtitleFilename.language;
+            entity.filename = finalFilename;
+            entity.filetype = parsedSubtitleFilename.fileType.getTypeString();
+            entity.isForced = parsedSubtitleFilename.isForced;
+            entity.isSDH = parsedSubtitleFilename.isSDH;
+            entity.isCC = parsedSubtitleFilename.isCC;
             entity.persist();
-
             return entity;
         }
-    }
-
-    @Transactional
-    public EpisodeSubtitle update(int id, EpisodeSubtitle subtitle) {
-        EpisodeSubtitle entity = EpisodeSubtitle.findById(id);
-
-        entity.language = subtitle.language;
-        entity.episode = subtitle.episode;
-        entity.filename = subtitle.filename;
-        entity.filetype = subtitle.filetype;
-        entity.isForced = subtitle.isForced;
-        entity.isSDH = subtitle.isSDH;
-        entity.isCC = subtitle.isCC;
-
-        return entity;
     }
 
     @Transactional

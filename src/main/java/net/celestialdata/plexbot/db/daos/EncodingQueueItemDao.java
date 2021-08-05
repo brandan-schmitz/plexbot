@@ -10,22 +10,27 @@ import java.util.List;
 @ApplicationScoped
 public class EncodingQueueItemDao {
 
+    @Transactional
     public List<EncodingQueueItem> listALl() {
         return EncodingQueueItem.listAll();
     }
 
+    @Transactional
     public EncodingQueueItem get(int id) {
         return EncodingQueueItem.findById(id);
     }
 
+    @Transactional
     public EncodingQueueItem getByTmdbId(long tmdbId) {
         return EncodingQueueItem.find("tmdbId", tmdbId).firstResult();
     }
 
+    @Transactional
     public boolean exists(int id) {
         return EncodingQueueItem.count("id", id) == 1;
     }
 
+    @Transactional
     public boolean existsByTmdbId(long tmdbId) {
         return EncodingQueueItem.count("tmdbId", tmdbId) == 1;
     }

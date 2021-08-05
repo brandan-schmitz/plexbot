@@ -241,7 +241,7 @@ public class RequestMovieCommandProcessor extends BotProcess {
             // Verify that the ID is either a IMDB or TMDB ID
             if (idArgument.matches("^tt[0-9]{7,8}")) {
                 // Fetch any results matching this ID
-                var results = tmdbService.findByExternalId(idArgument, TmdbSourceIdType.IMDB);
+                var results = tmdbService.findByExternalId(idArgument, TmdbSourceIdType.IMDB.getValue());
 
                 // Ensure that the search was successful
                 if (results.isSuccessful()) {

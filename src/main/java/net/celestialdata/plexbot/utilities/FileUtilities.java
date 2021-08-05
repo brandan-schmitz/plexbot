@@ -9,6 +9,7 @@ import net.celestialdata.plexbot.dataobjects.MediaInfoData;
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
 import net.celestialdata.plexbot.db.entities.Episode;
 import net.celestialdata.plexbot.db.entities.Movie;
+import net.celestialdata.plexbot.db.entities.Show;
 import net.celestialdata.plexbot.enumerators.FileType;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -150,6 +151,20 @@ public class FileUtilities {
         return success;
     }
 
+    public boolean createFolder(TmdbShow show) {
+        boolean success = true;
+
+        try {
+            Files.createDirectory(Paths.get(tvFolder + generatePathname(show)));
+        } catch (IOException e) {
+            if (!(e instanceof FileAlreadyExistsException)) {
+                success = false;
+            }
+        }
+
+        return success;
+    }
+
     public boolean createFolder(String folderPath) {
         boolean success = true;
 
@@ -188,7 +203,7 @@ public class FileUtilities {
         return generatePathname(mediaItem) + fileType.getExtension();
     }
 
-    private String subtitleSuffixBuilder(ParsedSubtitleFilename parsedFilename) {
+    public String subtitleSuffixBuilder(ParsedSubtitleFilename parsedFilename) {
         // Create the StringBuilder used to build the file suffix
         var suffixBuilder = new StringBuilder();
 
@@ -221,6 +236,27 @@ public class FileUtilities {
         if (mediaItem.name == null || mediaItem.name.isBlank()) {
             return sanitizeFilesystemNames(show.name + " - " + seasonAndEpisode) + fileType.getExtension();
         } else return sanitizeFilesystemNames(show.name + " - " + seasonAndEpisode + " - " + mediaItem.name) + fileType.getExtension();
+    }
+
+    public String generateEpisodeFilename(TmdbEpisode episode, Show show, FileType fileType) {
+        StringBuilder seasonAndEpisodeString = new StringBuilder();
+
+        // Build the season part of the string
+        if (episode.seasonNum > 9) {
+            seasonAndEpisodeString.append("s");
+        } else seasonAndEpisodeString.append("s0");
+        seasonAndEpisodeString.append(episode.seasonNum);
+
+        // Build the episode part of the string
+        if (episode.number > 9) {
+            seasonAndEpisodeString.append("e");
+        } else seasonAndEpisodeString.append("e0");
+        seasonAndEpisodeString.append(episode.number);
+
+        // Return the built filename
+        if (StringUtils.isBlank(episode.name)) {
+            return sanitizeFilesystemNames(show.name + " - " + seasonAndEpisodeString) + fileType.getExtension();
+        } else return sanitizeFilesystemNames(show.name + " - " + seasonAndEpisodeString + " - " + episode.name) + fileType.getExtension();
     }
 
     public String generateEpisodeSubtitleFilename(TmdbShow linkedShow, String seasonAndEpisode, ParsedSubtitleFilename parsedFilename) {

@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 @SuppressWarnings("unused")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TmdbExternalIds {
-
     @JsonAlias(value = "id")
     public Long tmdbId;
 

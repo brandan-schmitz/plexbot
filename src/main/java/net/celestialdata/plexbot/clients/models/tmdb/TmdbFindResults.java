@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import javax.annotation.Nullable;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class TmdbFindResults {
-
     @JsonAlias(value = "movie_results")
     public List<TmdbMovie> movies;
 

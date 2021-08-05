@@ -91,7 +91,7 @@ public class ResourceTester {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/tmdb/find/{external_id}")
     public TmdbFindResults findByExternalId(@PathParam("external_id") String externalId, @QueryParam("external_source") TmdbSourceIdType sourceIdType) {
-        return tmdbService.findByExternalId(externalId, sourceIdType);
+        return tmdbService.findByExternalId(externalId, sourceIdType.getValue());
     }
 
     @GET

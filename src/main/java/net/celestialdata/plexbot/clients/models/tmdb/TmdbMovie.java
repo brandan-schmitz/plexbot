@@ -6,8 +6,8 @@ import org.eclipse.microprofile.config.ConfigProvider;
 
 import javax.annotation.Nullable;
 
+@SuppressWarnings("unused")
 public class TmdbMovie {
-
     @JsonAlias(value = "id")
     public Long tmdbId;
 
@@ -53,6 +53,6 @@ public class TmdbMovie {
     }
 
     public String getYear() {
-        return releaseDate.substring(0, 3);
+        return releaseDate.substring(0, 4);
     }
 }

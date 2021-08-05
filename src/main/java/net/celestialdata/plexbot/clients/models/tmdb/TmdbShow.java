@@ -6,6 +6,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 
 import javax.annotation.Nullable;
 
+@SuppressWarnings("unused")
 public class TmdbShow {
 
     @JsonAlias(value = "id")

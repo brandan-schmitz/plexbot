@@ -47,7 +47,7 @@ public interface TmdbService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/find/{external_id}")
-    TmdbFindResults findByExternalId(@PathParam("external_id") String externalId, @QueryParam("external_source") TmdbSourceIdType sourceIdType);
+    TmdbFindResults findByExternalId(@PathParam("external_id") String externalId, @QueryParam("external_source") String sourceIdType);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
