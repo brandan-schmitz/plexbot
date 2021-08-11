@@ -130,7 +130,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
         });
     }
 
-    //@Scheduled(every = "168h", delay = 10, delayUnit = TimeUnit.SECONDS)
+    @Scheduled(every = "168h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void verifyDatabase() {
         // Configure the process
         configureProcess("Database Consistency Checker - na%");
