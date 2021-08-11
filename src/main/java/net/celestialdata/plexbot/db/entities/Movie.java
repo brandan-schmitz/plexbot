@@ -14,7 +14,7 @@ public class Movie extends PanacheEntityBase {
     @Column(name = "movie_id", nullable = false)
     public Integer id;
 
-    @Column(name = "movie_tmdb_id", nullable = false)
+    @Column(name = "movie_tmdb_id", nullable = false, unique = true)
     public Long tmdbId;
 
     @Column(name = "movie_imdb_id")
