@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.entities;
+package net.celestialdata.plexbot.db.entities;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
@@ -12,11 +12,11 @@ public class EncodingQueueItem extends PanacheEntityBase {
     @Id
     @Column(name = "item_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    public int id;
+    public Integer id;
 
     @Column(name = "item_type", nullable = false)
-    public String type;
+    public String mediaType;
 
     @Column(name = "item_media_id", nullable = false, unique = true)
-    public String mediaId;
+    public Long mediaId;
 }

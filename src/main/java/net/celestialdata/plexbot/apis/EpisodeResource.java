@@ -1,9 +1,12 @@
 package net.celestialdata.plexbot.apis;
 
-import net.celestialdata.plexbot.entities.Episode;
-import net.celestialdata.plexbot.entities.EpisodeSubtitle;
+import net.celestialdata.plexbot.db.daos.EpisodeDao;
+import net.celestialdata.plexbot.db.daos.EpisodeSubtitleDao;
+import net.celestialdata.plexbot.db.entities.Episode;
+import net.celestialdata.plexbot.db.entities.EpisodeSubtitle;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -14,16 +17,22 @@ import java.util.List;
 @Consumes(MediaType.APPLICATION_JSON)
 public class EpisodeResource {
 
+    @Inject
+    EpisodeDao episodeDao;
+
+    @Inject
+    EpisodeSubtitleDao episodeSubtitleDao;
+
     @GET
-    @Path("/{id}")
-    public Episode get(@PathParam("id") String id) {
-        return Episode.findById(id);
+    @Path("/{tvdb_id}")
+    public Episode get(@PathParam("tvdb_id") long tvdbId) {
+        return episodeDao.getByTvdbId(tvdbId);
     }
 
     @GET
     @Path("/{id}/subtitles")
-    public List<EpisodeSubtitle> getSubtitles(@PathParam("id") String id) {
-        Episode episode = Episode.findById(id);
-        return EpisodeSubtitle.list("episode", episode);
+    public List<EpisodeSubtitle> getSubtitles(@PathParam("id") int id) {
+        Episode episode = episodeDao.get(id);
+        return episodeSubtitleDao.getByEpisode(episode);
     }
 }

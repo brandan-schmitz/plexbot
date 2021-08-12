@@ -21,7 +21,6 @@ public class LazyReferenceBySupplier<T> extends LazyReference<T> {
      *
      * @param valueSupplier the supplier for the value that is called on first query to compute the value
      */
-    @SuppressWarnings("CdiInjectionPointsInspection")
     public LazyReferenceBySupplier(Supplier<T> valueSupplier) {
         this.valueSupplier = requireNonNull(valueSupplier, "value supplier must not be null");
     }

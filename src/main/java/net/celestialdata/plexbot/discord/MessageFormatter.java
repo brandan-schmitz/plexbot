@@ -1,10 +1,11 @@
 package net.celestialdata.plexbot.discord;
 
-import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
-import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbExtendedEpisode;
+import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
+import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbEpisode;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
 import net.celestialdata.plexbot.dataobjects.BotEmojis;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
+import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -53,7 +54,7 @@ public class MessageFormatter {
                 .setColor(Color.YELLOW);
     }
 
-    private EmbedBuilder baseDownloadProgressMessage(OmdbResult movie) {
+    private EmbedBuilder baseDownloadProgressMessage(TmdbMovie movie) {
         return new EmbedBuilder()
                 .setTitle("Download Status")
                 .setDescription("The movie **" + escapeString(movie.title) + "** is being added:")
@@ -110,114 +111,92 @@ public class MessageFormatter {
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Mask download file\n");
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Download movie\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  **Import movie**");
-        } else if (currentStep == MovieDownloadSteps.FINISHED) {
-            stringBuilder.append(BotEmojis.FINISHED_STEP).append("  User selects movie\n");
-            stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Locate movie file\n");
-            stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Mask download file\n");
-            stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Download movie\n");
-            stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Import movie");
         }
 
         return stringBuilder.toString();
     }
 
-    public EmbedBuilder downloadProgressMessage(OmdbResult movie, MovieDownloadSteps currentStep) {
+    public EmbedBuilder downloadProgressMessage(TmdbMovie movie, MovieDownloadSteps currentStep) {
         return baseDownloadProgressMessage(movie).addField("Progress:", downloadProgressStringBuilder(currentStep, 0.00));
     }
 
-    public EmbedBuilder downloadProgressMessage(OmdbResult movie, MovieDownloadSteps currentStep, double percentage) {
+    public EmbedBuilder downloadProgressMessage(TmdbMovie movie, MovieDownloadSteps currentStep, double percentage) {
         return baseDownloadProgressMessage(movie).addField("Progress:", downloadProgressStringBuilder(currentStep, percentage));
     }
 
-    public EmbedBuilder downloadFinishedMessage(OmdbResult movie) {
+    public EmbedBuilder downloadFinishedMessage(TmdbMovie movie) {
         return new EmbedBuilder()
-                .setTitle("Download Status")
-                .setDescription("The movie **" + escapeString(movie.title) + "** has been added:")
-                .addField("Progress:", downloadProgressStringBuilder(MovieDownloadSteps.FINISHED, 0))
-                .addField(escapeString(movie.title),
-                        "**Year:** " + escapeString(movie.year) + "\n" +
-                                "**Director(s):** " + escapeString(movie.director) + "\n" +
-                                "**Plot:** " + escapeString(movie.plot))
+                .setTitle("Movie Added")
+                .addField("Title:", "```" + movie.title + "```")
+                .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
+                .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
+                .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
+                .addField("Overview:", "```" + movie.getOverview() + "```")
                 .setImage(movie.getPoster())
                 .setFooter("Added on: " +
                         DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(ZonedDateTime.now()) + " CST")
                 .setColor(Color.GREEN);
     }
 
-    public EmbedBuilder newMovieNotification(OmdbResult movie) {
+    public EmbedBuilder newMovieNotification(TmdbMovie movie) {
         return new EmbedBuilder()
-                .setTitle(escapeString(movie.title))
-                .setDescription("**Year:** " + escapeString(movie.year) + "\n" +
-                        "**Director(s):** " + escapeString(movie.director) + "\n" +
-                        "**Plot:** " + escapeString(movie.plot))
+                .setTitle("Movie Added")
+                .addField("Title:", "```" + movie.title + "```")
+                .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
+                .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
+                .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
+                .addField("Overview:", "```" + movie.getOverview() + "```")
                 .setImage(movie.getPoster())
                 .setColor(Color.GREEN);
     }
 
-    public EmbedBuilder newEpisodeNotification(TvdbExtendedEpisode episode, TvdbSeries series) {
-        return new EmbedBuilder()
-                .setTitle(escapeString(episode.name))
-                .addField("Show:", escapeString(series.name))
-                .addInlineField("Season:", String.valueOf(episode.seasonNumber))
-                .addInlineField("Episode:", String.valueOf(episode.number))
+    public EmbedBuilder newEpisodeNotification(TvdbEpisode episode, TvdbSeries show, String episodeOverview) {
+        // Create the base embedded message
+        var embed = new EmbedBuilder()
+                .setTitle("Episode Added")
+                .addField("Show Name:", "```" + show.name + "```")
+                .addField("Episode Name:", "```" + episode.name + "```")
+                .addInlineField("Season #:", "```" + episode.seasonNumber + "```")
+                .addInlineField("Episode #:", "```" + episode.number + "```")
+                .addInlineField("TVDB ID:", "```" + episode.id + "```")
                 .setImage(episode.getImage())
                 .setColor(Color.GREEN);
+
+        // Add an episode overview if one is provided
+        if (!StringUtils.isBlank(episodeOverview)) {
+            embed.addField("Episode Overview:", "```" + episodeOverview + "```");
+        }
+
+        // Return the embed message
+        return embed;
     }
 
-    public EmbedBuilder newMovieUserNotification(OmdbResult movie) {
+    public EmbedBuilder newMovieUserNotification(TmdbMovie movie) {
         return new EmbedBuilder()
                 .setTitle("Movie Added")
                 .setDescription("You requested the following movie be added to Celestial Movies Plex Server. This message " +
-                        "is to notify you that the movie is now available on Plex.\n\n" +
-                        "**Title:** " + escapeString(movie.title) + "\n" +
-                        "**Year:** " + escapeString(movie.year) + "\n" +
-                        "**Director(s):** " + escapeString(movie.director) + "\n" +
-                        "**Plot:** " + escapeString(movie.plot))
+                        "is to notify you that the movie is now available on Plex.")
+                .addField("Title:", "```" + movie.title + "```")
+                .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
+                .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
+                .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
+                .addField("Overview:", "```" + movie.getOverview() + "```")
                 .setImage(movie.getPoster())
-                .setColor(Color.GREEN)
-                .setFooter("This message was sent by the Plexbot and no reply will be received to messages sent here.");
+                .setColor(Color.GREEN);
     }
 
-    public EmbedBuilder waitlistNotification(OmdbResult movie) {
+    public EmbedBuilder waitlistNotification(TmdbMovie movie) {
         return new EmbedBuilder()
-                .setTitle(escapeString(movie.title))
-                .setDescription("**Year:** " + escapeString(movie.year) + "\n" +
-                        "**Director(s):** " + escapeString(movie.director) + "\n" +
-                        "**Plot:** " + escapeString(movie.plot))
+                .setTitle("Movie Requested")
+                .addField("Title:", "```" + movie.title + "```")
+                .addInlineField("Release Date:", "```" + movie.releaseDate + "```")
+                .addInlineField("TMDB ID:", "```" + movie.tmdbId + "```")
+                .addInlineField("IMDB ID:", "```" + movie.getImdbId() + "```")
+                .addField("Overview:", "```" + movie.getOverview() + "```")
                 .setImage(movie.getPoster())
-                .setColor(Color.BLUE)
                 .setFooter("Last Checked: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-                        .format(ZonedDateTime.now()) + " CST");
-    }
-
-    public EmbedBuilder upgradeApprovalMessage(OmdbResult movie, int oldResolution, int newResolution) {
-        return new EmbedBuilder()
-                .setTitle("Request to upgrade")
-                .setDescription("The bot has located an improved quality of the following movie and needs your " +
-                        "approval in order to download and upgrade the movie. Please react to this message with a " +
-                        BotEmojis.THUMBS_UP + " emoji if you approve this upgrade."
-                )
-                .addInlineField("Title:", "```" + movie.title + "```")
-                .addInlineField("Year:", "```" + movie.year + "```")
-                .addInlineField("IMDb ID:", "```" + movie.imdbID + "```")
-                .addInlineField("Old Resolution:", "```" + oldResolution + "```")
-                .addInlineField("New Resolution:", "```" + newResolution + "```")
-                .setImage(movie.getPoster())
-                .setColor(Color.GREEN);
-    }
-
-    public EmbedBuilder upgradedNotification(OmdbResult movie, int oldResolution, int newResolution) {
-        return new EmbedBuilder()
-                .setTitle("Movie Quality Upgraded")
-                .setDescription("The bot has located and downloaded a better quality copy of the following movie and it " +
-                        "should now be available for watching on Plex")
-                .addInlineField("Title:", "```" + movie.title + "```")
-                .addInlineField("Year:", "```" + movie.year + "```")
-                .addInlineField("IMDb ID:", "```" + movie.imdbID + "```")
-                .addInlineField("Old Resolution:", "```" + oldResolution + "```")
-                .addInlineField("New Resolution:", "```" + newResolution + "```")
-                .setImage(movie.getPoster())
-                .setColor(Color.GREEN);
+                        .format(ZonedDateTime.now()) + " CST")
+                .setColor(Color.BLUE);
     }
 
     public EmbedBuilder importProgressMessage(String progressMessage) {

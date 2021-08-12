@@ -280,8 +280,10 @@ FolderSettings:
       - "?"
       - "*"
       - "."
+      - "%"
       - "’"
       - "…"
+      - "½"
     replace:
       - original: "·"
         replacement: "-"
@@ -367,11 +369,6 @@ SyncthingSettings:
 ### API Keys ###
 ################
 ApiKeys:
-  # The API key for all requests to the OMDb API for getting IMDB OmdbMovie ID's.
-  # You can get an API ket for this at http://www.omdbapi.com/ however it is recommended to purchase
-  # at least the Basic plan through https://www.patreon.com/join/omdb to avoid API key limits.
-  omdbApiKey: somerandomeapikeygoeshereotherwiseitwontwork
-
   # Private API key for real-debrid which is where the movies get downloaded from
   # In order to get an API key, you will need to register an account at https://real-debrid.com
   # and purchase a premium offer. Generally the 180 day plan is the best deal. Once purchased, go
@@ -382,6 +379,10 @@ ApiKeys:
   # The API key to access the SyncThing server defined in the SyncThing settings block. This API key
   # can be found on your SyncThing server UI under the Advanced Settings menu (Actions -> Advanced -> API Key).
   syncthingApiKey: somerandomeapikeygoeshereotherwiseitwontwork
+
+  # The API key for all requests to the TMDB API for getting details about movies. You can get a free API key
+  # at https://www.themoviedb.org by creating an account and going to the API settings under your profile.
+  tmdbApiToken: somerandomeapikeygoeshereotherwiseitwontwork
 
   # The API key for all requests to TheTVDB API. You can get this key from https://thetvdb.com and will
   # need to register to get a v4 API key. This is done once for the application.
@@ -428,7 +429,7 @@ The second method of running the bot is as a service. There are different ways t
    cd /etc/systemd/system/
    ```
 
-2. Create the service file for the bot: 
+2. Create the service file for the bot:
 
    ```bash
    nano plexbot.service
@@ -440,14 +441,14 @@ The second method of running the bot is as a service. There are different ways t
    [Unit]
    Description=Plexbot Discord Bot
    After=network-online.target
-   
+
    [Service]
    ExecStart=/path/to/plexbot-runner
    WorkingDirectory=/path/to/directory
    Restart=on-failure
    RestartSec=10
    TimeoutStopSec=10
-   
+
    [Install]
    WantedBy=multi-user.target
    ```
@@ -464,4 +465,3 @@ The second method of running the bot is as a service. There are different ways t
    systemctl start plexbot
    ```
 
-   

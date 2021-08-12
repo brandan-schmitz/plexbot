@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.enumerators;
 
-@SuppressWarnings({"CdiInjectionPointsInspection", "unused"})
+@SuppressWarnings({"unused"})
 public enum FileType {
     AVI(".avi"),
     DIVX(".divx"),

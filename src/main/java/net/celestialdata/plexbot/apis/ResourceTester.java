@@ -1,20 +1,17 @@
 package net.celestialdata.plexbot.apis;
 
-import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
-import net.celestialdata.plexbot.clients.models.omdb.OmdbSearchResponse;
-import net.celestialdata.plexbot.clients.models.omdb.enums.OmdbSearchTypeEnum;
 import net.celestialdata.plexbot.clients.models.plex.PlexUser;
 import net.celestialdata.plexbot.clients.models.rdb.RdbMagnetLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbTorrent;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUser;
 import net.celestialdata.plexbot.clients.models.syncthing.SyncthingCompletionResponse;
+import net.celestialdata.plexbot.clients.models.tmdb.*;
 import net.celestialdata.plexbot.clients.models.tvdb.TvdbLoginRequestBody;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.*;
 import net.celestialdata.plexbot.clients.models.tvdb.responses.TvdbAuthResponse;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovie;
 import net.celestialdata.plexbot.clients.services.*;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
@@ -29,7 +26,7 @@ public class ResourceTester {
 
     @Inject
     @RestClient
-    OmdbService omdbService;
+    TmdbService tmdbService;
 
     @Inject
     @RestClient
@@ -60,17 +57,66 @@ public class ResourceTester {
     YtsService ytsService;
 
     @GET
-    @Path("/imdb/search")
-    @Produces("application/json")
-    public OmdbSearchResponse search(@QueryParam("query") String query, @QueryParam("type") OmdbSearchTypeEnum searchType) {
-        return omdbService.search(query, searchType, ConfigProvider.getConfig().getValue("ApiKeys.omdbApiKey", String.class));
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("tmdb/tv/{tv_id}")
+    public TmdbShow getShow(@PathParam("tv_id") long showId) {
+        return tmdbService.getShow(showId);
     }
 
     @GET
-    @Path("/imdb/lookup/{id}")
-    @Produces("application/json")
-    public OmdbResult getById(@PathParam("id") String imdbID) {
-        return omdbService.getById(imdbID, ConfigProvider.getConfig().getValue("ApiKeys.omdbApiKey", String.class));
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tmdb/tv/{tv_id}/external_ids")
+    public TmdbExternalIds getShowExternalIds(@PathParam("tv_id") long showId) {
+        return tmdbService.getShowExternalIds(showId);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tmdb/tv/{tv_id}/season/{season_number}/episode/{episode_number}")
+    public TmdbEpisode getEpisode(@PathParam("tv_id") long showId, @PathParam("season_number") int seasonNumber, @PathParam("episode_number") int episodeNumber) {
+        return tmdbService.getEpisode(showId, seasonNumber, episodeNumber);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tmdb/tv/{tv_id}/season/{season_number}/episode/{episode_number}/external_ids")
+    public TmdbExternalIds getEpisodeExternalIds(@PathParam("tv_id") long showId, @PathParam("season_number") int seasonNumber, @PathParam("episode_number") int episodeNumber) {
+        return tmdbService.getEpisodeExternalIds(showId, seasonNumber, episodeNumber);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tmdb/movie/{movie_id}")
+    public TmdbMovie getMovie(@PathParam("movie_id") long movieId) {
+        return tmdbService.getMovie(movieId);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tmdb/movie/{movie_id}/external_ids")
+    public TmdbExternalIds getMovieExternalIds(@PathParam("movie_id") long movieId) {
+        return tmdbService.getMovieExternalIds(movieId);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tmdb/find/{external_id}")
+    public TmdbFindResults findByExternalId(@PathParam("external_id") String externalId, @QueryParam("external_source") TmdbSourceIdType sourceIdType) {
+        return tmdbService.findByExternalId(externalId, sourceIdType.getValue());
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tmdb/search/movie")
+    public TmdbMovieSearchResults searchForMovie(@QueryParam("query") String searchQuery) {
+        return tmdbService.searchForMovie(searchQuery);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tmdb/search/movie")
+    public TmdbMovieSearchResults searchForMovie(@QueryParam("query") String searchQuery, @QueryParam("year") String year) {
+        return tmdbService.searchForMovie(searchQuery, year);
     }
 
     @GET
@@ -171,7 +217,7 @@ public class ResourceTester {
     @GET
     @Produces("application/json")
     @Path("/tvdb/series/{id}")
-    public TvdbSeries getSeries(@PathParam("id") String id) {
+    public TvdbSeries getSeries(@PathParam("id") Long id) {
         return tvdbService.getSeries(id).series;
     }
 

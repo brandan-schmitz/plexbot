@@ -1,11 +1,8 @@
-package net.celestialdata.plexbot.entities;
+package net.celestialdata.plexbot.db.entities;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @SuppressWarnings({"unused", "JpaDataSourceORMInspection"})
 @Entity
@@ -13,8 +10,15 @@ import javax.persistence.Table;
 public class Movie extends PanacheEntityBase {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "movie_id", nullable = false)
-    public String id;
+    public Integer id;
+
+    @Column(name = "movie_tmdb_id", nullable = false, unique = true)
+    public Long tmdbId;
+
+    @Column(name = "movie_imdb_id")
+    public String imdbId;
 
     @Column(name = "movie_title", nullable = false)
     public String title;
@@ -23,16 +27,16 @@ public class Movie extends PanacheEntityBase {
     public String year;
 
     @Column(name = "movie_resolution", nullable = false)
-    public int resolution;
+    public Integer resolution;
 
     @Column(name = "movie_height")
-    public int height;
+    public Integer height;
 
     @Column(name = "movie_width")
-    public int width;
+    public Integer width;
 
     @Column(name = "movie_duration")
-    public int duration;
+    public Integer duration;
 
     @Column(name = "movie_codec")
     public String codec;
@@ -47,5 +51,5 @@ public class Movie extends PanacheEntityBase {
     public String folderName;
 
     @Column(name = "movie_optimized")
-    public boolean isOptimized;
+    public Boolean isOptimized;
 }

@@ -5,10 +5,13 @@ import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.dataobjects.MediaInfoData;
-import net.celestialdata.plexbot.entities.*;
+import net.celestialdata.plexbot.db.daos.*;
+import net.celestialdata.plexbot.db.entities.*;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.TextChannel;
@@ -72,7 +75,25 @@ public class DatabaseConsistencyChecker extends BotProcess {
     FileUtilities fileUtilities;
 
     @Inject
-    EntityUtilities entityUtilities;
+    CorruptedMediaItemDao corruptedMediaItemDao;
+
+    @Inject
+    EncodingQueueItemDao encodingQueueItemDao;
+
+    @Inject
+    EpisodeDao episodeDao;
+
+    @Inject
+    EpisodeSubtitleDao episodeSubtitleDao;
+
+    @Inject
+    MovieDao movieDao;
+
+    @Inject
+    MovieSubtitleDao movieSubtitleDao;
+
+    @Inject
+    ShowDao showDao;
 
     // Helper method to send a warning message to the bot owner
     private void sendWarning(EmbedBuilder message) {
@@ -93,17 +114,17 @@ public class DatabaseConsistencyChecker extends BotProcess {
         upgradeChannel.addButtonClickListener(clickEvent -> {
             if (clickEvent.getButtonInteraction().getCustomId().equals("recheck-corrupted-file")) {
                 // Get the ID of the message triggering this event
-                var messageId = String.valueOf(clickEvent.getButtonInteraction().getMessageId());
+                var messageId = clickEvent.getButtonInteraction().getMessageId();
 
                 // Fetch the corrupted media item from the database
-                CorruptedMediaItem corruptedMediaItem = entityUtilities.getCorruptedMediaItemByMessage(messageId);
+                CorruptedMediaItem corruptedMediaItem = corruptedMediaItemDao.getByMessageId(messageId);
 
                 // Attempt to load the file at the path given
-                File file = new File(corruptedMediaItem.path);
+                File file = new File(corruptedMediaItem.absolutePath);
 
                 // Delete the existing entry for the corrupted media file. If it is still corrupted, a new
                 // message will be sent to the channel.
-                entityUtilities.deleteCorruptedMediaItemByMessage(messageId);
+                corruptedMediaItemDao.deleteByMessageId(messageId);
 
                 // Verify the media file
                 verifyMediaFile(file);
@@ -117,11 +138,11 @@ public class DatabaseConsistencyChecker extends BotProcess {
         configureProcess("Database Consistency Checker - na%");
 
         // Get the lists of media in the database
-        showsInDatabase = Show.listAll();
-        episodesInDatabase = Episode.listAll();
-        episodeSubtitlesInDatabase = EpisodeSubtitle.listAll();
-        moviesInDatabase = Movie.listAll();
-        movieSubtitlesInDatabase = MovieSubtitle.listAll();
+        showsInDatabase = showDao.listALl();
+        episodesInDatabase = episodeDao.listALl();
+        episodeSubtitlesInDatabase = episodeSubtitleDao.listALl();
+        moviesInDatabase = movieDao.listALl();
+        movieSubtitlesInDatabase = movieSubtitleDao.listALl();
 
         // Fetch a list of all media files in the filesystem
         mediaFiles = FileUtils.listFiles(new File(movieFolder), mediaFileExtensions, true);
@@ -142,24 +163,36 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
         // Verify that all the folders for the shows in the DB exist
         showsInDatabase.forEach(show -> {
-            // Log a tracer message
-            logger.info("Verifying show: " + show.name + " {tvdb-" + show.id + "}");
+            try {
+                // Log a tracer message
+                logger.info("Verifying show: " + show.name + " {tvdb-" + show.id + "}");
 
-            // Verify the folder exists, if not send warnings
-            if (!Files.isDirectory(Path.of(tvFolder + "/" + show.foldername))) {
-                // Log that the folder does not exist
-                logger.warn("Data inconsistency found: Show \"" + show.name + " {tvdb-" + show.id +
-                        "}\" could not be found on the filesystem, however it is listed in the database.");
+                // Verify the folder exists, if not send warnings
+                if (!Files.isDirectory(Path.of(tvFolder + "/" + show.foldername))) {
+                    // Log that the folder does not exist
+                    logger.warn("Data inconsistency found: Show \"" + show.name + " {tvdb-" + show.id +
+                            "}\" could not be found on the filesystem, however it is listed in the database.");
 
-                // Send a warning in discord about the folder not existing.
+                    // Send a warning in discord about the folder not existing.
+                    sendWarning(new EmbedBuilder()
+                            .setTitle("Data Inconsistency Found")
+                            .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
+                                    "database but cannot be found on the filesystem.")
+                            .addInlineField("Media type:", "```Show```")
+                            .addInlineField("Show ID:", "```" + show.id + "```")
+                            .addInlineField("Show name:", "```" + show.name + "```")
+                            .setColor(Color.YELLOW)
+                    );
+                }
+            } catch (Throwable e) {
+                logger.error("Error verifying " + show.foldername + ":", e);
                 sendWarning(new EmbedBuilder()
-                        .setTitle("Data Inconsistency Found")
-                        .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
-                                "database but cannot be found on the filesystem.")
-                        .addInlineField("Media type:", "```Show```")
-                        .addInlineField("Show ID:", "```" + show.id + "```")
-                        .addInlineField("Show name:", "```" + show.name + "```")
-                        .setColor(Color.YELLOW)
+                        .setTitle("Error Detected")
+                        .setDescription("An error was detected while running the database consistency checker for the following " +
+                                "show folder. This item has been skipped for now.")
+                        .addField("File:", "```" + show.foldername + "```")
+                        .addField("Error Message:", "```" + ExceptionUtils.getRootCauseMessage(e) + "```")
+                        .addField("Stack Trace:", "```" + StringUtils.join(ExceptionUtils.getRootCauseStackTrace(e), "\n") + "```")
                 );
             }
 
@@ -170,11 +203,23 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
         // Verify that the media files exist and are updated
         mediaFiles.forEach(file -> {
-            // Log a tracer message
-            logger.info("Verifying media file: " + file.getAbsolutePath());
+            try {
+                // Log a tracer message
+                logger.info("Verifying media file: " + file.getAbsolutePath());
 
-            // Verify the file
-            verifyMediaFile(file);
+                // Verify the file
+                verifyMediaFile(file);
+            } catch (Throwable e) {
+                logger.error("Error verifying " + file.getAbsolutePath() + ":", e);
+                sendWarning(new EmbedBuilder()
+                        .setTitle("Error Detected")
+                        .setDescription("An error was detected while running the database consistency checker for the following " +
+                                "media file. This item has been skipped for now.")
+                        .addField("File:", "```" + file.getAbsolutePath() + "```")
+                        .addField("Error Message:", "```" + ExceptionUtils.getRootCauseMessage(e) + "```")
+                        .addField("Stack Trace:", "```" + StringUtils.join(ExceptionUtils.getRootCauseStackTrace(e), "\n") + "```")
+                );
+            }
 
             // Update the progress
             overallProgress.getAndIncrement();
@@ -183,11 +228,23 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
         // Verify that the subtitle files exist
         subtitleFiles.forEach(file -> {
-            // Log a tracer message
-            logger.info("Verifying subtitle file: " + file.getAbsolutePath());
+            try {
+                // Log a tracer message
+                logger.info("Verifying subtitle file: " + file.getAbsolutePath());
 
-            // Verify the file
-            verifySubtitleFile(file);
+                // Verify the file
+                verifySubtitleFile(file);
+            } catch (Throwable e) {
+                logger.error("Error verifying " + file.getAbsolutePath() + ":", e);
+                sendWarning(new EmbedBuilder()
+                        .setTitle("Error Detected")
+                        .setDescription("An error was detected while running the database consistency checker for the following " +
+                                "subtitle file. This item has been skipped for now.")
+                        .addField("File:", "```" + file.getAbsolutePath() + "```")
+                        .addField("Error Message:", "```" + ExceptionUtils.getRootCauseMessage(e) + "```")
+                        .addField("Stack Trace:", "```" + StringUtils.join(ExceptionUtils.getRootCauseStackTrace(e), "\n") + "```")
+                );
+            }
 
             // Update the progress
             overallProgress.getAndIncrement();
@@ -196,20 +253,32 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
         // Report any movies remaining in the list of movies in the database since they were not located on the filesystem
         moviesInDatabase.forEach(movie -> {
-            // Log the warning about a missing movie
-            logger.warn("Data inconsistency found: Movie \"" + movie.title + " (" + movie.year + ") {imdb-" + movie.id +
-                    "}\" could not be found on the filesystem, however it is listed in the database.");
+            try {
+                // Log the warning about a missing movie
+                logger.warn("Data inconsistency found: Movie \"" + movie.title + " (" + movie.year + ") {imdb-" + movie.id +
+                        "}\" could not be found on the filesystem, however it is listed in the database.");
 
-            // Send the warning over discord
-            sendWarning(new EmbedBuilder()
-                    .setTitle("Data Inconsistency Found")
-                    .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
-                            "database but cannot be found on the filesystem.")
-                    .addInlineField("Media type:", "```Movie```")
-                    .addInlineField("Media ID:", "```" + movie.id + "```")
-                    .addInlineField("Media name:", "```" + movie.title + "```")
-                    .setColor(Color.YELLOW)
-            );
+                // Send the warning over discord
+                sendWarning(new EmbedBuilder()
+                        .setTitle("Data Inconsistency Found")
+                        .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
+                                "database but cannot be found on the filesystem.")
+                        .addInlineField("Media type:", "```Movie```")
+                        .addInlineField("Media ID:", "```" + movie.id + "```")
+                        .addInlineField("Media name:", "```" + movie.title + "```")
+                        .setColor(Color.YELLOW)
+                );
+            } catch (Throwable e) {
+                logger.error("Error verifying " + movie.filename + ":", e);
+                sendWarning(new EmbedBuilder()
+                        .setTitle("Error Detected")
+                        .setDescription("An error was detected while running the database consistency checker for the following " +
+                                "movie media file. This item has been skipped for now.")
+                        .addField("File:", "```" + movie.filename + "```")
+                        .addField("Error Message:", "```" + ExceptionUtils.getRootCauseMessage(e) + "```")
+                        .addField("Stack Trace:", "```" + StringUtils.join(ExceptionUtils.getRootCauseStackTrace(e), "\n") + "```")
+                );
+            }
 
             // Update the progress
             overallProgress.getAndIncrement();
@@ -218,22 +287,34 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
         // Report any movie subtitles remaining in the list of movie subtitles in the database since they were not located on the filesystem
         movieSubtitlesInDatabase.forEach(subtitle -> {
-            // Log the warning about a missing movie
-            logger.warn("Data inconsistency found: Movie subtitle " + subtitle.filename + " for \"" + subtitle.movie.title +
-                    " (" + subtitle.movie.year + ") {imdb-" + subtitle.movie.id + "}\" could not be found on the filesystem, " +
-                    "however it is listed in the database.");
+            try {
+                // Log the warning about a missing movie
+                logger.warn("Data inconsistency found: Movie subtitle " + subtitle.filename + " for \"" + subtitle.movie.title +
+                        " (" + subtitle.movie.year + ") {imdb-" + subtitle.movie.id + "}\" could not be found on the filesystem, " +
+                        "however it is listed in the database.");
 
-            // Send the warning over discord
-            sendWarning(new EmbedBuilder()
-                    .setTitle("Data Inconsistency Found")
-                    .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
-                            "database but cannot be found on the filesystem.")
-                    .addInlineField("Media type:", "```Movie Subtitle```")
-                    .addInlineField("Subtitle: ", "```" + subtitle.filename + "```")
-                    .addInlineField("Associated Movie ID:", "```" + subtitle.movie.id + "```")
-                    .addInlineField("Associated Movie name:", "```" + subtitle.movie.title + "```")
-                    .setColor(Color.YELLOW)
-            );
+                // Send the warning over discord
+                sendWarning(new EmbedBuilder()
+                        .setTitle("Data Inconsistency Found")
+                        .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
+                                "database but cannot be found on the filesystem.")
+                        .addInlineField("Media type:", "```Movie Subtitle```")
+                        .addInlineField("Subtitle: ", "```" + subtitle.filename + "```")
+                        .addInlineField("Associated Movie ID:", "```" + subtitle.movie.id + "```")
+                        .addInlineField("Associated Movie name:", "```" + subtitle.movie.title + "```")
+                        .setColor(Color.YELLOW)
+                );
+            } catch (Throwable e) {
+                logger.error("Error verifying " + subtitle.filename + ":", e);
+                sendWarning(new EmbedBuilder()
+                        .setTitle("Error Detected")
+                        .setDescription("An error was detected while running the database consistency checker for the following " +
+                                "movie subtitle file. This item has been skipped for now.")
+                        .addField("File:", "```" + subtitle.filename + "```")
+                        .addField("Error Message:", "```" + ExceptionUtils.getRootCauseMessage(e) + "```")
+                        .addField("Stack Trace:", "```" + StringUtils.join(ExceptionUtils.getRootCauseStackTrace(e), "\n") + "```")
+                );
+            }
 
             // Update the progress
             overallProgress.getAndIncrement();
@@ -242,23 +323,35 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
         // Report any episodes remaining in the list of movies in the database since they were not located on the filesystem
         episodesInDatabase.forEach(episode -> {
-            // Log the warning about a missing movie
-            logger.warn("Data inconsistency found: Episode " + episode.number + " of season " + episode.season + " of " + episode.show.name +
-                    " could not be found on the filesystem, however it is listed in the database.");
+            try {
+                // Log the warning about a missing movie
+                logger.warn("Data inconsistency found: Episode " + episode.number + " of season " + episode.season + " of " + episode.show.name +
+                        " could not be found on the filesystem, however it is listed in the database.");
 
-            // Send the warning over discord
-            sendWarning(new EmbedBuilder()
-                    .setTitle("Error fetching media information")
-                    .setDescription("An error occurred while fetching information about the following media during the " +
-                            "database consistency checker. Please make sure this media file is not corrupted.")
-                    .addInlineField("Media type:", "```Episode```")
-                    .addInlineField("Episode ID:", "```" + episode.id + "```")
-                    .addInlineField("Episode #:", "```" + episode.number + "```")
-                    .addInlineField("Season #:", "```" + episode.season + "```")
-                    .addInlineField("Episode title:", "```" + episode.title + "```")
-                    .addInlineField("Associated show:", "```" + episode.show.name + "```")
-                    .setColor(Color.YELLOW)
-            );
+                // Send the warning over discord
+                sendWarning(new EmbedBuilder()
+                        .setTitle("Error fetching media information")
+                        .setDescription("An error occurred while fetching information about the following media during the " +
+                                "database consistency checker. Please make sure this media file is not corrupted.")
+                        .addInlineField("Media type:", "```Episode```")
+                        .addInlineField("Episode ID:", "```" + episode.id + "```")
+                        .addInlineField("Episode #:", "```" + episode.number + "```")
+                        .addInlineField("Season #:", "```" + episode.season + "```")
+                        .addInlineField("Episode title:", "```" + episode.title + "```")
+                        .addInlineField("Associated show:", "```" + episode.show.name + "```")
+                        .setColor(Color.YELLOW)
+                );
+            } catch (Throwable e) {
+                logger.error("Error verifying " + episode.filename + ":", e);
+                sendWarning(new EmbedBuilder()
+                        .setTitle("Error Detected")
+                        .setDescription("An error was detected while running the database consistency checker for the following " +
+                                "episode media file. This item has been skipped for now.")
+                        .addField("File:", "```" + episode.filename + "```")
+                        .addField("Error Message:", "```" + ExceptionUtils.getRootCauseMessage(e) + "```")
+                        .addField("Stack Trace:", "```" + StringUtils.join(ExceptionUtils.getRootCauseStackTrace(e), "\n") + "```")
+                );
+            }
 
             // Update the progress
             overallProgress.getAndIncrement();
@@ -267,23 +360,35 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
         // Report any episode subtitles remaining in the list of episode subtitles in the database since they were not located on the filesystem
         episodeSubtitlesInDatabase.forEach(subtitle -> {
-            // Log the warning about a missing movie
-            logger.warn("Data inconsistency found: Episode subtitle " + subtitle.filename + " for season " + subtitle.episode.season + ", episode " +
-                    subtitle.episode.number + " of " + subtitle.episode.show.name + " {tvdb-" + subtitle.episode.show.id + "} could not be found on the " +
-                    "filesystem, however it is located in the database");
+            try {
+                // Log the warning about a missing movie
+                logger.warn("Data inconsistency found: Episode subtitle " + subtitle.filename + " for season " + subtitle.episode.season + ", episode " +
+                        subtitle.episode.number + " of " + subtitle.episode.show.name + " {tvdb-" + subtitle.episode.show.id + "} could not be found on the " +
+                        "filesystem, however it is located in the database");
 
-            // Send the warning over discord
-            sendWarning(new EmbedBuilder()
-                    .setTitle("Data Inconsistency Found")
-                    .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
-                            "database but cannot be found on the filesystem.")
-                    .addInlineField("Media type:", "```Episode Subtitle```")
-                    .addInlineField("Subtitle: ", "```" + subtitle.filename + "```")
-                    .addInlineField("Associated Episode #:", "```" + subtitle.episode.number + "```")
-                    .addInlineField("Associated Season #:", "```" + subtitle.episode.season + "```")
-                    .addInlineField("Associated show:", "```" + subtitle.episode.show.name + "```")
-                    .setColor(Color.YELLOW)
-            );
+                // Send the warning over discord
+                sendWarning(new EmbedBuilder()
+                        .setTitle("Data Inconsistency Found")
+                        .setDescription("A inconsistency in the database has been found. The following item is listed in the " +
+                                "database but cannot be found on the filesystem.")
+                        .addInlineField("Media type:", "```Episode Subtitle```")
+                        .addInlineField("Subtitle: ", "```" + subtitle.filename + "```")
+                        .addInlineField("Associated Episode #:", "```" + subtitle.episode.number + "```")
+                        .addInlineField("Associated Season #:", "```" + subtitle.episode.season + "```")
+                        .addInlineField("Associated show:", "```" + subtitle.episode.show.name + "```")
+                        .setColor(Color.YELLOW)
+                );
+            } catch (Throwable e) {
+                logger.error("Error verifying " + subtitle.filename + ":", e);
+                sendWarning(new EmbedBuilder()
+                        .setTitle("Error Detected")
+                        .setDescription("An error was detected while running the database consistency checker for the following " +
+                                "episode subtitle file. This item has been skipped for now.")
+                        .addField("File:", "```" + subtitle.filename + "```")
+                        .addField("Error Message:", "```" + ExceptionUtils.getRootCauseMessage(e) + "```")
+                        .addField("Stack Trace:", "```" + StringUtils.join(ExceptionUtils.getRootCauseStackTrace(e), "\n") + "```")
+                );
+            }
 
             // Update the progress
             overallProgress.getAndIncrement();
@@ -312,7 +417,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
             } catch (StringIndexOutOfBoundsException e) {
                 // If the file is corrupted, send the proper warnings
                 logger.warn("Corrupted File Detected: " + file.getAbsolutePath());
-                entityUtilities.addCorruptedMediaItem(mediaType, file);
+                corruptedMediaItemDao.create(mediaType, file);
 
                 // Ensure that the file was not in the list of database entries
                 moviesInDatabase.removeIf(item -> item.filename.equals(file.getName()));
@@ -327,7 +432,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
                 Movie movie;
                 try {
                     // Fetch the movie from the database
-                    movie = Movie.find("filename", file.getName()).singleResult();
+                    movie = movieDao.getByFilename(file.getName());
                 } catch (NoResultException e) {
                     // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Movie " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
@@ -357,7 +462,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 // If the episode is not optimized, ensure it is in the queue
                 if (!movie.isOptimized) {
-                    entityUtilities.addOrUpdateEncodingQueueItem("movie", movie.id);
+                    encodingQueueItemDao.create("movie", movie.id);
                 }
 
                 // Remove the movie from the list of movies in the database
@@ -367,7 +472,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 try {
                     // Fetch the episode from the database
-                    episode = Episode.find("filename", file.getName()).singleResult();
+                    episode = episodeDao.getByFilename(file.getName());
                 } catch (NoResultException e) {
                     // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Episode " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
@@ -397,7 +502,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 // If the episode is not optimized, ensure it is in the queue
                 if (!episode.isOptimized) {
-                    entityUtilities.addOrUpdateEncodingQueueItem("episode", episode.id);
+                    encodingQueueItemDao.create("episode", episode.tvdbId);
                 }
 
                 // Remove the episode from the list of episodes in the database
@@ -437,7 +542,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
             if (mediaType.equals("movie")) {
                 try {
                     // Fetch the movie subtitle from the database
-                    MovieSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
+                    MovieSubtitle subtitle = movieSubtitleDao.getByFilename(file.getName());
                 } catch (NoResultException e) {
                     // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Movie subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");
@@ -456,7 +561,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
             } else {
                 try {
                     // Fetch the episode subtitle from the database
-                    EpisodeSubtitle subtitle = MovieSubtitle.find("filename", file.getName()).singleResult();
+                    EpisodeSubtitle subtitle = episodeSubtitleDao.getByFilename(file.getName());
                 } catch (NoResultException e) {
                     // If the file does not exist in the database, send an alert and continue to the next file
                     logger.warn("Data inconsistency found: Episode subtitle " + file.getAbsolutePath() + " is located on the filesystem but not in the database.");

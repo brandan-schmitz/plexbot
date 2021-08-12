@@ -23,7 +23,7 @@ class LazyReference<T> {
     private final Lock readLock;
 
     /**
-     * A write lock for lazy initialization of the value.
+     * Write lock for lazy initialization of the value.
      */
     private final Lock writeLock;
 

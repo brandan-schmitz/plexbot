@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.entities;
+package net.celestialdata.plexbot.db.entities;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
@@ -10,8 +10,12 @@ import javax.persistence.*;
 public class Episode extends PanacheEntityBase {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "episode_id", nullable = false)
-    public String id;
+    public Integer id;
+
+    @Column(name = "episode_tvdb_id", nullable = false, unique = true)
+    public Long tvdbId;
 
     @Column(name = "episode_title")
     public String title;
@@ -20,10 +24,10 @@ public class Episode extends PanacheEntityBase {
     public String date;
 
     @Column(name = "episode_number")
-    public int number;
+    public Integer number;
 
     @Column(name = "episode_season")
-    public String season;
+    public Integer season;
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "episode_show", referencedColumnName = "show_id", nullable = false)
@@ -36,20 +40,20 @@ public class Episode extends PanacheEntityBase {
     public String filetype;
 
     @Column(name = "episode_height")
-    public int height;
+    public Integer height;
 
     @Column(name = "episode_width")
-    public int width;
+    public Integer width;
 
     @Column(name = "episode_duration")
-    public int duration;
+    public Integer duration;
 
     @Column(name = "episode_codec")
     public String codec;
 
     @Column(name = "episode_resolution")
-    public int resolution;
+    public Integer resolution;
 
     @Column(name = "episode_optimized")
-    public boolean isOptimized;
+    public Boolean isOptimized;
 }

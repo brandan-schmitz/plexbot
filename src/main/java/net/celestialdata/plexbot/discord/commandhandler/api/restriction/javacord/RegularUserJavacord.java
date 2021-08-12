@@ -25,7 +25,7 @@ import static java.lang.Boolean.FALSE;
 
 /**
  * A restriction that allows a command for regular users and is evaluated by the Javacord command handler.
- * Regular users means no bots, and no webhooks.
+ * Regular users' means no bots, and no webhooks.
  */
 @ApplicationScoped
 @SuppressWarnings("unused")
