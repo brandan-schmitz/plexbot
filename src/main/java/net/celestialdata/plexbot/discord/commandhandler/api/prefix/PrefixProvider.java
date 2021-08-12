@@ -30,7 +30,7 @@ import javax.enterprise.context.ApplicationScoped;
 public interface PrefixProvider<M> {
     /**
      * Returns the command prefix to be used for the given message.
-     * Typically this does not depend on the message content itself, but on properties of the message,
+     * Typically, this does not depend on the message content itself, but on properties of the message,
      * like the server the message was sent on, to have different prefixes on different servers.
      *
      * @param message the message for which the prefix has to be returned

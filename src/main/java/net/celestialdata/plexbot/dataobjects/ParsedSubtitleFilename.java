@@ -16,7 +16,7 @@ public class ParsedSubtitleFilename {
     public boolean isSDH = false;
 
     public ParsedSubtitleFilename parseFilename(String unparsedFilename) throws IllegalArgumentException {
-        // Split the filename into parts based on the . character
+        // Split the filename into parts based on the "." character
         String[] filenameParts = unparsedFilename.split("\\.");
 
         // Ensure the filename ir properly formatted

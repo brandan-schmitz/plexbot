@@ -72,7 +72,6 @@ public class WaitlistMovieDao {
         return WaitlistMovie.count("messageId", messageId) == 1;
     }
 
-    @SuppressWarnings("DuplicatedCode")
     @Transactional
     public WaitlistMovie create(TmdbMovie movie, long requestedBy) {
         if (existsByTmdbId(movie.tmdbId)) {

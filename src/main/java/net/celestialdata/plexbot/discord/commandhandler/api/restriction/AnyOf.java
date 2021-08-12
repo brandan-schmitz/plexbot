@@ -43,14 +43,14 @@ import static java.util.Arrays.asList;
  */
 public abstract class AnyOf<M> implements Restriction<M> {
     /**
-     * The restrictions of which any one must allow a command.
+     * The restrictions of which any must allow a command.
      */
     private final Collection<Restriction<? super M>> restrictions;
 
     /**
      * Constructs a new any-of restriction.
      *
-     * @param restrictions the restrictions of which any one must allow a command
+     * @param restrictions the restrictions of which any must allow a command
      */
     @SuppressWarnings({"unused", "CdiInjectionPointsInspection"})
     @SafeVarargs

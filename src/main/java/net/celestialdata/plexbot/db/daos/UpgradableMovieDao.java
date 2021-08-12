@@ -75,12 +75,11 @@ public class UpgradableMovieDao {
                             .setTitle("Approval Required")
                             .setDescription("The bot has located an improved quality of the following movie and needs your approval " +
                                     "in order to download and upgrade the movie.")
-                            .addInlineField("Title:", "```" + movieData.title + "```")
-                            .addInlineField("Release Date:", "```" + movieData.releaseDate + "```")
+                            .addField("Title:", "```" + movieData.title + "```")
                             .addInlineField("TMDB ID:", "```" + movieData.tmdbId + "```")
-                            .addField("Overview:", "```" + movieData.getOverview() + "```")
                             .addInlineField("Old Resolution:", "```" + upgradeMovie.resolution + "```")
                             .addInlineField("New Resolution:", "```" + newResolution + "```")
+                            .addField("Overview:", "```" + movieData.getOverview() + "```")
                             .setImage(movieData.getPoster())
                             .setColor(Color.GREEN))
                     .addComponents(ActionRow.of(

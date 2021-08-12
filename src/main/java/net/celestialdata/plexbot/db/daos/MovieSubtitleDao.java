@@ -1,8 +1,6 @@
 package net.celestialdata.plexbot.db.daos;
 
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
-import net.celestialdata.plexbot.db.entities.Episode;
-import net.celestialdata.plexbot.db.entities.EpisodeSubtitle;
 import net.celestialdata.plexbot.db.entities.Movie;
 import net.celestialdata.plexbot.db.entities.MovieSubtitle;
 

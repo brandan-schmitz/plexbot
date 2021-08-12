@@ -45,14 +45,14 @@ public abstract class UserJavacord implements Restriction<Message> {
     private final String userName;
 
     /**
-     * Whether the {@code userName} should be case sensitive or not.
+     * Whether the {@code userName} should be case-sensitive or not.
      * This does not apply to the {@code userPattern},
      * where an embedded flag can be used to control case sensitivity.
      */
     private final boolean caseSensitive;
 
     /**
-     * The pattern user names are matched against to determine whether a command is allowed.
+     * The pattern usernames are matched against to determine whether a command is allowed.
      */
     private final Pattern userPattern;
 
@@ -67,7 +67,7 @@ public abstract class UserJavacord implements Restriction<Message> {
     }
 
     /**
-     * Constructs a new user restriction for checking the user name case-sensitively against a fixed name.
+     * Constructs a new user restriction for checking the username case-sensitively against a fixed name.
      *
      * @param userName the case-sensitive name of the user for whom a command should be allowed
      */
@@ -77,7 +77,7 @@ public abstract class UserJavacord implements Restriction<Message> {
     }
 
     /**
-     * Constructs a new user restriction for checking the user name against a fixed name.
+     * Constructs a new user restriction for checking the username against a fixed name.
      *
      * @param userName      the name of the user for whom a command should be allowed
      * @param caseSensitive whether the name should be matched case-sensitively or not
@@ -88,9 +88,9 @@ public abstract class UserJavacord implements Restriction<Message> {
     }
 
     /**
-     * Constructs a new user restriction for checking the user name against a regular expression.
+     * Constructs a new user restriction for checking the username against a regular expression.
      *
-     * @param userPattern the pattern against which the user name is matched
+     * @param userPattern the pattern against which the username is matched
      *                    to determine for whom a command should be allowed
      */
     @SuppressWarnings("unused")
@@ -104,7 +104,7 @@ public abstract class UserJavacord implements Restriction<Message> {
      * @param userId        the ID of the user for whom a command should be allowed
      * @param userName      the name of the user for whom a command should be allowed
      * @param caseSensitive whether the name should be matched case-sensitively or not
-     * @param userPattern   the pattern against which the user name is matched
+     * @param userPattern   the pattern against which the username is matched
      *                      to determine for whom a command should be allowed
      */
     @SuppressWarnings("unused")
@@ -209,10 +209,10 @@ public abstract class UserJavacord implements Restriction<Message> {
     }
 
     /**
-     * Returns whether a command is allowed according to the configured user name or pattern.
+     * Returns whether a command is allowed according to the configured username or pattern.
      *
      * @param message the message of the command to check
-     * @return whether a command is allowed according to the configured user name or pattern
+     * @return whether a command is allowed according to the configured username or pattern
      */
     private boolean allowCommandByUserName(Message message) {
         return message.getUserAuthor()

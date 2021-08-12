@@ -45,7 +45,7 @@ public abstract class ServerJavacord implements Restriction<Message> {
     private final String serverName;
 
     /**
-     * Whether the {@code serverName} should be case sensitive or not.
+     * Whether the {@code serverName} should be case-sensitive or not.
      * This does not apply to the {@code serverPattern},
      * where an embedded flag can be used to control case sensitivity.
      */

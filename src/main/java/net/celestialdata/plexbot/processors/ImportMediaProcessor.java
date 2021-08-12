@@ -159,6 +159,7 @@ public class ImportMediaProcessor extends BotProcess {
                 .join();
     }
 
+    @SuppressWarnings("unused")
     public void processImport(Message replyMessage, Long commandMessageId, boolean skipSync, boolean overwrite, boolean optimized, boolean includeOptimized) {
         // TODO: Ensure there are no previous instance of the import processor running to avoid interference
 
@@ -418,7 +419,6 @@ public class ImportMediaProcessor extends BotProcess {
         });
     }
 
-    @SuppressWarnings("DuplicatedCode")
     public Multi<Integer> processEpisodeItems(Collection<File> files, boolean filesAreSubtitles) {
         AtomicInteger progress = new AtomicInteger(0);
 
@@ -637,7 +637,6 @@ public class ImportMediaProcessor extends BotProcess {
         });
     }
 
-    @SuppressWarnings("DuplicatedCode")
     private Multi<Integer> processMovieItems(Collection<File> files, boolean filesAreSubtitles) {
         AtomicInteger progress = new AtomicInteger(0);
 

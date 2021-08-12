@@ -12,7 +12,7 @@ public class EpisodeSubtitle extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "subtitle_id", nullable = false)
-    public int id;
+    public Integer id;
 
     @Column(name = "subtitle_language", nullable = false)
     public String language;

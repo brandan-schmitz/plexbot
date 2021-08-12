@@ -12,7 +12,7 @@ public class UpgradableMovie extends PanacheEntityBase {
     @Id
     @Column(name = "upgrade_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    public int id;
+    public Integer id;
 
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "upgrade_movie", referencedColumnName = "movie_id", unique = true)

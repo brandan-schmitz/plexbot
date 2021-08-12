@@ -54,7 +54,7 @@ public abstract class RoleJavacord implements Restriction<Message> {
     private final String roleName;
 
     /**
-     * Whether the {@code roleName} should be case sensitive or not.
+     * Whether the {@code roleName} should be case-sensitive or not.
      * This does not apply to the {@code rolePattern},
      * where an embedded flag can be used to control case sensitivity.
      */

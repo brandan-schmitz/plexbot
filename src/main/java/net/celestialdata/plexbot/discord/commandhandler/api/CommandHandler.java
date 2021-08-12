@@ -35,7 +35,7 @@ import static net.celestialdata.plexbot.discord.commandhandler.api.Command.getPa
 /**
  * A base class for command handlers that does the common logic.
  *
- * <p>Each method of this class starting with {@code do}, should usually be called by a subclass. Typically per each
+ * <p>Each method of this class starting with {@code do}, should usually be called by a subclass. Typically, per each
  * such method a subclass will have an according method that gets the needed arguments injected by the CDI framework.
  * CDI cannot inject beans into methods that use wildcards (like {@code Restriction<? super M>}) but only into methods
  * that define concrete type arguments (like {@code Restriction<? super Message>}). Due to this fact, this class cannot

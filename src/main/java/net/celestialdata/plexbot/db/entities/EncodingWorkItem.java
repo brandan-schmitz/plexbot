@@ -12,7 +12,7 @@ public class EncodingWorkItem extends PanacheEntityBase {
     @Id
     @Column(name = "item_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    public int id;
+    public Integer id;
 
     @Column(name = "item_progress", nullable = false)
     public String progress;

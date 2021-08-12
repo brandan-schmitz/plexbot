@@ -12,7 +12,7 @@ public class EncodingQueueItem extends PanacheEntityBase {
     @Id
     @Column(name = "item_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    public int id;
+    public Integer id;
 
     @Column(name = "item_type", nullable = false)
     public String mediaType;
