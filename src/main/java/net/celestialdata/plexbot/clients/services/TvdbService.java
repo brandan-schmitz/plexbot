@@ -47,7 +47,7 @@ public interface TvdbService {
     @GET
     @Produces("application/json")
     @Path("/series/{id}")
-    TvdbSeriesResponse getSeries(@PathParam("id") String id);
+    TvdbSeriesResponse getSeries(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")

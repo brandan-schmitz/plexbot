@@ -1,18 +1,19 @@
 package net.celestialdata.plexbot.processors;
 
 import io.smallrye.mutiny.Multi;
-import net.celestialdata.plexbot.clients.models.omdb.OmdbResult;
 import net.celestialdata.plexbot.clients.models.rdb.RdbTorrent;
 import net.celestialdata.plexbot.clients.models.rdb.RdbTorrentFile;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.clients.models.rdb.enums.RdbTorrentStatusEnum;
+import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovie;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovieTorrent;
 import net.celestialdata.plexbot.clients.services.PlexService;
 import net.celestialdata.plexbot.clients.services.RdbService;
 import net.celestialdata.plexbot.clients.services.YtsService;
+import net.celestialdata.plexbot.db.daos.MovieDao;
+import net.celestialdata.plexbot.db.daos.WaitlistMovieDao;
 import net.celestialdata.plexbot.discord.MessageFormatter;
-import net.celestialdata.plexbot.entities.EntityUtilities;
 import net.celestialdata.plexbot.enumerators.FileType;
 import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
 import net.celestialdata.plexbot.utilities.BotProcess;
@@ -41,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Dependent
 public class MovieDownloadProcessor extends BotProcess {
+
     @ConfigProperty(name = "BotSettings.ownerID")
     String botOwner;
 
@@ -69,23 +71,26 @@ public class MovieDownloadProcessor extends BotProcess {
     FileUtilities fileUtilities;
 
     @Inject
-    EntityUtilities entityUtilities;
+    DiscordApi discordApi;
 
     @Inject
-    DiscordApi discordApi;
+    MovieDao movieDao;
+
+    @Inject
+    WaitlistMovieDao waitlistMovieDao;
 
     private long requestedBy = 0;
 
-    public Multi<Map<MovieDownloadSteps, EmbedBuilder>> processDownload(OmdbResult movieToDownload, Message statusMessage, Long requestedBy) {
-        configureProcess("Download " + movieToDownload.title + " (" + movieToDownload.year + ")", statusMessage);
+    public Multi<Map<MovieDownloadSteps, EmbedBuilder>> processDownload(TmdbMovie movieToDownload, Message statusMessage, Long requestedBy) {
+        configureProcess("Download " + movieToDownload.title + " (" + movieToDownload.getYear() + ")", statusMessage);
         this.requestedBy = requestedBy;
         return processDownload(movieToDownload);
     }
 
-    public Multi<Map<MovieDownloadSteps, EmbedBuilder>> processDownload(OmdbResult movieToDownload) {
+    public Multi<Map<MovieDownloadSteps, EmbedBuilder>> processDownload(TmdbMovie movieToDownload) {
         // Configure the process if it is now already configured
         if (processString == null) {
-            configureProcess("Download " + movieToDownload.title + " (" + movieToDownload.year + ")");
+            configureProcess("Download " + movieToDownload.title + " (" + movieToDownload.getYear() + ")");
         }
 
 
@@ -102,7 +107,7 @@ public class MovieDownloadProcessor extends BotProcess {
                 ));
 
                 // Search YTS for the movie
-                var ytsResponse = ytsService.search(movieToDownload.imdbID);
+                var ytsResponse = ytsService.search(movieToDownload.getImdbId());
 
                 // Verify that the search was successful, fail if it was not successful
                 if (!ytsResponse.status.equals("ok")) {
@@ -114,7 +119,7 @@ public class MovieDownloadProcessor extends BotProcess {
                 // Verify that the search returned results, otherwise add movie to the waiting list and then fail
                 if (ytsResponse.results.resultCount == 0) {
                     // If the movie is already in the waitlist, fail with a message stating that
-                    if (entityUtilities.waitlistMovieExists(movieToDownload.imdbID)) {
+                    if (waitlistMovieDao.existsByTmdbId(movieToDownload.tmdbId)) {
                         processEmitter.fail(new InterruptedException("Already in waitlist"));
                         endProcess();
                         return;
@@ -122,7 +127,7 @@ public class MovieDownloadProcessor extends BotProcess {
 
                     // Add the movie to the waitlist
                     if (requestedBy != 0) {
-                        entityUtilities.addWaitlistMovie(movieToDownload, requestedBy);
+                        waitlistMovieDao.create(movieToDownload, requestedBy);
                     }
 
                     // Fail the process
@@ -134,7 +139,7 @@ public class MovieDownloadProcessor extends BotProcess {
                 // Build a list of torrents available to download
                 var availableTorrents = new ArrayList<YtsMovieTorrent>();
                 for (YtsMovie movie : ytsResponse.results.movies) {
-                    if (movie.imdbCode.equalsIgnoreCase(movieToDownload.imdbID)) {
+                    if (movie.imdbCode.equalsIgnoreCase(movieToDownload.getImdbId())) {
                         availableTorrents.addAll(movie.torrents);
                     }
                 }
@@ -433,10 +438,11 @@ public class MovieDownloadProcessor extends BotProcess {
                             .setTitle("New Subtitle Downloaded")
                             .setDescription("A movie was recently downloaded to the server and was accompanied by the following " +
                                     "subtitle file. The file has been left in the temp folder and will require manual importing.")
-                            .addInlineField("Movie:", movieToDownload.title + " (" + movieToDownload.year + ")")
-                            .addInlineField("IMDb: ", movieToDownload.imdbID)
+                            .addInlineField("Movie:", "```" + movieToDownload.title + " (" + movieToDownload.getYear() + ")```")
+                            .addInlineField("IMDB ID: ", "```" + movieToDownload.getImdbId() + "```")
+                            .addInlineField("TMDB ID:", "```" + movieToDownload.tmdbId + "```")
                             .addField("Subtitle Filename(s):", "```" + subtitleFileNamesBuilder + "```")
-                            .setFooter("Added by: " + (requestedBy != 0 ? discordApi.getUserById(requestedBy).join().getDiscriminatedName() : "NA"))
+                            .setFooter("Added by: " + (requestedBy != 0 ? discordApi.getUserById(requestedBy).join().getDiscriminatedName() : "N/A"))
                             .setColor(Color.GREEN)
                     ).send(discordApi.getUserById(botOwner).join()).join();
                 }
@@ -445,7 +451,7 @@ public class MovieDownloadProcessor extends BotProcess {
                 for (String filename : filenames) {
                     if (FileType.isVideo(filename)) {
                         try {
-                            entityUtilities.addOrUpdateMovie(movieToDownload, filename);
+                            movieDao.createOrUpdate(movieToDownload, filename);
                         } catch (StringIndexOutOfBoundsException e) {
                             processEmitter.fail(new InterruptedException("File is corrupted: " + filename));
                             endProcess();

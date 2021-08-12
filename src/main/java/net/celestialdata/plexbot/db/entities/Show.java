@@ -1,11 +1,8 @@
-package net.celestialdata.plexbot.entities;
+package net.celestialdata.plexbot.db.entities;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @SuppressWarnings({"unused", "JpaDataSourceORMInspection"})
 @Entity
@@ -13,8 +10,12 @@ import javax.persistence.Table;
 public class Show extends PanacheEntityBase {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "show_id", nullable = false)
-    public String id;
+    public Integer id;
+
+    @Column(name = "show_tvdb_id", nullable = false, unique = true)
+    public Long tvdbId;
 
     @Column(name = "show_name", nullable = false)
     public String name;

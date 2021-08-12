@@ -1,10 +1,11 @@
 package net.celestialdata.plexbot.dataobjects;
 
+@SuppressWarnings("unused")
 public class ParsedMediaFilename {
     public String id;
 
     public ParsedMediaFilename parseFilename(String unparsedFilename) throws IllegalArgumentException {
-        // Split the filename into parts based on the . character
+        // Split the filename into parts based on the "." character
         String[] filenameParts = unparsedFilename.split("\\.");
 
         // Ensure the file is properly named

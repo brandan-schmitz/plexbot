@@ -41,7 +41,6 @@ public class AliasAndParameterString {
      * @param alias           the alias
      * @param parameterString the parameter string
      */
-    @SuppressWarnings("CdiInjectionPointsInspection")
     public AliasAndParameterString(String alias, String parameterString) {
         this.alias = requireNonNull(alias);
         this.parameterString = requireNonNull(parameterString);

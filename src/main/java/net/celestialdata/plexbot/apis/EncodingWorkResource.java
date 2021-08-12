@@ -1,9 +1,10 @@
 package net.celestialdata.plexbot.apis;
 
-import net.celestialdata.plexbot.entities.EncodingWorkItem;
+import net.celestialdata.plexbot.db.daos.EncodingWorkItemDao;
+import net.celestialdata.plexbot.db.entities.EncodingWorkItem;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import javax.transaction.Transactional;
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -14,49 +15,34 @@ import java.util.List;
 @Consumes(MediaType.APPLICATION_JSON)
 public class EncodingWorkResource {
 
+    @Inject
+    EncodingWorkItemDao encodingWorkItemDao;
+
     @GET
     public List<EncodingWorkItem> get() {
-        return EncodingWorkItem.listAll();
+        return encodingWorkItemDao.listALl();
     }
 
     @GET
     @Path("/{id}")
     public EncodingWorkItem get(@PathParam("id") int id) {
-        return EncodingWorkItem.findById(id);
+        return encodingWorkItemDao.get(id);
     }
 
     @POST
-    @Transactional
     public int create(EncodingWorkItem workItem) {
-        workItem.persist();
-        return workItem.id;
+        return encodingWorkItemDao.create(workItem).id;
     }
 
     @PUT
     @Path("/{id}")
-    @Transactional
     public EncodingWorkItem update(@PathParam("id") int id, EncodingWorkItem workItem) {
-        EncodingWorkItem entity = EncodingWorkItem.findById(id);
-        if (entity == null) {
-            throw new NotFoundException();
-        }
-
-        entity.progress = workItem.progress;
-        entity.workerAgentName = workItem.workerAgentName;
-        entity.type = workItem.type;
-        entity.mediaId = workItem.mediaId;
-
-        return entity;
+        return encodingWorkItemDao.update(id, workItem);
     }
 
     @DELETE
     @Path("/{id}")
-    @Transactional
     public void delete(@PathParam("id") int id) {
-        EncodingWorkItem entity = EncodingWorkItem.findById(id);
-        if (entity == null) {
-            throw new NotFoundException();
-        }
-        entity.delete();
+        encodingWorkItemDao.delete(id);
     }
 }

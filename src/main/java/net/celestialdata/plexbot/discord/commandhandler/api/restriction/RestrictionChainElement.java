@@ -53,7 +53,7 @@ public class RestrictionChainElement {
      * Returns whether the command triggered by the given message should be allowed or not.
      *
      * @param message               the message that triggered the command
-     * @param availableRestrictions the look up to find the actual restriction implementations
+     * @param availableRestrictions the look-up to find the actual restriction implementations
      * @param <M>                   the class of the message
      * @return whether the command triggered by the given message should be allowed or not
      */

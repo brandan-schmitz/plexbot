@@ -1,11 +1,8 @@
-package net.celestialdata.plexbot.entities;
+package net.celestialdata.plexbot.db.entities;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @SuppressWarnings({"unused", "JpaDataSourceORMInspection"})
 @Entity
@@ -13,8 +10,15 @@ import javax.persistence.Table;
 public class WaitlistMovie extends PanacheEntityBase {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "movie_id", nullable = false)
-    public String id;
+    public Integer id;
+
+    @Column(name = "movie_tmdb_id", nullable = false)
+    public Long tmdbId;
+
+    @Column(name = "movie_imdb_id")
+    public String imdbId;
 
     @Column(name = "movie_title", nullable = false)
     public String title;

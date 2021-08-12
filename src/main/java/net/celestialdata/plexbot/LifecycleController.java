@@ -61,7 +61,7 @@ public class LifecycleController {
             }
         }
 
-        // Display an link to invite the bot to a server with
+        // Display a link to invite the bot to a server with
         logger.info("Invite the bot to servers with this link: " + inviteLink.get());
     }
 

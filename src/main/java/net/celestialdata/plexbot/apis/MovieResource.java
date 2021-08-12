@@ -1,9 +1,12 @@
 package net.celestialdata.plexbot.apis;
 
-import net.celestialdata.plexbot.entities.Movie;
-import net.celestialdata.plexbot.entities.MovieSubtitle;
+import net.celestialdata.plexbot.db.daos.MovieDao;
+import net.celestialdata.plexbot.db.daos.MovieSubtitleDao;
+import net.celestialdata.plexbot.db.entities.Movie;
+import net.celestialdata.plexbot.db.entities.MovieSubtitle;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -14,16 +17,22 @@ import java.util.List;
 @Consumes(MediaType.APPLICATION_JSON)
 public class MovieResource {
 
+    @Inject
+    MovieDao movieDao;
+
+    @Inject
+    MovieSubtitleDao movieSubtitleDao;
+
     @GET
-    @Path("/{id}")
-    public Movie get(@PathParam("id") String id) {
-        return Movie.findById(id);
+    @Path("/{tmdb_id}")
+    public Movie get(@PathParam("tmdb_id") long tmdbId) {
+        return movieDao.getByTmdbId(tmdbId);
     }
 
     @GET
     @Path("/{id}/subtitles")
-    public List<MovieSubtitle> getSubtitles(@PathParam("id") String id) {
-        Movie movie = Movie.findById(id);
-        return MovieSubtitle.list("movie", movie);
+    public List<MovieSubtitle> getSubtitles(@PathParam("id") int id) {
+        Movie movie = movieDao.get(id);
+        return movieSubtitleDao.getByMovie(movie);
     }
 }

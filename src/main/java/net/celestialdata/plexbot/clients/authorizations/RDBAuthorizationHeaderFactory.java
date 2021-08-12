@@ -9,6 +9,7 @@ import javax.ws.rs.core.MultivaluedMap;
 
 @ApplicationScoped
 public class RDBAuthorizationHeaderFactory implements ClientHeadersFactory {
+
     @Override
     public MultivaluedMap<String, String> update(MultivaluedMap<String, String> incomingHeaders, MultivaluedMap<String, String> clientOutgoingHeaders) {
         MultivaluedMap<String, String> result = new MultivaluedMapImpl<>();

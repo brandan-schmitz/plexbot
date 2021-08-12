@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 public class ExceptionUtil {
 
     /**
-     * Allows to throw an unchecked exception without declaring it in a throws clause.
+     * Allows to throw an unchecked exception without declaring it in a throw clause.
      * The given {@code Throwable} will be unconditionally thrown.
      * The return type is only present to be able to use the method as
      * last statement in a method or lambda that needs a value returned,

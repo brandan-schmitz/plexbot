@@ -90,7 +90,7 @@ public interface Command<M> {
 
     /**
      * Returns the description of this command.
-     * Currently this description is used nowhere, but can for example be displayed in an own help command.
+     * Currently, this description is used nowhere, but can for example be displayed in an own help command.
      *
      * <p>The default implementation of this method returns the description configured using the
      * {@link Description @Description} annotation. If no description is configured by annotation,
@@ -186,7 +186,7 @@ public interface Command<M> {
      * Returns whether this command should be executed asynchronously.
      *
      * <p>How exactly this is implemented is up to the command handler that evaluates this command. Usually the command
-     * will be execute in some thread pool. But it would also be valid for a command handler to execute each
+     * will be executed in some thread pool. But it would also be valid for a command handler to execute each
      * asynchronous command execution in a new thread, so using this can add significant overhead if overused. As long
      * as a command is not doing long-running or blocking operations it might be a good idea to not execute the command
      * asynchronously. But if long-running or blocking operations are done in the command code directly, depending on

@@ -27,7 +27,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * An annotation with which a description of the command can be configured.
- * Currently this description is used nowhere, but can for example be displayed in an own help command.
+ * Currently, this description is used nowhere, but can for example be displayed in an own help command.
  *
  * <p>Alternatively to using this annotation the {@link Command#getDescription()} method can be overwritten.
  * If that method is overwritten and this annotation is used, the method overwrite takes precedence.

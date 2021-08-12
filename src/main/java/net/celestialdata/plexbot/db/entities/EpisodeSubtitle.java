@@ -1,4 +1,4 @@
-package net.celestialdata.plexbot.entities;
+package net.celestialdata.plexbot.db.entities;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
@@ -12,7 +12,7 @@ public class EpisodeSubtitle extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "subtitle_id", nullable = false)
-    public int id;
+    public Integer id;
 
     @Column(name = "subtitle_language", nullable = false)
     public String language;

@@ -18,7 +18,6 @@ public class InvalidAnnotationCombinationException extends RuntimeException {
      *
      * @param message the detail message
      */
-    @SuppressWarnings("CdiInjectionPointsInspection")
     public InvalidAnnotationCombinationException(String message) {
         super(message);
     }
