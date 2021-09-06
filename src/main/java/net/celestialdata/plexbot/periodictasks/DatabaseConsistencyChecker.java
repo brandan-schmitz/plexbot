@@ -149,7 +149,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
         showsInDatabase = showDao.listALl();
         episodesInDatabase = episodeDao.listALl();
         episodeSubtitlesInDatabase = episodeSubtitleDao.listALl();
-        moviesInDatabase = movieDao.listALl();
+        moviesInDatabase = movieDao.listAll();
         movieSubtitlesInDatabase = movieSubtitleDao.listALl();
 
         // Fetch a list of all media files in the filesystem

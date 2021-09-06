@@ -221,7 +221,7 @@ public class ResolutionChecker extends BotProcess {
 
         try {
             // Fetch all the movies in the database
-            List<Movie> movies = movieDao.listALl();
+            List<Movie> movies = movieDao.listAll();
 
             // Process all movies and see if one has a better version available on YTS
             for (Movie movie : movies) {

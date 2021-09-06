@@ -60,7 +60,7 @@ public class StatsCommand implements Command<Message> {
 
 
         // Fetch lists of all the media on the server
-        var movies = movieDao.listALl();
+        var movies = movieDao.listAll();
         var movieSubtitles = movieSubtitleDao.listALl();
         var episodes = episodeDao.listALl();
         var episodeSubtitles = episodeSubtitleDao.listALl();
