@@ -59,6 +59,9 @@ public class ResolutionChecker extends BotProcess {
     @Inject
     DiscordApi discordApi;
 
+    @ConfigProperty(name = "PeriodicTaskSettings.resolutionChecker")
+    String resolutionChecker;
+
     @ConfigProperty(name = "ChannelSettings.upgradeApprovalChannel")
     String upgradeApprovalChannel;
 
@@ -207,12 +210,18 @@ public class ResolutionChecker extends BotProcess {
 
     @Scheduled(every = "12h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void runCheck() {
+        // Skip the check if the config has the check disabled
+        if (!resolutionChecker.equalsIgnoreCase("enabled")) {
+            return;
+        }
+
+        // Configure process
         configureProcess("Resolution Checker");
         int progress = 0;
 
         try {
             // Fetch all the movies in the database
-            List<Movie> movies = movieDao.listALl();
+            List<Movie> movies = movieDao.listAll();
 
             // Process all movies and see if one has a better version available on YTS
             for (Movie movie : movies) {

@@ -31,6 +31,9 @@ import java.util.concurrent.TimeUnit;
 public class WaitlistChecker extends BotProcess {
     private final DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
 
+    @ConfigProperty(name = "PeriodicTaskSettings.waitlistChecker")
+    String waitlistChecker;
+
     @ConfigProperty(name = "ChannelSettings.movieWaitlistChannel")
     String movieWaitlistChannel;
 
@@ -65,6 +68,12 @@ public class WaitlistChecker extends BotProcess {
 
     @Scheduled(every = "6h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void runCheck() {
+        // Skip this check if the check is disabled in the config
+        if (!waitlistChecker.equalsIgnoreCase("enabled")) {
+            return;
+        }
+
+        // Configure the process
         configureProcess("Waitlist Checker");
         int progress = 0;
 

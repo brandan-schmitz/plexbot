@@ -22,7 +22,7 @@ public class MovieDao {
     FileUtilities fileUtilities;
 
     @Transactional
-    public List<Movie> listALl() {
+    public List<Movie> listAll() {
         return Movie.listAll();
     }
 
