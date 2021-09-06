@@ -181,6 +181,20 @@ BotSettings:
   logLevel: INFO
 
 
+##############################
+### Periodic Task Settings ###
+##############################
+PeriodicTaskSettings:
+  # Enable or disable the database consistency checker. Valid options are 'enabled' or 'disabled'.
+  consistencyChecker: enabled
+
+  # Enable or disable the resolution checker. Valid options are 'enabled' or 'disabled'.
+  resolutionChecker: enabled
+
+  # Enable or disable the waitlist checker. Valid options are 'enabled' or 'disabled'.
+  waitlistChecker: enabled
+
+
 #########################
 ### Database Settings ###
 #########################

@@ -53,6 +53,9 @@ public class DatabaseConsistencyChecker extends BotProcess {
     @LoggerName("net.celestialdata.plexbot.periodictasks.DatabaseConsistencyChecker")
     Logger logger;
 
+    @ConfigProperty(name = "PeriodicTaskSettings.consistencyChecker")
+    String consistencyChecker;
+
     @ConfigProperty(name = "ChannelSettings.corruptedNotificationChannel")
     String corruptedNotificationChannel;
 
@@ -134,6 +137,11 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
     @Scheduled(every = "168h", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void verifyDatabase() {
+        // Skip the check if the config has the check disabled
+        if (!consistencyChecker.equalsIgnoreCase("enabled")) {
+            return;
+        }
+
         // Configure the process
         configureProcess("Database Consistency Checker - na%");
 
