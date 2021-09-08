@@ -5,6 +5,11 @@ import net.celestialdata.plexbot.clients.models.rdb.RdbMagnetLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbTorrent;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUser;
+import net.celestialdata.plexbot.clients.models.sg.enums.SgQuality;
+import net.celestialdata.plexbot.clients.models.sg.enums.SgStatus;
+import net.celestialdata.plexbot.clients.models.sg.responses.SgFetchHistoryResponse;
+import net.celestialdata.plexbot.clients.models.sg.responses.SgGetEpisodeResponse;
+import net.celestialdata.plexbot.clients.models.sg.responses.SgSimpleResponse;
 import net.celestialdata.plexbot.clients.models.syncthing.SyncthingCompletionResponse;
 import net.celestialdata.plexbot.clients.models.tmdb.*;
 import net.celestialdata.plexbot.clients.models.tvdb.TvdbLoginRequestBody;
@@ -12,6 +17,7 @@ import net.celestialdata.plexbot.clients.models.tvdb.objects.*;
 import net.celestialdata.plexbot.clients.models.tvdb.responses.TvdbAuthResponse;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovie;
 import net.celestialdata.plexbot.clients.services.*;
+import net.celestialdata.plexbot.clients.utilities.SgServiceWrapper;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
@@ -55,6 +61,9 @@ public class ResourceTester {
     @Inject
     @RestClient
     YtsService ytsService;
+
+    @Inject
+    SgServiceWrapper sgServiceWrapper;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -263,5 +272,39 @@ public class ResourceTester {
     @Produces(MediaType.APPLICATION_JSON)
     public List<YtsMovie> search(@QueryParam("query_term") String imdbID) {
         return ytsService.search(imdbID).results.movies;
+    }
+
+
+    @POST
+    @Path("/sg/shows")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public SgSimpleResponse addShow(@QueryParam("tvdbId") long tvdbId) {
+        return sgServiceWrapper.addShow(tvdbId);
+    }
+
+    @GET
+    @Path("/sg/history")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public SgFetchHistoryResponse fetchHistory() {
+        return sgServiceWrapper.fetchHistory();
+    }
+
+    @GET
+    @Path("/sg/episodes/{show_id}/{season}/{episode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public SgGetEpisodeResponse getSgEpisode(@PathParam("show_id") long showTvDb, @PathParam("season") int season, @PathParam("episode") int episode) {
+        return sgServiceWrapper.getEpisode(showTvDb, season, episode);
+    }
+
+    @PUT
+    @Path("/sg/episodes/set_status")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public SgSimpleResponse setEpisodeStatus(@QueryParam("showTvdbId") long showTvdbId, @QueryParam("season") int season, @QueryParam("episode") int episode,
+                                             @QueryParam("status") SgStatus status, @QueryParam("quality") SgQuality quality) {
+        return sgServiceWrapper.setEpisodeStatus(showTvdbId, season, episode, status, quality);
     }
 }
