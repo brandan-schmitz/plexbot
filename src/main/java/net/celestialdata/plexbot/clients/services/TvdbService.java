@@ -5,10 +5,8 @@ import net.celestialdata.plexbot.clients.models.tvdb.responses.*;
 import org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 
 @RegisterRestClient(baseUri = "https://api4.thetvdb.com/v4")
 @RegisterClientHeaders(TvdbAuthorizationHeaderFactory.class)
@@ -58,4 +56,14 @@ public interface TvdbService {
     @Produces("application/json")
     @Path("/series/{id}/episodes/official")
     TvdbSeriesEpisodesResponse getSeriesEpisodes(@PathParam("id") String id);
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/search")
+    TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType);
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/search")
+    TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType, @QueryParam("year") String year);
 }
