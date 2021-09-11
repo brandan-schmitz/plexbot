@@ -3,7 +3,9 @@ package net.celestialdata.plexbot.periodictasks;
 import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.clients.models.sg.objects.SgHistoryItem;
 import net.celestialdata.plexbot.clients.utilities.SgServiceWrapper;
+import net.celestialdata.plexbot.db.daos.DownloadHistoryItemDao;
 import net.celestialdata.plexbot.db.daos.DownloadQueueItemDao;
+import net.celestialdata.plexbot.db.entities.DownloadHistoryItem;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -20,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class ScrapeSgHistory {
-
     private final Logger logger = Logger.getLogger(ScrapeSgHistory.class);
 
     @ConfigProperty(name = "BotSettings.ownerID")
@@ -37,6 +38,9 @@ public class ScrapeSgHistory {
 
     @Inject
     DownloadQueueItemDao downloadQueueItemDao;
+
+    @Inject
+    DownloadHistoryItemDao downloadHistoryItemDao;
 
     @Inject
     DiscordApi discordApi;
@@ -60,7 +64,13 @@ public class ScrapeSgHistory {
         // Cycle through each of the history items and add them to the download queue
         for (SgHistoryItem item : historyResponse.results) {
             try {
-                // Truncate the resource string to 81 characters as SG only sends 81 characters
+                // Check if the DB already contains this specific item or if it was downloaded already
+                if (downloadQueueItemDao.existsByResource(item.resource) || downloadHistoryItemDao.existsByResource(item.resource)
+                        && downloadHistoryItemDao.getByResource(item.resource).status.equals("downloaded")) {
+                    continue;
+                }
+
+                // Create a local copy of the resource field for modification
                 var resource = item.resource;
 
                 // Remove the .. that occasionally appears at the end of some resource strings

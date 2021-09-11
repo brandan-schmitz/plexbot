@@ -4,7 +4,7 @@ import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbEpisode;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
 import net.celestialdata.plexbot.dataobjects.BotEmojis;
-import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
+import net.celestialdata.plexbot.enumerators.DownloadSteps;
 import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 
@@ -63,49 +63,49 @@ public class MessageFormatter {
                 .setColor(Color.BLUE);
     }
 
-    private String downloadProgressStringBuilder(MovieDownloadSteps currentStep, double percentage) {
+    private String downloadProgressStringBuilder(DownloadSteps currentStep, double percentage) {
         StringBuilder stringBuilder = new StringBuilder();
         DecimalFormat decimalFormatter = new DecimalFormat("#0.00");
 
-        if (currentStep == MovieDownloadSteps.SELECT_MOVIE) {
+        if (currentStep == DownloadSteps.SELECT_MOVIE) {
             stringBuilder.append(BotEmojis.TODO_STEP).append("  **User selects movie**\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Locate movie file\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Mask download file\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Download movie\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Import movie");
-        } else if (currentStep == MovieDownloadSteps.LOCATE_MOVIE) {
+        } else if (currentStep == DownloadSteps.LOCATE_MOVIE) {
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  User selects movie\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  **Locate movie file**\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Mask download file\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Download movie\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Import movie");
-        } else if (currentStep == MovieDownloadSteps.MASK_DOWNLOAD_INIT) {
+        } else if (currentStep == DownloadSteps.MASK_DOWNLOAD_INIT) {
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  User selects movie\n");
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Locate movie file\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  **Mask download file**\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Download movie\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Import movie");
-        } else if (currentStep == MovieDownloadSteps.MASK_DOWNLOAD_DOWNLOADING) {
+        } else if (currentStep == DownloadSteps.MASK_DOWNLOAD_DOWNLOADING) {
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  User selects movie\n");
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Locate movie file\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  **Mask download file:** ")
                     .append((int) percentage).append("%\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Download movie\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Import movie");
-        } else if (currentStep == MovieDownloadSteps.MASK_DOWNLOAD_PROCESSING) {
+        } else if (currentStep == DownloadSteps.MASK_DOWNLOAD_PROCESSING) {
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  User selects movie\n");
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Locate movie file\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  **Mask download file:** Processing...\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Download movie\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Import movie");
-        } else if (currentStep == MovieDownloadSteps.DOWNLOAD_MOVIE) {
+        } else if (currentStep == DownloadSteps.DOWNLOAD_MOVIE) {
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  User selects movie\n");
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Locate movie file\n");
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Mask download file\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  **Download movie:** ")
                     .append(decimalFormatter.format(percentage)).append("%\n");
             stringBuilder.append(BotEmojis.TODO_STEP).append("  Import movie");
-        } else if (currentStep == MovieDownloadSteps.IMPORT_MOVIE) {
+        } else if (currentStep == DownloadSteps.IMPORT_MOVIE) {
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  User selects movie\n");
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Locate movie file\n");
             stringBuilder.append(BotEmojis.FINISHED_STEP).append("  Mask download file\n");
@@ -116,11 +116,11 @@ public class MessageFormatter {
         return stringBuilder.toString();
     }
 
-    public EmbedBuilder downloadProgressMessage(TmdbMovie movie, MovieDownloadSteps currentStep) {
+    public EmbedBuilder downloadProgressMessage(TmdbMovie movie, DownloadSteps currentStep) {
         return baseDownloadProgressMessage(movie).addField("Progress:", downloadProgressStringBuilder(currentStep, 0.00));
     }
 
-    public EmbedBuilder downloadProgressMessage(TmdbMovie movie, MovieDownloadSteps currentStep, double percentage) {
+    public EmbedBuilder downloadProgressMessage(TmdbMovie movie, DownloadSteps currentStep, double percentage) {
         return baseDownloadProgressMessage(movie).addField("Progress:", downloadProgressStringBuilder(currentStep, percentage));
     }
 

@@ -58,6 +58,7 @@ public class ImportMediaProcessor extends BotProcess {
     private Message replyMessage;
     private ListenerManager<ButtonClickListener> cancelListener;
     private boolean stopProcess = false;
+    private boolean sendFailureMessages = true;
 
     @LoggerName("net.celestialdata.plexbot.processors.ImportMediaProcessor")
     Logger logger;
@@ -124,6 +125,14 @@ public class ImportMediaProcessor extends BotProcess {
 
     @Inject
     WaitlistMovieDao waitlistMovieDao;
+
+    public void setOverwrite(boolean overwrite) {
+        this.overwrite = overwrite;
+    }
+
+    public void setSendFailureMessages(boolean sendFailureMessages) {
+        this.sendFailureMessages = sendFailureMessages;
+    }
 
     @Override
     public void configureProcess(String processString, Message replyMessage) {
@@ -437,11 +446,13 @@ public class ImportMediaProcessor extends BotProcess {
                         parsedFilename = filesAreSubtitles ?
                                 new ParsedSubtitleFilename().parseFilename(file.getName()) : new ParsedMediaFilename().parseFilename(file.getName());
                     } catch (IllegalArgumentException e) {
-                        new MessageBuilder()
-                                .setEmbed(messageFormatter.warningMessage(e.getMessage(), file.toString()))
-                                .send(replyMessage.getChannel())
-                                .exceptionally(ExceptionLogger.get())
-                                .join();
+                        if (sendFailureMessages) {
+                            new MessageBuilder()
+                                    .setEmbed(messageFormatter.warningMessage(e.getMessage(), file.toString()))
+                                    .send(replyMessage.getChannel())
+                                    .exceptionally(ExceptionLogger.get())
+                                    .join();
+                        }
                         progress.getAndIncrement();
                         multiEmitter.emit(progress.get());
                         continue;
@@ -450,12 +461,14 @@ public class ImportMediaProcessor extends BotProcess {
                     // Verify the ID is a tvdb ID and not an IMDb ID
                     var parsedId = filesAreSubtitles ? ((ParsedSubtitleFilename) parsedFilename).id : ((ParsedMediaFilename) parsedFilename).id;
                     if (!parsedId.matches("^[0-9]{1,12}")) {
-                        new MessageBuilder()
-                                .setEmbed(messageFormatter.warningMessage("The following file in the episodes import folder is not using a valid TVDB id. " +
-                                        "Please make sure that only files using valid TVDB ids are in the episodes import folder.\n\n" + file.getName()))
-                                .send(replyMessage.getChannel())
-                                .exceptionally(ExceptionLogger.get())
-                                .join();
+                        if (sendFailureMessages ) {
+                            new MessageBuilder()
+                                    .setEmbed(messageFormatter.warningMessage("The following file in the episodes import folder is not using a valid TVDB id. " +
+                                            "Please make sure that only files using valid TVDB ids are in the episodes import folder.\n\n" + file.getName()))
+                                    .send(replyMessage.getChannel())
+                                    .exceptionally(ExceptionLogger.get())
+                                    .join();
+                        }
                         progress.getAndIncrement();
                         multiEmitter.emit(progress.get());
                         continue;
@@ -463,28 +476,34 @@ public class ImportMediaProcessor extends BotProcess {
 
                     // Verify the episode exists if this is a subtitle file
                     if (filesAreSubtitles && !episodeDao.existsByTvdbId(Long.parseLong(parsedId))) {
-                        new MessageBuilder()
-                                .setEmbed(messageFormatter.warningMessage("You attempted to import the following subtitle file, however the corresponding episode " +
-                                        "does not exist in the system. Please add the episode before adding the subtitle.\n" + file.getName()))
-                                .send(replyMessage.getChannel())
-                                .exceptionally(ExceptionLogger.get())
-                                .join();
+                        if (sendFailureMessages) {
+                            new MessageBuilder()
+                                    .setEmbed(messageFormatter.warningMessage("You attempted to import the following subtitle file, however the corresponding episode " +
+                                            "does not exist in the system. Please add the episode before adding the subtitle.\n" + file.getName()))
+                                    .send(replyMessage.getChannel())
+                                    .exceptionally(ExceptionLogger.get())
+                                    .join();
+                        }
+
                         progress.getAndIncrement();
                         multiEmitter.emit(progress.get());
                         continue;
                     }
 
                     // Fetch information from TVDB about this item
-                    var episodeResponse = tvdbService.getEpisode(parsedId);
+                    var episodeResponse = tvdbService.getEpisode(Long.parseLong(parsedId));
 
                     // Ensure that the request was successful
                     if (!episodeResponse.status.equalsIgnoreCase("success")) {
-                        new MessageBuilder()
-                                .setEmbed(messageFormatter.warningMessage("Unable to match the following file to a TVDB episode: " + file.getName(),
-                                        episodeResponse.message))
-                                .send(replyMessage.getChannel())
-                                .exceptionally(ExceptionLogger.get())
-                                .join();
+                        if (sendFailureMessages) {
+                            new MessageBuilder()
+                                    .setEmbed(messageFormatter.warningMessage("Unable to match the following file to a TVDB episode: " + file.getName(),
+                                            episodeResponse.message))
+                                    .send(replyMessage.getChannel())
+                                    .exceptionally(ExceptionLogger.get())
+                                    .join();
+                        }
+
                         progress.getAndIncrement();
                         multiEmitter.emit(progress.get());
                         continue;
@@ -495,12 +514,15 @@ public class ImportMediaProcessor extends BotProcess {
 
                     // Ensure that this request was also successful
                     if (!showResponse.status.equalsIgnoreCase("success")) {
-                        new MessageBuilder()
-                                .setEmbed(messageFormatter.warningMessage("Unable to match the following file to a TVDB series: " + file.getName(),
-                                        showResponse.message))
-                                .send(replyMessage.getChannel())
-                                .exceptionally(ExceptionLogger.get())
-                                .join();
+                        if (sendFailureMessages) {
+                            new MessageBuilder()
+                                    .setEmbed(messageFormatter.warningMessage("Unable to match the following file to a TVDB series: " + file.getName(),
+                                            showResponse.message))
+                                    .send(replyMessage.getChannel())
+                                    .exceptionally(ExceptionLogger.get())
+                                    .join();
+                        }
+
                         progress.getAndIncrement();
                         multiEmitter.emit(progress.get());
                         continue;
@@ -556,13 +578,16 @@ public class ImportMediaProcessor extends BotProcess {
 
                         // Verify that the file does not exist. If it does and overwrite is not specified skip this file
                         if (Files.exists(Paths.get(tvFolder + showFoldername + "/" + seasonFoldername + "/" + itemFilename)) && !overwrite || existsInDatabase && !overwrite) {
-                            new MessageBuilder()
-                                    .setEmbed(messageFormatter.errorMessage("The following item already exists. " +
-                                            "Please use the --overwrite flag if you wish to overwrite this file: " +
-                                            file.getAbsolutePath()))
-                                    .send(replyMessage.getChannel())
-                                    .exceptionally(ExceptionLogger.get())
-                                    .join();
+                            if (sendFailureMessages) {
+                                new MessageBuilder()
+                                        .setEmbed(messageFormatter.errorMessage("The following item already exists. " +
+                                                "Please use the --overwrite flag if you wish to overwrite this file: " +
+                                                file.getAbsolutePath()))
+                                        .send(replyMessage.getChannel())
+                                        .exceptionally(ExceptionLogger.get())
+                                        .join();
+                            }
+
                             progress.getAndIncrement();
                             multiEmitter.emit(progress.get());
                             continue;
@@ -622,12 +647,14 @@ public class ImportMediaProcessor extends BotProcess {
                     progress.getAndIncrement();
                     multiEmitter.emit(progress.get());
                 } catch (Exception e) {
-                    new MessageBuilder()
-                            .setEmbed(messageFormatter.errorMessage("There was an error while importing the following file: " +
-                                    file.getName(), e.getMessage()))
-                            .send(replyMessage.getChannel())
-                            .exceptionally(ExceptionLogger.get())
-                            .join();
+                    if (sendFailureMessages) {
+                        new MessageBuilder()
+                                .setEmbed(messageFormatter.errorMessage("There was an error while importing the following file: " +
+                                        file.getName(), e.getMessage()))
+                                .send(replyMessage.getChannel())
+                                .exceptionally(ExceptionLogger.get())
+                                .join();
+                    }
                     progress.getAndIncrement();
                     multiEmitter.emit(progress.get());
                     reportError(e);

@@ -1,11 +1,13 @@
 package net.celestialdata.plexbot;
 
-import io.quarkus.arc.log.LoggerName;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
+import net.celestialdata.plexbot.db.daos.DownloadQueueItemDao;
+import net.celestialdata.plexbot.db.entities.DownloadQueueItem;
 import net.celestialdata.plexbot.periodictasks.BotStatusDisplay;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.jboss.logging.Logger;
 
@@ -19,15 +21,19 @@ import java.nio.file.Paths;
 
 @ApplicationScoped
 public class LifecycleController {
+    private final Logger logger = Logger.getLogger(LifecycleController.class);
 
-    @LoggerName("net.celestialdata.plexbot.LifecycleController")
-    Logger logger;
+    @ConfigProperty(name = "SickgearSettings.enabled")
+    boolean sickgearEnabled;
 
     @Inject
     DiscordApi discordApi;
 
     @Inject
     BotStatusDisplay botStatusDisplay;
+
+    @Inject
+    DownloadQueueItemDao downloadQueueItemDao;
 
     @Inject
     @Named("inviteLink")
@@ -63,6 +69,15 @@ public class LifecycleController {
 
         // Display a link to invite the bot to a server with
         logger.info("Invite the bot to servers with this link: " + inviteLink.get());
+
+        // Verify that previously downloading files are changed back to the queued status so that a download can be re-attempted
+        // This will only run if the SickGear integration is enabled as that is the only time this download queue is used.
+        if (sickgearEnabled) {
+            var queueItems = downloadQueueItemDao.listDownloading();
+            for (DownloadQueueItem downloadQueueItem : queueItems) {
+                downloadQueueItemDao.updateStatus(downloadQueueItem.id, "queued");
+            }
+        }
     }
 
     void stop(@Observes ShutdownEvent event) {

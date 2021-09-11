@@ -15,32 +15,32 @@ public interface TvdbService {
     @GET
     @Produces("application/json")
     @Path("/episodes/{id}")
-    TvdbEpisodeResponse getEpisode(@PathParam("id") String id);
+    TvdbEpisodeResponse getEpisode(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
     @Path("/episodes/{id}/extended")
-    TvdbExtendedEpisodeResponse getExtendedEpisode(@PathParam("id") String id);
+    TvdbExtendedEpisodeResponse getExtendedEpisode(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
     @Path("/movies/{id}")
-    TvdbMovieResponse getMovie(@PathParam("id") String id);
+    TvdbMovieResponse getMovie(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
     @Path("/movies/{id}/extended")
-    TvdbExtendedMovieResponse getExtendedMovie(@PathParam("id") String id);
+    TvdbExtendedMovieResponse getExtendedMovie(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
     @Path("/seasons/{id}")
-    TvdbSeasonResponse getSeason(@PathParam("id") String id);
+    TvdbSeasonResponse getSeason(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
     @Path("/seasons/{id}/extended")
-    TvdbExtendedSeasonResponse getExtendedSeason(@PathParam("id") String id);
+    TvdbExtendedSeasonResponse getExtendedSeason(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
@@ -50,12 +50,17 @@ public interface TvdbService {
     @GET
     @Produces("application/json")
     @Path("/series/{id}/extended")
-    TvdbExtendedSeriesResponse getExtendedSeries(@PathParam("id") String id);
+    TvdbExtendedSeriesResponse getExtendedSeries(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
-    @Path("/series/{id}/episodes/official")
-    TvdbSeriesEpisodesResponse getSeriesEpisodes(@PathParam("id") String id);
+    @Path("/series/{id}/episodes/default")
+    TvdbSeriesEpisodesResponse getSeriesEpisodes(@PathParam("id") long id);
+
+    @GET
+    @Produces("application/json")
+    @Path("/series/{id}/episodes/default")
+    TvdbSeriesEpisodesResponse getSeriesEpisodes(@PathParam("id") long id, @QueryParam("season") int season);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

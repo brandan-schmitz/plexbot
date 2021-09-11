@@ -11,7 +11,7 @@ import net.celestialdata.plexbot.clients.utilities.SgServiceWrapper;
 import net.celestialdata.plexbot.db.daos.MovieDao;
 import net.celestialdata.plexbot.db.daos.ShowDao;
 import net.celestialdata.plexbot.discord.MessageFormatter;
-import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
+import net.celestialdata.plexbot.enumerators.DownloadSteps;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.context.ManagedExecutor;
@@ -414,7 +414,7 @@ public class RequestProcessor extends BotProcess {
         TmdbMovie finalSelectedMovie = selectedMovie;
         movieDownloadProcessor.get().processDownload(selectedMovie, replyMessage, incomingMessage.getAuthor().getId()).runSubscriptionOn(managedExecutor.get()).subscribe().with(
                 progress -> {
-                    for (Map.Entry<MovieDownloadSteps, EmbedBuilder> entry : progress.entrySet()) {
+                    for (Map.Entry<DownloadSteps, EmbedBuilder> entry : progress.entrySet()) {
                         replyMessage.edit(entry.getValue()).exceptionally(ExceptionLogger.get());
                     }
                 },

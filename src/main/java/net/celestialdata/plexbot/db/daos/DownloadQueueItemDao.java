@@ -3,7 +3,6 @@ package net.celestialdata.plexbot.db.daos;
 import net.celestialdata.plexbot.clients.models.sg.objects.SgHistoryItem;
 import net.celestialdata.plexbot.db.entities.DownloadQueueItem;
 import net.celestialdata.plexbot.utilities.FileUtilities;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -14,9 +13,6 @@ import java.util.List;
 @ApplicationScoped
 public class DownloadQueueItemDao {
 
-    @ConfigProperty(name = "SickgearSettings.torrentFolder")
-    String torrentFolder;
-
     @Inject
     FileUtilities fileUtilities;
 
@@ -26,13 +22,35 @@ public class DownloadQueueItemDao {
     }
 
     @Transactional
+    public List<DownloadQueueItem> listDownloading() {
+        return DownloadQueueItem.list("status", "downloading");
+    }
+
+    @Transactional
     public DownloadQueueItem get(int id) {
         return DownloadQueueItem.findById(id);
     }
 
     @Transactional
+    public boolean existsByResource(String resource) {
+        return DownloadQueueItem.count("resource", resource) == 1;
+    }
+
+    @Transactional
     public DownloadQueueItem getByFilename(String filename) {
         return DownloadQueueItem.find("filename", filename).firstResult();
+    }
+
+    @Transactional
+    public DownloadQueueItem getNext() {
+        if (DownloadQueueItem.count("status", "queued") != 0) {
+            return (DownloadQueueItem) DownloadQueueItem.list("status", "queued").get(0);
+        } else return null;
+    }
+
+    @Transactional
+    public long getDownloadingCount() {
+        return DownloadQueueItem.count("status", "downloading");
     }
 
     @Transactional
@@ -51,6 +69,7 @@ public class DownloadQueueItemDao {
             return DownloadQueueItem.find("filename", filename).firstResult();
         } else {
             DownloadQueueItem entity = new DownloadQueueItem();
+            entity.resource = historyItem.resource;
             entity.filename = filename;
             entity.filetype = filetype;
             entity.showId = historyItem.tvdbId;
@@ -61,5 +80,18 @@ public class DownloadQueueItemDao {
             entity.persist();
             return entity;
         }
+    }
+
+    @Transactional
+    public DownloadQueueItem updateStatus(int id, String status) {
+        DownloadQueueItem entity = DownloadQueueItem.findById(id);
+        entity.status = status;
+        return entity;
+    }
+
+    @Transactional
+    public void delete(DownloadQueueItem queueItem) {
+        DownloadQueueItem entity = DownloadQueueItem.findById(queueItem.id);
+        entity.delete();
     }
 }

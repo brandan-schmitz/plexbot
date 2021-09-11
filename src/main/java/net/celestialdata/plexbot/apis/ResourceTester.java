@@ -1,7 +1,7 @@
 package net.celestialdata.plexbot.apis;
 
 import net.celestialdata.plexbot.clients.models.plex.PlexUser;
-import net.celestialdata.plexbot.clients.models.rdb.RdbMagnetLink;
+import net.celestialdata.plexbot.clients.models.rdb.RdbAddedTorrent;
 import net.celestialdata.plexbot.clients.models.rdb.RdbTorrent;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUnrestrictedLink;
 import net.celestialdata.plexbot.clients.models.rdb.RdbUser;
@@ -18,12 +18,14 @@ import net.celestialdata.plexbot.clients.models.tvdb.responses.TvdbAuthResponse;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovie;
 import net.celestialdata.plexbot.clients.services.*;
 import net.celestialdata.plexbot.clients.utilities.SgServiceWrapper;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.io.InputStream;
 import java.util.List;
 
 @Tag(name = "Test", description = "Endpoints available to test the API functions.")
@@ -96,7 +98,7 @@ public class ResourceTester {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/tmdb/movie/{movie_id}")
-    public TmdbMovie getMovie(@PathParam("movie_id") long movieId) {
+    public TmdbMovie getTmdbMovie(@PathParam("movie_id") long movieId) {
         return tmdbService.getMovie(movieId);
     }
 
@@ -139,8 +141,16 @@ public class ResourceTester {
     @Path("/rdb/torrents/addMagnet")
     @Produces("application/json")
     @Consumes("application/x-www-form-urlencoded")
-    public RdbMagnetLink addMagnet(@FormParam("magnet") String magnet) {
+    public RdbAddedTorrent addMagnet(@FormParam("magnet") String magnet) {
         return rdbService.addMagnet(magnet);
+    }
+
+    @PUT
+    @Path("/rdb/torrents/addTorrent")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes("application/x-bittorrent")
+    public RdbAddedTorrent addTorrent(@RequestBody(description = "Torrent file to upload") InputStream file) {
+        return rdbService.addTorrent(file);
     }
 
     @GET
@@ -184,42 +194,42 @@ public class ResourceTester {
     @GET
     @Produces("application/json")
     @Path("/tvdb/episodes/{id}")
-    public TvdbEpisode getEpisode(@PathParam("id") String id) {
+    public TvdbEpisode getEpisode(@PathParam("id") long id) {
         return tvdbService.getEpisode(id).episode;
     }
 
     @GET
     @Produces("application/json")
     @Path("/tvdb/episodes/{id}/extended")
-    public TvdbExtendedEpisode getExtendedEpisode(@PathParam("id") String id) {
+    public TvdbExtendedEpisode getExtendedEpisode(@PathParam("id") long id) {
         return tvdbService.getExtendedEpisode(id).extendedEpisode;
     }
 
     @GET
     @Produces("application/json")
     @Path("/tvdb/movies/{id}")
-    public TvdbMovie getMovie(@PathParam("id") String id) {
+    public TvdbMovie getTvdbMovie(@PathParam("id") long id) {
         return tvdbService.getMovie(id).movie;
     }
 
     @GET
     @Produces("application/json")
     @Path("/tvdb/movies/{id}/extended")
-    public TvdbExtendedMovie getExtendedMovie(@PathParam("id") String id) {
+    public TvdbExtendedMovie getExtendedMovie(@PathParam("id") long id) {
         return tvdbService.getExtendedMovie(id).extendedMovie;
     }
 
     @GET
     @Produces("application/json")
     @Path("/tvdb/seasons/{id}")
-    public TvdbSeason getSeason(@PathParam("id") String id) {
+    public TvdbSeason getSeason(@PathParam("id") long id) {
         return tvdbService.getSeason(id).season;
     }
 
     @GET
     @Produces("application/json")
     @Path("/tvdb/seasons/{id}/extended")
-    public TvdbExtendedSeason getExtendedSeason(@PathParam("id") String id) {
+    public TvdbExtendedSeason getExtendedSeason(@PathParam("id") long id) {
         return tvdbService.getExtendedSeason(id).extendedSeason;
     }
 
@@ -233,14 +243,14 @@ public class ResourceTester {
     @GET
     @Produces("application/json")
     @Path("/tvdb/series/{id}/extended")
-    public TvdbExtendedSeries getExtendedSeries(@PathParam("id") String id) {
+    public TvdbExtendedSeries getExtendedSeries(@PathParam("id") long id) {
         return tvdbService.getExtendedSeries(id).extendedSeries;
     }
 
     @GET
     @Produces("application/json")
     @Path("/tvdb/series/{id}/episodes/official")
-    public List<TvdbEpisode> getSeriesEpisodes(@PathParam("id") String id) {
+    public List<TvdbEpisode> getSeriesEpisodes(@PathParam("id") long id) {
         return tvdbService.getSeriesEpisodes(id).seriesEpisodes.episodes;
     }
 

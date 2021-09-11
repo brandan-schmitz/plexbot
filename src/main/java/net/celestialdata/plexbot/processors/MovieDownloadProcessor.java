@@ -15,7 +15,7 @@ import net.celestialdata.plexbot.db.daos.MovieDao;
 import net.celestialdata.plexbot.db.daos.WaitlistMovieDao;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.enumerators.FileType;
-import net.celestialdata.plexbot.enumerators.MovieDownloadSteps;
+import net.celestialdata.plexbot.enumerators.DownloadSteps;
 import net.celestialdata.plexbot.utilities.BotProcess;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.apache.commons.io.FileUtils;
@@ -81,18 +81,17 @@ public class MovieDownloadProcessor extends BotProcess {
 
     private long requestedBy = 0;
 
-    public Multi<Map<MovieDownloadSteps, EmbedBuilder>> processDownload(TmdbMovie movieToDownload, Message statusMessage, Long requestedBy) {
+    public Multi<Map<DownloadSteps, EmbedBuilder>> processDownload(TmdbMovie movieToDownload, Message statusMessage, Long requestedBy) {
         configureProcess("Download " + movieToDownload.title + " (" + movieToDownload.getYear() + ")", statusMessage);
         this.requestedBy = requestedBy;
         return processDownload(movieToDownload);
     }
 
-    public Multi<Map<MovieDownloadSteps, EmbedBuilder>> processDownload(TmdbMovie movieToDownload) {
+    public Multi<Map<DownloadSteps, EmbedBuilder>> processDownload(TmdbMovie movieToDownload) {
         // Configure the process if it is now already configured
         if (processString == null) {
             configureProcess("Download " + movieToDownload.title + " (" + movieToDownload.getYear() + ")");
         }
-
 
         return Multi.createFrom().emitter(processEmitter -> {
             // Create the list of torrents here so that if an error occurs the bot can remove them from real-debrid
@@ -101,9 +100,9 @@ public class MovieDownloadProcessor extends BotProcess {
             try {
                 // Show that the process is attempting to locate the movie
                 processEmitter.emit(Map.of(
-                        MovieDownloadSteps.LOCATE_MOVIE,
+                        DownloadSteps.LOCATE_MOVIE,
                         messageFormatter.downloadProgressMessage(
-                                movieToDownload, MovieDownloadSteps.LOCATE_MOVIE)
+                                movieToDownload, DownloadSteps.LOCATE_MOVIE)
                 ));
 
                 // Search YTS for the movie
@@ -161,9 +160,9 @@ public class MovieDownloadProcessor extends BotProcess {
 
                 // Emit the updated status
                 processEmitter.emit(Map.of(
-                        MovieDownloadSteps.MASK_DOWNLOAD_INIT,
+                        DownloadSteps.MASK_DOWNLOAD_INIT,
                         messageFormatter.downloadProgressMessage(
-                                movieToDownload, MovieDownloadSteps.MASK_DOWNLOAD_INIT)
+                                movieToDownload, DownloadSteps.MASK_DOWNLOAD_INIT)
                 ));
 
                 // Add the generated magnet to real-debrid to get a link and ensure it is valid
@@ -178,8 +177,14 @@ public class MovieDownloadProcessor extends BotProcess {
                     endProcess();
                     return;
                 } else if (torrentInformation.status == RdbTorrentStatusEnum.MAGNET_CONVERSION) {
+                    LocalDateTime lastCheck = LocalDateTime.now();
+
+                    // Wait for the magnet link to get converted, only check every 3 seconds to avoid overloading the API
                     while (torrentInformation.status == RdbTorrentStatusEnum.MAGNET_CONVERSION) {
-                        torrentInformation = rdbService.getTorrentInfo(rdbMagnetLink.id);
+                        if (lastCheck.plus(3, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
+                            torrentInformation = rdbService.getTorrentInfo(rdbMagnetLink.id);
+                            lastCheck = LocalDateTime.now();
+                        }
                     }
                 }
 
@@ -241,18 +246,18 @@ public class MovieDownloadProcessor extends BotProcess {
 
                             if (updatedTorrentInfo.status == RdbTorrentStatusEnum.WAITING_FILES_SELECTION || updatedTorrentInfo.status == RdbTorrentStatusEnum.QUEUED) {
                                 processEmitter.emit(Map.of(
-                                        MovieDownloadSteps.MASK_DOWNLOAD_INIT,
+                                        DownloadSteps.MASK_DOWNLOAD_INIT,
                                         messageFormatter.downloadProgressMessage(
                                                 movieToDownload,
-                                                MovieDownloadSteps.MASK_DOWNLOAD_INIT
+                                                DownloadSteps.MASK_DOWNLOAD_INIT
                                         )
                                 ));
                             } else if (updatedTorrentInfo.status == RdbTorrentStatusEnum.DOWNLOADING) {
                                 processEmitter.emit(Map.of(
-                                        MovieDownloadSteps.MASK_DOWNLOAD_DOWNLOADING,
+                                        DownloadSteps.MASK_DOWNLOAD_DOWNLOADING,
                                         messageFormatter.downloadProgressMessage(
                                                 movieToDownload,
-                                                MovieDownloadSteps.MASK_DOWNLOAD_DOWNLOADING,
+                                                DownloadSteps.MASK_DOWNLOAD_DOWNLOADING,
                                                 updatedTorrentInfo.progress
                                         )
                                 ));
@@ -265,10 +270,10 @@ public class MovieDownloadProcessor extends BotProcess {
                                 return;
                             } else {
                                 processEmitter.emit(Map.of(
-                                        MovieDownloadSteps.MASK_DOWNLOAD_PROCESSING,
+                                        DownloadSteps.MASK_DOWNLOAD_PROCESSING,
                                         messageFormatter.downloadProgressMessage(
                                                 movieToDownload,
-                                                MovieDownloadSteps.MASK_DOWNLOAD_PROCESSING
+                                                DownloadSteps.MASK_DOWNLOAD_PROCESSING
                                         )
                                 ));
                             }
@@ -297,10 +302,10 @@ public class MovieDownloadProcessor extends BotProcess {
                 }
 
                 processEmitter.emit(Map.of(
-                        MovieDownloadSteps.MASK_DOWNLOAD_PROCESSING,
+                        DownloadSteps.MASK_DOWNLOAD_PROCESSING,
                         messageFormatter.downloadProgressMessage(
                                 movieToDownload,
-                                MovieDownloadSteps.MASK_DOWNLOAD_PROCESSING
+                                DownloadSteps.MASK_DOWNLOAD_PROCESSING
                         )
                 ));
 
@@ -355,10 +360,10 @@ public class MovieDownloadProcessor extends BotProcess {
                                     progress -> {
                                         var percentage = (((double) progress / finalTotalDownloadSize) * 100);
                                         processEmitter.emit(Map.of(
-                                                MovieDownloadSteps.DOWNLOAD_MOVIE,
+                                                DownloadSteps.DOWNLOAD_MOVIE,
                                                 messageFormatter.downloadProgressMessage(
                                                         movieToDownload,
-                                                        MovieDownloadSteps.DOWNLOAD_MOVIE,
+                                                        DownloadSteps.DOWNLOAD_MOVIE,
                                                         percentage
                                                 )
                                         ));
@@ -392,10 +397,10 @@ public class MovieDownloadProcessor extends BotProcess {
                 }
 
                 processEmitter.emit(Map.of(
-                        MovieDownloadSteps.IMPORT_MOVIE,
+                        DownloadSteps.IMPORT_MOVIE,
                         messageFormatter.downloadProgressMessage(
                                 movieToDownload,
-                                MovieDownloadSteps.IMPORT_MOVIE
+                                DownloadSteps.IMPORT_MOVIE
                         )
                 ));
 
