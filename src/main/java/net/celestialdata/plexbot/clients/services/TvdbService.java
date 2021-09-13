@@ -65,10 +65,10 @@ public interface TvdbService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/search")
-    TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType);
+    TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType, @QueryParam("limit") int limit);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/search")
-    TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType, @QueryParam("year") String year);
+    TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType, @QueryParam("year") String year, @QueryParam("limit")  int limit);
 }

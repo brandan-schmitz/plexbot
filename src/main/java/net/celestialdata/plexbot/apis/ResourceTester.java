@@ -15,6 +15,7 @@ import net.celestialdata.plexbot.clients.models.tmdb.*;
 import net.celestialdata.plexbot.clients.models.tvdb.TvdbLoginRequestBody;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.*;
 import net.celestialdata.plexbot.clients.models.tvdb.responses.TvdbAuthResponse;
+import net.celestialdata.plexbot.clients.models.tvdb.responses.TvdbSearchResponse;
 import net.celestialdata.plexbot.clients.models.yts.YtsMovie;
 import net.celestialdata.plexbot.clients.services.*;
 import net.celestialdata.plexbot.clients.utilities.SgServiceWrapper;
@@ -189,6 +190,20 @@ public class ResourceTester {
     @Produces(MediaType.APPLICATION_JSON)
     public TvdbAuthResponse login(TvdbLoginRequestBody loginBody) {
         return tvdbAuthorizationService.login(loginBody);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tvdb/search")
+    public TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType, @QueryParam("limit") int limit) {
+        return tvdbService.search(searchQuery, mediaType, limit);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tvdb/search")
+    public TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType, @QueryParam("year") String year, @QueryParam("limit") int limit) {
+        return tvdbService.search(searchQuery, mediaType, year, limit);
     }
 
     @GET

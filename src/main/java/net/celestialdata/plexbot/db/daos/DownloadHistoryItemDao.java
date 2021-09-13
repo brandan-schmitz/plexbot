@@ -7,6 +7,7 @@ import net.celestialdata.plexbot.utilities.FileUtilities;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
@@ -65,6 +66,7 @@ public class DownloadHistoryItemDao {
             entity.episodeNumber = queueItem.episodeNumber;
             entity.quality = queueItem.quality;
             entity.status = status;
+            entity.time = LocalDateTime.now();
             entity.persist();
             return entity;
         }

@@ -40,6 +40,10 @@ public class SgServiceWrapper {
         return sgService.getEpisode(apiKey, "sg.episode", 1, showTvdbId, season, episode);
     }
 
+    public SgSimpleResponse setEpisodeStatus(long showTvdbId, int season, int episode, SgStatus status) {
+        return sgService.setEpisodeStatus(apiKey, "sg.episode.setstatus", 1, showTvdbId, season, episode, status.getValue());
+    }
+
     public SgSimpleResponse setEpisodeStatus(long showTvdbId, int season, int episode, SgStatus status, SgQuality quality) {
         return sgService.setEpisodeStatus(apiKey, "sg.episode.setstatus", 1, showTvdbId, season, episode, status.getValue(), quality.getApiString());
     }

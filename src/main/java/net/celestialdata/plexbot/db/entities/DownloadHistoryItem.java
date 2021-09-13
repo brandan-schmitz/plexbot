@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import net.celestialdata.plexbot.clients.models.sg.enums.SgQuality;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @SuppressWarnings({"unused", "JpaDataSourceORMInspection"})
 @Entity
@@ -14,10 +15,10 @@ public class DownloadHistoryItem extends PanacheEntityBase {
     @Column(name = "history_id", nullable = false)
     public Integer id;
 
-    @Column(name = "history_resource", unique = true)
+    @Column(name = "history_resource", nullable = false)
     public String resource;
 
-    @Column(name = "history_filename", unique = true)
+    @Column(name = "history_filename", nullable = false)
     public String filename;
 
     @Column(name = "history_filetype", nullable = false)
@@ -37,4 +38,7 @@ public class DownloadHistoryItem extends PanacheEntityBase {
 
     @Column(name = "history_status", nullable = false)
     public String status;
+
+    @Column(name = "history_time", nullable = false)
+    public LocalDateTime time;
 }

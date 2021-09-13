@@ -14,10 +14,10 @@ public class DownloadQueueItem extends PanacheEntityBase {
     @Column(name = "download_id", nullable = false)
     public Integer id;
 
-    @Column(name = "download_resource", unique = true)
+    @Column(name = "download_resource", unique = true, nullable = false)
     public String resource;
 
-    @Column(name = "download_filename", unique = true)
+    @Column(name = "download_filename", unique = true, nullable = false)
     public String filename;
 
     @Column(name = "download_filetype", nullable = false)

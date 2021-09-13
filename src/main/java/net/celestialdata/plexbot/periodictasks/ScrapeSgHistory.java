@@ -5,7 +5,6 @@ import net.celestialdata.plexbot.clients.models.sg.objects.SgHistoryItem;
 import net.celestialdata.plexbot.clients.utilities.SgServiceWrapper;
 import net.celestialdata.plexbot.db.daos.DownloadHistoryItemDao;
 import net.celestialdata.plexbot.db.daos.DownloadQueueItemDao;
-import net.celestialdata.plexbot.db.entities.DownloadHistoryItem;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -86,16 +85,18 @@ public class ScrapeSgHistory {
 
                 // Ensure that the file was found
                 if (files.isEmpty()) {
-                    logger.warn("The resource file for " + item.showName + " s" + item.season + "e" + item.episode + " was not located!!");
-                    discordApi.getUserById(botOwner).join().sendMessage(new EmbedBuilder()
-                            .setTitle("Missing Resource File")
-                            .setDescription("I was unable to located the specified resource file while attempting to scrape the following episode history from SickGear.")
-                            .addField("Show:", "```" + item.showName + "```")
-                            .addInlineField("Season:", "```" + item.season + "```")
-                            .addInlineField("Episode:", "```" + item.episode + "```")
-                            .addField("Resource:", "```" + item.resource + "```")
-                            .setColor(Color.YELLOW)
-                    ).join();
+                    if (downloadHistoryItemDao.existsByResource(item.resource) && !downloadHistoryItemDao.getByResource(item.resource).status.equalsIgnoreCase("failed")) {
+                        logger.warn("The resource file for " + item.showName + " s" + item.season + "e" + item.episode + " was not located!!");
+                        discordApi.getUserById(botOwner).join().sendMessage(new EmbedBuilder()
+                                .setTitle("Missing Resource File")
+                                .setDescription("I was unable to located the specified resource file while attempting to scrape the following episode history from SickGear.")
+                                .addField("Show:", "```" + item.showName + "```")
+                                .addInlineField("Season:", "```" + item.season + "```")
+                                .addInlineField("Episode:", "```" + item.episode + "```")
+                                .addField("Resource:", "```" + item.resource + "```")
+                                .setColor(Color.YELLOW)
+                        ).join();
+                    }
                     continue;
                 }
 

@@ -23,6 +23,7 @@ import org.javacord.api.entity.message.component.ActionRow;
 import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
+import org.jboss.logging.Logger;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Instance;
@@ -43,6 +44,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RequestProcessor extends BotProcess {
     private Message replyMessage;
     private Message incomingMessage;
+
+    private final Logger logger = Logger.getLogger(RequestProcessor.class);
 
     @ConfigProperty(name = "BotSettings.prefix")
     String commandPrefix;
@@ -551,7 +554,7 @@ public class RequestProcessor extends BotProcess {
                     return;
                 } else {
                     // Search by title and filter by year. If no results were found display an error
-                    var results = tvdbService.search(titleArgument, "series", yearArgument);
+                    var results = tvdbService.search(titleArgument, "series", yearArgument, 25);
 
                     // Verify the search was successful and add the results to the search list if it was
                     if (results.status.equalsIgnoreCase("success")) {
@@ -581,7 +584,7 @@ public class RequestProcessor extends BotProcess {
                 }
             } else {
                 // Fetch a list of movies matching the search title
-                var results = tvdbService.search(titleArgument, "series");
+                var results = tvdbService.search(titleArgument, "series", 25);
 
                 // Verify that the search was successful and add the results to the search list if it was
                 if (results.status.equalsIgnoreCase("success")) {
@@ -713,10 +716,12 @@ public class RequestProcessor extends BotProcess {
         } catch (Throwable e) {
             discordApi.getMessageById(replyMessage.getId(), incomingMessage.getChannel()).join().delete().join();
             replyMessage = new MessageBuilder()
-                    .setEmbed(messageFormatter.errorMessage("An unknown error occurred while processing your request. Please ty again later.", e.getCause().getMessage()))
+                    .setEmbed(messageFormatter.errorMessage("An unknown error occurred while processing your request. Please ty again later.", e.getMessage()))
                     .replyTo(incomingMessage)
                     .send(incomingMessage.getChannel())
                     .join();
+
+            e.printStackTrace();
 
             endProcess(e);
         }
