@@ -88,6 +88,7 @@ public class FileUtilities {
 
                 multiEmitter.complete();
             } catch (IOException e) {
+                e.printStackTrace();
                 multiEmitter.fail(e);
             }
         });
@@ -236,7 +237,7 @@ public class FileUtilities {
         return generatePathname(linkedMovie) + subtitleSuffixBuilder(parsedFilename);
     }
 
-    private String buildSeasonAndEpisodeString(TvdbEpisode episode, Show show) {
+    public String buildSeasonAndEpisodeString(TvdbEpisode episode, Show show) {
         StringBuilder seasonAndEpisodeString = new StringBuilder();
 
         // Build the season part of the string
@@ -250,6 +251,24 @@ public class FileUtilities {
             seasonAndEpisodeString.append("e");
         } else seasonAndEpisodeString.append("e0");
         seasonAndEpisodeString.append(episode.number);
+
+        return seasonAndEpisodeString.toString();
+    }
+
+    public String buildSeasonAndEpisodeString(int episodeNumber, int seasonNumber) {
+        StringBuilder seasonAndEpisodeString = new StringBuilder();
+
+        // Build the season part of the string
+        if (seasonNumber > 9) {
+            seasonAndEpisodeString.append("s");
+        } else seasonAndEpisodeString.append("s0");
+        seasonAndEpisodeString.append(seasonNumber);
+
+        // Build the episode part of the string
+        if (episodeNumber > 9) {
+            seasonAndEpisodeString.append("e");
+        } else seasonAndEpisodeString.append("e0");
+        seasonAndEpisodeString.append(episodeNumber);
 
         return seasonAndEpisodeString.toString();
     }

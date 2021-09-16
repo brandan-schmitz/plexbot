@@ -58,11 +58,6 @@ public interface TvdbService {
     TvdbSeriesEpisodesResponse getSeriesEpisodes(@PathParam("id") long id);
 
     @GET
-    @Produces("application/json")
-    @Path("/series/{id}/episodes/default")
-    TvdbSeriesEpisodesResponse getSeriesEpisodes(@PathParam("id") long id, @QueryParam("season") int season);
-
-    @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/search")
     TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType, @QueryParam("limit") int limit);
