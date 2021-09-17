@@ -83,7 +83,7 @@ public class FileUtilities {
 
                 // Rename the file to specified name
                 if (!multiEmitter.isCancelled()) {
-                    moveMedia(tempPath.toString(), tempPath.toString().replace(".pbdownload", ""), true);
+                    renameMedia(tempPath.toString(), tempPath.toString().replace(".pbdownload", ""), true);
                 }
 
                 multiEmitter.complete();
@@ -106,6 +106,24 @@ public class FileUtilities {
         }
 
         return false;
+    }
+
+    public boolean renameMedia(String source, String destination, boolean overwrite) {
+        boolean success;
+
+        // If the file exists and the overwrite flag is false, then do not write the file
+        if (Files.exists(Paths.get(destination)) && !overwrite) {
+            success = false;
+        } else {
+            try {
+                success = new File(source).renameTo(new File(destination));
+            } catch (Exception e) {
+                e.printStackTrace();
+                success = false;
+            }
+        }
+
+        return success;
     }
 
     public boolean moveMedia(String source, String destination, boolean overwrite) {

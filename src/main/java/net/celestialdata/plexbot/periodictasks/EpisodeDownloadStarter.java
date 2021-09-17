@@ -22,7 +22,7 @@ public class EpisodeDownloadStarter {
     @Inject
     Instance<EpisodeDownloadProcessor> episodeDownloadProcessors;
 
-    @Scheduled(every = "15s", delay = 10, delayUnit = TimeUnit.SECONDS)
+    @Scheduled(every = "1m", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void startDownload() {
         // Check to see how many are currently downloading
         var runningCount = downloadQueueItemDao.getDownloadingCount();

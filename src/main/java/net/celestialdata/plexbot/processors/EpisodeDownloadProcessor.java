@@ -31,7 +31,6 @@ import org.jboss.logging.Logger;
 import javax.annotation.Nullable;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
-import javax.ws.rs.WebApplicationException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -188,7 +187,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
         try {
             // Configure the process name as it will appear in the bot process manager
-            configureProcess("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - loading...");
+            configureProcess("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - loading...");
 
             // Mark the item as downloading since the process has been started
             queueItem = downloadQueueItemDao.updateStatus(queueItem.id, "downloading");
@@ -269,7 +268,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 }
             }
 
-            updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - masking...");
+            updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - masking...");
 
             // Add the torrent to real-debrid, use the proper method based on the file type
             torrentInformation = addTorrent(queueItem);
@@ -386,10 +385,10 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
                     // Update the process sting with the download progress
                     if (torrentInformation.status == RdbTorrentStatusEnum.DOWNLOADING) {
-                        updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+                        updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" +
                                 queueItem.episodeNumber + " - masking: " + torrentInformation.progress + "%");
                     } else {
-                        updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+                        updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" +
                                 queueItem.episodeNumber + " - masking: processing...");
                     }
 
@@ -432,7 +431,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
             // Create a status tracker for the download failure status
             AtomicBoolean downloadFailed = new AtomicBoolean(false);
 
-            updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+            updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" +
                     queueItem.episodeNumber + " - downloading");
 
             // Run the download task
@@ -443,7 +442,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                     .subscribe().with(
                             progress -> {
                                 var percentage = (((double) progress / unrestrictedLink.filesize) * 100);
-                                updateProcessString("Download " + finalQueueItem.showId + " - s" + finalQueueItem.seasonNumber + "e" +
+                                updateProcessString("Download " + finalQueueItem.showId + " s" + finalQueueItem.seasonNumber + "e" +
                                         finalQueueItem.episodeNumber + " - downloading: " + decimalFormatter.format(percentage) + "%");
                             },
                             failure -> {
@@ -473,7 +472,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 return;
             }
 
-            updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+            updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" +
                     queueItem.episodeNumber + " - processing");
 
             // Generate the season and show folder names
@@ -582,6 +581,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
             // Report the error and exit
             logger.error(e.getCause());
+            e.printStackTrace();
             endProcess(e);
         }
     }
