@@ -12,6 +12,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+@SuppressWarnings("UnusedReturnValue")
 @ApplicationScoped
 public class SgServiceWrapper {
 
@@ -34,6 +35,10 @@ public class SgServiceWrapper {
 
     public SgFetchHistoryResponse fetchHistory() {
         return sgService.fetchHistory(apiKey, "sg.history", "snatched");
+    }
+
+    public SgSimpleResponse clearHistory() {
+        return sgService.clearHistory(apiKey, "sg.history.clear");
     }
 
     public SgGetEpisodeResponse getEpisode(long showTvdbId, int season, int episode) {

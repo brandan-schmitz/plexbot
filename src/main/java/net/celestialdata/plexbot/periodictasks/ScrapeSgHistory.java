@@ -60,10 +60,12 @@ public class ScrapeSgHistory {
             return;
         }
 
+        // Try to clear the SickGear history after a successful fetch so that we do not encounter accidental duplicates
+        sgServiceWrapper.clearHistory();
+
         // Cycle through each of the history items and add them to the download queue
         for (SgHistoryItem item : historyResponse.results) {
             try {
-
                 // Check if the DB already contains this specific item or if it was downloaded already
                 if (downloadQueueItemDao.exists(item.tvdbId, item.season, item.episode, item.quality) ||
                         downloadHistoryItemDao.exists(item.tvdbId, item.season, item.episode, item.quality, "downloaded")) {

@@ -29,6 +29,11 @@ public interface SgService {
     @GET
     @Path(value = "/{api_key}/")
     @Produces(MediaType.APPLICATION_JSON)
+    SgSimpleResponse clearHistory(@PathParam("api_key") String apiKey, @QueryParam("cmd") String sgCommand);
+
+    @GET
+    @Path(value = "/{api_key}/")
+    @Produces(MediaType.APPLICATION_JSON)
     SgGetEpisodeResponse getEpisode(@PathParam("api_key") String apiKey, @QueryParam("cmd") String sgCommand, @QueryParam("indexer") int indexerNum,
                                     @QueryParam("indexerid") long showTvdbId, @QueryParam("season") int season, @QueryParam("episode") int episode);
 

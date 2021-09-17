@@ -268,6 +268,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 }
             }
 
+            // Update the process of the download in the bot status manager
             updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - masking...");
 
             // Add the torrent to real-debrid, use the proper method based on the file type
@@ -300,7 +301,8 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 var type = FileType.determineFiletype(normalizedPathname);
 
                 // Add the video files that match the right season/episode string to the list of possible files
-                if (type.isVideo() && normalizedPathname.contains(fileUtilities.buildSeasonAndEpisodeString(queueItem.episodeNumber, queueItem.seasonNumber))) {
+                // This looks for the s##e## format and verifies that there is a '.' on both sides so that we do not accidentally fetch combined episodes.
+                if (type.isVideo() && normalizedPathname.contains("." + fileUtilities.buildSeasonAndEpisodeString(queueItem.episodeNumber, queueItem.seasonNumber) + ".")) {
                     possibleFiles.add(file);
                 }
             }
