@@ -32,11 +32,6 @@ public class DownloadQueueItemDao {
     }
 
     @Transactional
-    public boolean existsByResource(String resource) {
-        return DownloadQueueItem.count("resource", resource) == 1;
-    }
-
-    @Transactional
     public DownloadQueueItem getByFilename(String filename) {
         return DownloadQueueItem.find("filename", filename).firstResult();
     }
@@ -61,6 +56,16 @@ public class DownloadQueueItemDao {
     @Transactional
     public boolean exists(String filename) {
         return DownloadQueueItem.count("filename", filename) == 1;
+    }
+
+    @Transactional
+    public boolean exists(long showTvdbId, int seasonNumber, int episodeNumber) {
+        return DownloadQueueItem.count("showId = ?1 and seasonNumber = ?2 and episodeNumber = ?3", showTvdbId, seasonNumber, episodeNumber) == 1;
+    }
+
+    @Transactional
+    public boolean existsByResource(String resource) {
+        return DownloadQueueItem.count("resource", resource) == 1;
     }
 
     @Transactional

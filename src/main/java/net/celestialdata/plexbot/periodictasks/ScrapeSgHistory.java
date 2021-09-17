@@ -44,7 +44,7 @@ public class ScrapeSgHistory {
     @Inject
     DiscordApi discordApi;
 
-    @Scheduled(every = "1m", delay = 10, delayUnit = TimeUnit.SECONDS)
+    @Scheduled(every = "30s", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void runScrape() {
         // Skip this task if the Sickgear integration is disabled
         if (!enabled) {
@@ -64,8 +64,8 @@ public class ScrapeSgHistory {
         for (SgHistoryItem item : historyResponse.results) {
             try {
                 // Check if the DB already contains this specific item or if it was downloaded already
-                if (downloadQueueItemDao.existsByResource(item.resource) || downloadHistoryItemDao.existsByResource(item.resource)
-                        && downloadHistoryItemDao.getByResource(item.resource).status.equals("downloaded")) {
+                if (downloadQueueItemDao.exists(item.tvdbId, item.season, item.episode) ||
+                        downloadHistoryItemDao.exists(item.tvdbId, item.season, item.episode, item.quality, "downloaded")) {
                     continue;
                 }
 
@@ -85,7 +85,7 @@ public class ScrapeSgHistory {
 
                 // Ensure that the file was found
                 if (files.isEmpty()) {
-                    if (downloadHistoryItemDao.existsByResource(item.resource) && !downloadHistoryItemDao.getByResource(item.resource).status.equalsIgnoreCase("failed")) {
+                    if (!downloadHistoryItemDao.exists(item.tvdbId, item.season, item.episode, item.quality, "downloaded")) {
                         logger.warn("The resource file for " + item.showName + " s" + item.season + "e" + item.episode + " was not located!!");
                         discordApi.getUserById(botOwner).join().sendMessage(new EmbedBuilder()
                                 .setTitle("Missing Resource File")

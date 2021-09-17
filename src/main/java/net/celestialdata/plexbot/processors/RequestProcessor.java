@@ -13,6 +13,7 @@ import net.celestialdata.plexbot.db.daos.ShowDao;
 import net.celestialdata.plexbot.discord.MessageFormatter;
 import net.celestialdata.plexbot.enumerators.DownloadSteps;
 import net.celestialdata.plexbot.utilities.BotProcess;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -23,7 +24,6 @@ import org.javacord.api.entity.message.component.ActionRow;
 import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
-import org.jboss.logging.Logger;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Instance;
@@ -44,8 +44,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RequestProcessor extends BotProcess {
     private Message replyMessage;
     private Message incomingMessage;
-
-    private final Logger logger = Logger.getLogger(RequestProcessor.class);
 
     @ConfigProperty(name = "BotSettings.prefix")
     String commandPrefix;
@@ -130,15 +128,23 @@ public class RequestProcessor extends BotProcess {
                             .setColor(Color.BLUE)
                     );
                 } else if (mediaItem instanceof TvdbSeries) {
-                    selectScreens.add(new EmbedBuilder()
+                    // Create the base page format
+                    var page = new EmbedBuilder()
                             .setTitle("Select Show")
                             .setDescription("It looks like your search returned " + mediaList.size() + " results. " +
-                                    "Please use the buttons below to navigate and select the correct movie.\n\u200b")
+                                    "Please use the buttons below to navigate and select the correct show.\n\u200b")
                             .addField("Title:", "```" + ((TvdbSeries) mediaItem).name + "```")
                             .addField("TVDB ID:", "```" + ((TvdbSeries) mediaItem).id + "```")
                             .setImage(((TvdbSeries) mediaItem).getImage())
-                            .setColor(Color.BLUE)
-                    );
+                            .setColor(Color.BLUE);
+
+                    // If an overview is present, add that
+                    if (((TvdbSeries) mediaItem).overview != null) {
+                        page.addField("Overview:", "```" + ((TvdbSeries) mediaItem).overview + "```");
+                    }
+
+                    // Add the page
+                    selectScreens.add(page);
                 }
             }
 
@@ -197,7 +203,7 @@ public class RequestProcessor extends BotProcess {
                     // Submit the cancellation
                     uniEmitter.fail(new InterruptedException("User has canceled the selection process."));
                 }
-            }).removeAfter(2, TimeUnit.MINUTES).addRemoveHandler(() -> uniEmitter.fail(new InterruptedException("Timeout occurred while waiting for user to select a movie.")));
+            }).removeAfter(2, TimeUnit.MINUTES).addRemoveHandler(() -> uniEmitter.fail(new InterruptedException("Timeout occurred while waiting for user to select a media item.")));
         });
     }
 
@@ -630,13 +636,24 @@ public class RequestProcessor extends BotProcess {
                 return;
             }
 
+            // Attempt to load the overview for shows from TMDB since TVDB does not provide them in an easy to get manner
+            // If the episode name is not present, check to see if TMDB has it
+            for (TvdbSeries series : searchResultList) {
+                var findResponse = tmdbService.findByExternalId(String.valueOf(series.id), TmdbSourceIdType.TVDB.getValue());
+
+                // Attempt to load the show name if TMDB returned a result
+                if (findResponse.isSuccessful() && findResponse.shows.size() > 0 && !StringUtils.isBlank(findResponse.shows.get(0).overview)) {
+                    series.overview = findResponse.shows.get(0).overview;
+                }
+            }
+
             // Send the list of results to the selection handler method and await its result
             AtomicBoolean selectionFailed = new AtomicBoolean(false);
             try {
                 selectedShow = (TvdbSeries) handleSelection(searchResultList).onFailure().invoke(returnedError -> {
                     selectionFailed.set(true);
                     if (returnedError instanceof InterruptedException) {
-                        if (returnedError.getMessage().equals("Timeout occurred while waiting for user to select a show.")) {
+                        if (returnedError.getMessage().equals("Timeout occurred while waiting for user to select a media item.")) {
                             discordApi.getMessageById(replyMessage.getId(), incomingMessage.getChannel()).join().delete().join();
                             replyMessage = new MessageBuilder()
                                     .setEmbed(new EmbedBuilder()
@@ -686,15 +703,24 @@ public class RequestProcessor extends BotProcess {
 
             // Send the message that the show was added or that there was an error if there was an error
             if (sgResult.result.equals("success")) {
+                // Build the base embedded message
+                var newEmbed = new EmbedBuilder()
+                        .setTitle("Show added to queue")
+                        .setDescription("The bot has added the show to the queue to download. This process may take a day or two to complete.")
+                        .addField("Title:", "```" + selectedShow.name + "```")
+                        .addField("TVDB ID:", "```" + selectedShow.id + "```")
+                        .setImage(selectedShow.getImage())
+                        .setColor(Color.GREEN);
+
+                // Add the shows overview if it is present
+                if (!StringUtils.isBlank(selectedShow.overview)) {
+                    newEmbed.addField("Overview:", "```" + selectedShow.overview + "```");
+                }
+
+                // Update the message with the new embed message
                 discordApi.getMessageById(replyMessage.getId(), incomingMessage.getChannel()).join().delete().join();
                 replyMessage = new MessageBuilder()
-                        .setEmbed(new EmbedBuilder()
-                                .setTitle("Show added to queue")
-                                .setDescription("The bot has added the show to the queue to download. This process may take a day or two to complete.")
-                                .addField("Title:", "```" + selectedShow.name + "```")
-                                .addField("TVDB ID:", "```" + selectedShow.id + "```")
-                                .setImage(selectedShow.getImage())
-                                .setColor(Color.GREEN))
+                        .setEmbed(newEmbed)
                         .replyTo(incomingMessage)
                         .send(incomingMessage.getChannel())
                         .join();

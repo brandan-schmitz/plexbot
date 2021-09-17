@@ -187,7 +187,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
         try {
             // Configure the process name as it will appear in the bot process manager
-            configureProcess("Downloading " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber);
+            configureProcess("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - loading...");
 
             // Mark the item as downloading since the process has been started
             queueItem = downloadQueueItemDao.updateStatus(queueItem.id, "downloading");
@@ -268,6 +268,8 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 }
             }
 
+            updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - masking...");
+
             // Add the torrent to real-debrid, use the proper method based on the file type
             torrentInformation = addTorrent(queueItem);
 
@@ -299,7 +301,6 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
                 // Add the video files that match the right season/episode string to the list of possible files
                 if (type.isVideo() && normalizedPathname.contains(fileUtilities.buildSeasonAndEpisodeString(queueItem.episodeNumber, queueItem.seasonNumber))) {
-                    logger.info("Possible File: " + file.path);
                     possibleFiles.add(file);
                 }
             }
@@ -371,8 +372,6 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 return;
             }
 
-            logger.info("Selected File: " + selectedFile.path);
-
             // Select the proper file on real-debrid
             rdbService.selectFiles(torrentInformation.id, String.valueOf(selectedFile.id));
 
@@ -383,6 +382,15 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
             while (torrentInformation.status != RdbTorrentStatusEnum.DOWNLOADED) {
                 if (lastUpdated.plus(5, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
                     torrentInformation = rdbService.getTorrentInfo(torrentInformation.id);
+
+                    // Update the process sting with the download progress
+                    if (torrentInformation.status == RdbTorrentStatusEnum.DOWNLOADING) {
+                        updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+                                queueItem.episodeNumber + " - masking: " + torrentInformation.progress + "%");
+                    } else {
+                        updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+                                queueItem.episodeNumber + " - masking: processing...");
+                    }
 
                     // If real-debrid encountered an error while downloading the file then stop
                     if (torrentInformation.status == RdbTorrentStatusEnum.VIRUS ||
@@ -423,6 +431,9 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
             // Create a status tracker for the download failure status
             AtomicBoolean downloadFailed = new AtomicBoolean(false);
 
+            updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+                    queueItem.episodeNumber + " - downloading");
+
             // Run the download task
             DownloadQueueItem finalQueueItem = queueItem;
             RdbTorrent finalTorrentInformation = torrentInformation;
@@ -431,8 +442,8 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                     .subscribe().with(
                             progress -> {
                                 var percentage = (((double) progress / unrestrictedLink.filesize) * 100);
-                                updateProcessString("Downloading " + finalQueueItem.showId + " - s" +
-                                        finalQueueItem.seasonNumber + "e" + finalQueueItem.episodeNumber + " - " + decimalFormatter.format(percentage) + "%");
+                                updateProcessString("Download " + finalQueueItem.showId + " - s" + finalQueueItem.seasonNumber + "e" +
+                                        finalQueueItem.episodeNumber + " - downloading: " + decimalFormatter.format(percentage) + "%");
                             },
                             failure -> {
                                 logger.error(new InterruptedException("Failed to download file " + finalTempDownloadFilename + " for the following torrent file: " + finalQueueItem.filename));
@@ -460,6 +471,9 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 endProcess();
                 return;
             }
+
+            updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+                    queueItem.episodeNumber + " - processing");
 
             // Generate the season and show folder names
             var showFoldername = fileUtilities.generatePathname(showInfo.series);

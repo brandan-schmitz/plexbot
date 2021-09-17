@@ -1,5 +1,6 @@
 package net.celestialdata.plexbot.db.daos;
 
+import net.celestialdata.plexbot.clients.models.sg.enums.SgQuality;
 import net.celestialdata.plexbot.db.entities.DownloadHistoryItem;
 import net.celestialdata.plexbot.db.entities.DownloadQueueItem;
 import net.celestialdata.plexbot.utilities.FileUtilities;
@@ -43,33 +44,35 @@ public class DownloadHistoryItemDao {
     }
 
     @Transactional
+    public boolean exists(long showTvdbId, int seasonNumber, int episodeNumber, SgQuality quality, String status) {
+        return DownloadQueueItem.count("showId = ?1 and seasonNumber = ?2 and episodeNumber = ?3 and quality = ?4 and status = ?5",
+                showTvdbId, seasonNumber, episodeNumber, quality, status) >= 1;
+    }
+
+    @Transactional
     public boolean existsByFilename(String filename) {
-        return DownloadHistoryItem.count("filename", filename) == 1;
+        return DownloadHistoryItem.count("filename", filename) >= 1;
     }
 
     @Transactional
     public boolean existsByResource(String resource) {
-        return DownloadHistoryItem.count("resource", resource) == 1;
+        return DownloadHistoryItem.count("resource", resource) >= 1;
     }
 
     @Transactional
     public DownloadHistoryItem create(DownloadQueueItem queueItem, String status) {
-        if (existsByResource(queueItem.resource)) {
-            return getByResource(queueItem.resource);
-        } else {
-            DownloadHistoryItem entity = new DownloadHistoryItem();
-            entity.resource = queueItem.resource;
-            entity.filename = queueItem.filename;
-            entity.filetype = queueItem.filetype;
-            entity.showId = queueItem.showId;
-            entity.seasonNumber = queueItem.seasonNumber;
-            entity.episodeNumber = queueItem.episodeNumber;
-            entity.quality = queueItem.quality;
-            entity.status = status;
-            entity.time = LocalDateTime.now();
-            entity.persist();
-            return entity;
-        }
+        DownloadHistoryItem entity = new DownloadHistoryItem();
+        entity.resource = queueItem.resource;
+        entity.filename = queueItem.filename;
+        entity.filetype = queueItem.filetype;
+        entity.showId = queueItem.showId;
+        entity.seasonNumber = queueItem.seasonNumber;
+        entity.episodeNumber = queueItem.episodeNumber;
+        entity.quality = queueItem.quality;
+        entity.status = status;
+        entity.time = LocalDateTime.now();
+        entity.persist();
+        return entity;
     }
 
     @Transactional
