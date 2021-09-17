@@ -70,21 +70,17 @@ public class DownloadQueueItemDao {
 
     @Transactional
     public DownloadQueueItem create(SgHistoryItem historyItem, String filename, String filetype) {
-        if (exists(filename)) {
-            return DownloadQueueItem.find("filename", filename).firstResult();
-        } else {
-            DownloadQueueItem entity = new DownloadQueueItem();
-            entity.resource = historyItem.resource;
-            entity.filename = filename;
-            entity.filetype = filetype;
-            entity.showId = historyItem.tvdbId;
-            entity.seasonNumber = historyItem.season;
-            entity.episodeNumber = historyItem.episode;
-            entity.quality = historyItem.quality;
-            entity.status = "queued";
-            entity.persist();
-            return entity;
-        }
+        DownloadQueueItem entity = new DownloadQueueItem();
+        entity.resource = historyItem.resource;
+        entity.filename = filename;
+        entity.filetype = filetype;
+        entity.showId = historyItem.tvdbId;
+        entity.seasonNumber = historyItem.season;
+        entity.episodeNumber = historyItem.episode;
+        entity.quality = historyItem.quality;
+        entity.status = "queued";
+        entity.persist();
+        return entity;
     }
 
     @Transactional
