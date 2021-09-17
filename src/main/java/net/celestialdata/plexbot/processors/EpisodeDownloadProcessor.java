@@ -307,6 +307,14 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
             // Make sure the bot was able to locate some files
             if (possibleFiles.isEmpty()) {
+                // Create a list of the files that were included within the torrent
+                StringBuilder mediaFileList = new StringBuilder();
+                for (RdbTorrentFile file : torrentInformation.files) {
+                    if (FileType.isVideo(file.path)) {
+                        mediaFileList.append(file.path).append("\n");
+                    }
+                }
+
                 // Send a notice that no files were found
                 new MessageBuilder().setEmbed(new EmbedBuilder()
                         .setTitle("Unable to determine which file to download")
@@ -316,6 +324,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                         .addInlineField("Season:", "```" + queueItem.seasonNumber + "```")
                         .addInlineField("Episode:", "```" + queueItem.episodeNumber + "```")
                         .addField("Torrent File:", "```" + queueItem.filename + "```")
+                        .addField("Files included in torrent:", "```" + mediaFileList + "```")
                         .setColor(Color.YELLOW)
                 ).send(discordApi.getUserById(botOwner).join()).join();
 
@@ -348,6 +357,14 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
             // Make sure the bot was able to select a file from the possible files
             if (selectedFile == null) {
+                // Create a list of the files that were included within the torrent
+                StringBuilder mediaFileList = new StringBuilder();
+                for (RdbTorrentFile file : torrentInformation.files) {
+                    if (FileType.isVideo(file.path)) {
+                        mediaFileList.append(file.path).append("\n");
+                    }
+                }
+
                 // Send a notice that no files were found
                 new MessageBuilder().setEmbed(new EmbedBuilder()
                         .setTitle("Unable to determine which file to download")
@@ -357,6 +374,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                         .addInlineField("Season:", "```" + queueItem.seasonNumber + "```")
                         .addInlineField("Episode:", "```" + queueItem.episodeNumber + "```")
                         .addField("Torrent File:", "```" + queueItem.filename + "```")
+                        .addField("Files included in torrent:", "```" + mediaFileList + "```")
                         .setColor(Color.YELLOW)
                 ).send(discordApi.getUserById(botOwner).join()).join();
 
