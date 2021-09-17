@@ -31,6 +31,7 @@ import org.jboss.logging.Logger;
 import javax.annotation.Nullable;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
+import javax.ws.rs.WebApplicationException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -557,8 +558,12 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
             endProcess();
         } catch (Throwable e) {
             // Delete torrent from real-debrid if there was an error
-            if (torrentInformation != null) {
-                rdbService.deleteTorrent(torrentInformation.id);
+            try {
+                if (torrentInformation != null) {
+                    rdbService.deleteTorrent(torrentInformation.id);
+                }
+            } catch (Throwable e1) {
+                logger.trace("Unable to delete torrent after error, the torrent may have already been deleted.");
             }
 
             // Mark that the download failed
