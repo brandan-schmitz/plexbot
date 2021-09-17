@@ -1,6 +1,6 @@
 package net.celestialdata.plexbot.enumerators;
 
-public enum MovieDownloadSteps {
+public enum DownloadSteps {
     SELECT_MOVIE,
     LOCATE_MOVIE,
     MASK_DOWNLOAD_INIT,

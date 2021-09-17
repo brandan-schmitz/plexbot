@@ -5,10 +5,8 @@ import net.celestialdata.plexbot.clients.models.tvdb.responses.*;
 import org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 
 @RegisterRestClient(baseUri = "https://api4.thetvdb.com/v4")
 @RegisterClientHeaders(TvdbAuthorizationHeaderFactory.class)
@@ -17,32 +15,32 @@ public interface TvdbService {
     @GET
     @Produces("application/json")
     @Path("/episodes/{id}")
-    TvdbEpisodeResponse getEpisode(@PathParam("id") String id);
+    TvdbEpisodeResponse getEpisode(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
     @Path("/episodes/{id}/extended")
-    TvdbExtendedEpisodeResponse getExtendedEpisode(@PathParam("id") String id);
+    TvdbExtendedEpisodeResponse getExtendedEpisode(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
     @Path("/movies/{id}")
-    TvdbMovieResponse getMovie(@PathParam("id") String id);
+    TvdbMovieResponse getMovie(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
     @Path("/movies/{id}/extended")
-    TvdbExtendedMovieResponse getExtendedMovie(@PathParam("id") String id);
+    TvdbExtendedMovieResponse getExtendedMovie(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
     @Path("/seasons/{id}")
-    TvdbSeasonResponse getSeason(@PathParam("id") String id);
+    TvdbSeasonResponse getSeason(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
     @Path("/seasons/{id}/extended")
-    TvdbExtendedSeasonResponse getExtendedSeason(@PathParam("id") String id);
+    TvdbExtendedSeasonResponse getExtendedSeason(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
@@ -52,10 +50,20 @@ public interface TvdbService {
     @GET
     @Produces("application/json")
     @Path("/series/{id}/extended")
-    TvdbExtendedSeriesResponse getExtendedSeries(@PathParam("id") String id);
+    TvdbExtendedSeriesResponse getExtendedSeries(@PathParam("id") long id);
 
     @GET
     @Produces("application/json")
-    @Path("/series/{id}/episodes/official")
-    TvdbSeriesEpisodesResponse getSeriesEpisodes(@PathParam("id") String id);
+    @Path("/series/{id}/episodes/default")
+    TvdbSeriesEpisodesResponse getSeriesEpisodes(@PathParam("id") long id);
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/search")
+    TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType, @QueryParam("limit") int limit);
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/search")
+    TvdbSearchResponse search(@QueryParam("q") String searchQuery, @QueryParam("type") String mediaType, @QueryParam("year") String year, @QueryParam("limit")  int limit);
 }

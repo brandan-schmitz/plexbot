@@ -173,7 +173,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
         showsInDatabase.forEach(show -> {
             try {
                 // Log a tracer message
-                logger.info("Verifying show: " + show.name + " {tvdb-" + show.id + "}");
+                logger.trace("Verifying show: " + show.name + " {tvdb-" + show.id + "}");
 
                 // Verify the folder exists, if not send warnings
                 if (!Files.isDirectory(Path.of(tvFolder + "/" + show.foldername))) {
@@ -213,7 +213,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
         mediaFiles.forEach(file -> {
             try {
                 // Log a tracer message
-                logger.info("Verifying media file: " + file.getAbsolutePath());
+                logger.trace("Verifying media file: " + file.getAbsolutePath());
 
                 // Verify the file
                 verifyMediaFile(file);
@@ -238,7 +238,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
         subtitleFiles.forEach(file -> {
             try {
                 // Log a tracer message
-                logger.info("Verifying subtitle file: " + file.getAbsolutePath());
+                logger.trace("Verifying subtitle file: " + file.getAbsolutePath());
 
                 // Verify the file
                 verifySubtitleFile(file);

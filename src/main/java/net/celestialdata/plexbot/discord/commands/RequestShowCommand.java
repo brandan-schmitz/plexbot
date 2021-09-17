@@ -1,6 +1,5 @@
 package net.celestialdata.plexbot.discord.commands;
 
-import io.quarkus.arc.log.LoggerName;
 import net.celestialdata.plexbot.discord.commandhandler.api.Command;
 import net.celestialdata.plexbot.processors.RequestProcessor;
 import org.javacord.api.entity.message.Message;
@@ -14,10 +13,9 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 @ApplicationScoped
-public class RequestMovieCommand implements Command<Message> {
+public class RequestShowCommand implements Command<Message> {
 
-    @LoggerName("net.celestialdata.plexbot.discord.commands.RequestMovieCommand")
-    Logger logger;
+    private final Logger logger = Logger.getLogger(RequestShowCommand.class);
 
     @Inject
     Instance<RequestProcessor> requestProcessorInstance;
@@ -30,12 +28,12 @@ public class RequestMovieCommand implements Command<Message> {
     @Override
     public List<String> getAliases() {
         List<String> alias = new ArrayList<>();
-        alias.add("rm");
+        alias.add("rs");
         return alias;
     }
 
     @Override
     public void execute(Message incomingMessage, String prefix, String usedAlias, String parameterString) {
-        requestProcessorInstance.get().runMovieRequest(incomingMessage, parameterString);
+        requestProcessorInstance.get().runShowRequest(incomingMessage, parameterString);
     }
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @SuppressWarnings("unused")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RdbMagnetLink {
+public class RdbAddedTorrent {
     public String id;
     public String uri;
 }

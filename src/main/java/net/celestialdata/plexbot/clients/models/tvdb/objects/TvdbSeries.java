@@ -20,6 +20,7 @@ public class TvdbSeries {
     public List<String> overviewTranslations;
     public String slug;
     public TvdbSeasonType type;
+    public String overview;
 
     public String getImage() {
         if (StringUtils.isBlank(this.image)) {
