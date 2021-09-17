@@ -545,11 +545,13 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
             }
 
             // Trigger a refresh of the libraries on the Plex server
+            /*
             try {
                 plexService.refreshLibraries();
             } catch (Exception e) {
                 reportError(e);
             }
+             */
 
             // Make sure the process is removed from the bot status manager.
             endProcess();
