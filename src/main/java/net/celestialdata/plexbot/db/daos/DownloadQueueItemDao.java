@@ -50,6 +50,22 @@ public class DownloadQueueItemDao {
         return entity;
     }
 
+    @SuppressWarnings("DuplicatedCode")
+    @Transactional
+    public DownloadQueueItem create(DownloadQueueItem queueItem) {
+        DownloadQueueItem entity = new DownloadQueueItem();
+        entity.resource = queueItem.resource;
+        entity.filename = queueItem.filename;
+        entity.filetype = queueItem.filetype;
+        entity.showId = queueItem.showId;
+        entity.seasonNumber = queueItem.seasonNumber;
+        entity.episodeNumber = queueItem.episodeNumber;
+        entity.quality = queueItem.quality;
+        entity.status = "queued";
+        entity.persist();
+        return entity;
+    }
+
     @Transactional
     public DownloadQueueItem updateStatus(int id, String status) {
         DownloadQueueItem entity = DownloadQueueItem.findById(id);

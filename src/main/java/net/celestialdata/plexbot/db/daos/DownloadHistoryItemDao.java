@@ -19,6 +19,12 @@ public class DownloadHistoryItemDao {
     }
 
     @Transactional
+    public long countFailed(long showTvdbId, int seasonNumber, int episodeNumber, SgQuality quality, String filename) {
+        return DownloadHistoryItem.count("showId = ?1 and seasonNumber = ?2 and episodeNumber = ?3 and quality = ?4 and filename = ?5",
+                showTvdbId, seasonNumber, episodeNumber, quality, filename);
+    }
+
+    @Transactional
     public DownloadHistoryItem create(DownloadQueueItem queueItem, String status) {
         DownloadHistoryItem entity = new DownloadHistoryItem();
         entity.resource = queueItem.resource;
