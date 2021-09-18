@@ -297,6 +297,9 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 // Convert the pathname to all lowercase letters for easier parsing
                 var normalizedPathname = file.path.toLowerCase();
 
+                // Replace any spaces with '.' characters to account for the few torrent file names with spaces
+                normalizedPathname = normalizedPathname.replace(" ", ".");
+
                 // Determine the type of file
                 var type = FileType.determineFiletype(normalizedPathname);
 
