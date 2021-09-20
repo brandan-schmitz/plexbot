@@ -313,6 +313,9 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 downloadHistoryItemDao.create(queueItem, "skipped");
                 downloadQueueItemDao.delete(queueItem);
 
+                // Delete the torrent file from real-debrid
+                rdbService.deleteTorrent(torrentInformation.id);
+
                 // Update the episode status in sickgear to show that the download was skipped
                 sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.SKIPPED);
 
@@ -353,6 +356,9 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 // Mark the download as a skipped download in the history
                 downloadHistoryItemDao.create(queueItem, "skipped");
                 downloadQueueItemDao.delete(queueItem);
+
+                // Delete the torrent file from real-debrid
+                rdbService.deleteTorrent(torrentInformation.id);
 
                 // Update the episode status in sickgear to show that the download was skipped
                 sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.SKIPPED);
