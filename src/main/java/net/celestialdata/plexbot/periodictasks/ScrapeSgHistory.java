@@ -5,6 +5,7 @@ import net.celestialdata.plexbot.clients.models.sg.objects.SgHistoryItem;
 import net.celestialdata.plexbot.clients.utilities.SgServiceWrapper;
 import net.celestialdata.plexbot.db.daos.DownloadHistoryItemDao;
 import net.celestialdata.plexbot.db.daos.DownloadQueueItemDao;
+import net.celestialdata.plexbot.enumerators.FileType;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -60,22 +61,19 @@ public class ScrapeSgHistory {
             return;
         }
 
-        // Try to clear the SickGear history after a successful fetch so that we do not encounter accidental duplicates
-        sgServiceWrapper.clearHistory();
-
         // Cycle through each of the history items and add them to the download queue
         for (SgHistoryItem item : historyResponse.results) {
             try {
                 // Check if the DB already contains this specific item or if it was downloaded already
                 if (downloadQueueItemDao.exists(item.tvdbId, item.season, item.episode, item.quality) ||
-                        downloadHistoryItemDao.exists(item.tvdbId, item.season, item.episode, item.quality, "downloaded")) {
+                        downloadHistoryItemDao.exists(item.tvdbId, item.season, item.episode, item.quality, item.resource)) {
                     continue;
                 }
 
                 // Create a local copy of the resource field for modification
                 var resource = item.resource;
 
-                // Remove the .. that occasionally appears at the end of some resource strings
+                // Remove the two '.' characters that occasionally appears at the end of some resource strings
                 if (resource.endsWith("..")) {
                     resource = resource.substring(0, (resource.length() - 2));
                 }
@@ -88,34 +86,24 @@ public class ScrapeSgHistory {
 
                 // Ensure that the file was found
                 if (files.isEmpty()) {
-                    if (!downloadHistoryItemDao.exists(item.tvdbId, item.season, item.episode, item.quality, "downloaded")) {
-                        logger.warn("The resource file for " + item.showName + " s" + item.season + "e" + item.episode + " was not located!!");
-                        discordApi.getUserById(botOwner).join().sendMessage(new EmbedBuilder()
-                                .setTitle("Missing Resource File")
-                                .setDescription("I was unable to located the specified resource file while attempting to scrape the following episode history from SickGear.")
-                                .addField("Show:", "```" + item.showName + "```")
-                                .addInlineField("Season:", "```" + item.season + "```")
-                                .addInlineField("Episode:", "```" + item.episode + "```")
-                                .addField("Resource:", "```" + item.resource + "```")
-                                .setColor(Color.YELLOW)
-                        ).join();
-                    }
+                    logger.warn("The resource file for " + item.showName + " s" + item.season + "e" + item.episode + " was not located!!");
+                    discordApi.getUserById(botOwner).join().sendMessage(new EmbedBuilder()
+                            .setTitle("Missing Resource File")
+                            .setDescription("I was unable to located the specified resource file while attempting to scrape the following episode history from SickGear.")
+                            .addField("Show:", "```" + item.showName + "```")
+                            .addInlineField("Season:", "```" + item.season + "```")
+                            .addInlineField("Episode:", "```" + item.episode + "```")
+                            .addField("Resource:", "```" + item.resource + "```")
+                            .setColor(Color.YELLOW)
+                    ).join();
                     continue;
                 }
 
                 // Fetch the first file in the collection, this should be the only one and the file we want
                 var file = files.iterator().next();
 
-                // Determine the type of file
-                var filetype = "torrent";
-                if (file.getName().endsWith(".torrent")) {
-                    filetype = "torrent";
-                } else if (file.getName().endsWith(".magnet")) {
-                    filetype = "magnet";
-                }
-
                 // Add the file to the download queue
-                downloadQueueItemDao.create(item, file.getName(), filetype);
+                downloadQueueItemDao.create(item, file.getName(), FileType.determineFiletype(file.getName()).getTypeString());
             } catch (Throwable e) {
                 logger.error(e);
                 discordApi.getUserById(botOwner).join().sendMessage(new EmbedBuilder()

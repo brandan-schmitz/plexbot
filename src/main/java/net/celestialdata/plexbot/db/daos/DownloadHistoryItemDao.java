@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 public class DownloadHistoryItemDao {
 
     @Transactional
-    public boolean exists(long showTvdbId, int seasonNumber, int episodeNumber, SgQuality quality, String status) {
-        return DownloadHistoryItem.count("showId = ?1 and seasonNumber = ?2 and episodeNumber = ?3 and quality = ?4 and status = ?5",
-                showTvdbId, seasonNumber, episodeNumber, quality, status) >= 1;
+    public boolean exists(long showTvdbId, int seasonNumber, int episodeNumber, SgQuality quality, String resource) {
+        return DownloadHistoryItem.count("showId = ?1 and seasonNumber = ?2 and episodeNumber = ?3 and quality = ?4 and resource = ?5",
+                showTvdbId, seasonNumber, episodeNumber, quality, resource) >= 1;
     }
 
     @Transactional
@@ -24,6 +24,7 @@ public class DownloadHistoryItemDao {
                 showTvdbId, seasonNumber, episodeNumber, quality, filename);
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @Transactional
     public DownloadHistoryItem create(DownloadQueueItem queueItem, String status) {
         DownloadHistoryItem entity = new DownloadHistoryItem();
