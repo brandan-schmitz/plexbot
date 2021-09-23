@@ -557,6 +557,10 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
             // status to queued so that it can be tried again.
             downloadHistoryItemDao.create(queueItem, "dead");
             downloadQueueItemDao.updateStatus(queueItem.id, "queued");
+
+            // Display the error and exit
+            logger.error(e);
+            endProcess(e);
         } catch (Throwable e) {
             // Delete torrent from real-debrid if there was an error
             try {
