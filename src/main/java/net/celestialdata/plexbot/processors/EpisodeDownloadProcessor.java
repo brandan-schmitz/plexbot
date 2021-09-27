@@ -210,7 +210,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
             }
 
             // Fetch a list of episodes in the season this episode is in
-            var seriesEpisodeList = tvdbService.getSeriesEpisodes(queueItem.showId);
+            var seriesEpisodeList = tvdbService.getSeriesEpisodes(queueItem.showId, queueItem.seasonNumber);
 
             // Verify that it was able to get a list of episodes for the season
             if (!seriesEpisodeList.status.equalsIgnoreCase("success")) {
