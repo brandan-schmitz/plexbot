@@ -315,13 +315,18 @@ public class FileUtilities {
 
         if (file.open()) {
             // Get the unparsed duration and then calculate the duration to the nearest minute
-            var duration = Integer.parseInt(file.info("General;%Duration%"));
-            if ((duration / 60000.0) < 0.5) {
-                duration = 0;
-            } else if ((duration / 60000.0) < 1 && (duration / 60000.0) >= 0.5) {
-                duration = 1;
-            } else {
-                duration = (duration / 60000) + ((((duration % 60000) / 1000) >= 30) ? 1 : 0);
+            int duration;
+            try {
+                duration = Integer.parseInt(file.info("General;%Duration%"));
+                if ((duration / 60000.0) < 0.5) {
+                    duration = 0;
+                } else if ((duration / 60000.0) < 1 && (duration / 60000.0) >= 0.5) {
+                    duration = 1;
+                } else {
+                    duration = (duration / 60000) + ((((duration % 60000) / 1000) >= 30) ? 1 : 0);
+                }
+            } catch (NumberFormatException e) {
+                throw new NumberFormatException("Unable to determine playback length.");
             }
 
             // Get the codec type and verify it is not empty, if it is fetch and parse from another source
