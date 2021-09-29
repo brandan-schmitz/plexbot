@@ -133,25 +133,10 @@ public class FileUtilities {
         if (Files.exists(Paths.get(destination)) && !overwrite) {
             success = false;
         } else {
-            // Attempt to move the file
-            try (
-                    FileChannel inputChannel = new FileInputStream(source).getChannel();
-                    FileChannel outputChannel = new FileOutputStream(destination, false).getChannel()
-            ) {
-                ByteBuffer buffer = ByteBuffer.allocateDirect(1048576);
-                while (inputChannel.read(buffer) != -1) {
-                    buffer.flip();
-                    outputChannel.write(buffer);
-                    buffer.clear();
-                }
-            } catch (IOException e) {
-                success = false;
-            }
-
-            // If the file was moved successfully, delete the original
             try {
-                FileUtils.delete(new File(source));
-            } catch (IOException e) {
+                success = new File(source).renameTo(new File(destination));
+            } catch (Exception e) {
+                e.printStackTrace();
                 success = false;
             }
         }
@@ -329,12 +314,19 @@ public class FileUtilities {
         MediaInfoData mediaInfoData = new MediaInfoData();
 
         if (file.open()) {
-            // Get the unparsed duration
-            var durationString = file.info("General;%Duration/String3%");
+            // Get the unparsed duration and then calculate the duration to the nearest minute
+            var duration = Integer.parseInt(file.info("General;%Duration%"));
+            if ((duration / 60000.0) < 0.5) {
+                duration = 0;
+            } else if ((duration / 60000.0) < 1 && (duration / 60000.0) >= 0.5) {
+                duration = 1;
+            } else {
+                duration = (duration / 60000) + ((((duration % 60000) / 1000) >= 30) ? 1 : 0);
+            }
 
             // Get the codec type and verify it is not empty, if it is fetch and parse from another source
             var codecString = file.info("Video;%Encoded_Library_Name%");
-            if (codecString.isBlank()) {
+            if (StringUtils.isBlank(codecString)) {
                 codecString = file.info("Video;%InternetMediaType%").replace("video/", "");
             }
 
@@ -342,9 +334,7 @@ public class FileUtilities {
             mediaInfoData.codec = codecString;
             mediaInfoData.width = Integer.parseInt(file.info("Video;%Width%"));
             mediaInfoData.height = Integer.parseInt(file.info("Video;%Height%"));
-            mediaInfoData.duration = (Integer.parseInt(durationString.substring(0, 2)) * 60) +
-                    Integer.parseInt(durationString.substring(3, 5)) +
-                    ((Integer.parseInt(durationString.substring(6, 8)) >= 30) ? 1 : 0);
+            mediaInfoData.duration = duration;
         }
 
         return mediaInfoData;
