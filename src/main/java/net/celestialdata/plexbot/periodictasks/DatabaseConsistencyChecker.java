@@ -422,7 +422,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
             MediaInfoData mediaInfo;
             try {
                 mediaInfo = fileUtilities.getMediaInfo(file.getAbsolutePath());
-            } catch (StringIndexOutOfBoundsException e) {
+            } catch (NumberFormatException e) {
                 // If the file is corrupted, send the proper warnings
                 logger.warn("Corrupted File Detected: " + file.getAbsolutePath());
                 corruptedMediaItemDao.create(mediaType, file);
