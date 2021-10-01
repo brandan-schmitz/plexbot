@@ -299,6 +299,8 @@ public class ImportMediaProcessor extends BotProcess {
                     this::updateStatus,
                     failure -> {
                         if (!failure.getMessage().equals("Process canceled by user")) {
+                            logger.error(failure);
+                            failure.printStackTrace();
                             reportError(failure);
                         }
                     },
@@ -647,6 +649,8 @@ public class ImportMediaProcessor extends BotProcess {
                     progress.getAndIncrement();
                     multiEmitter.emit(progress.get());
                 } catch (Exception e) {
+                    logger.error("Failed adding " + file.getName(), e);
+                    e.printStackTrace();
                     if (sendFailureMessages) {
                         new MessageBuilder()
                                 .setEmbed(messageFormatter.errorMessage("There was an error while importing the following file: " +

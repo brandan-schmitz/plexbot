@@ -127,13 +127,22 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 rdbService.deleteTorrent(rdbAddedTorrent.id);
                 return null;
             } else if (torrentInformation.status == RdbTorrentStatusEnum.MAGNET_CONVERSION) {
-                LocalDateTime lastCheck = LocalDateTime.now();
+                // Collect the start times and variable for storing when to perform the next check
+                var lastCheck = LocalDateTime.now();
+                var startTime = LocalDateTime.now();
 
-                // Wait for the magnet link to get converted, only check every 3 seconds to avoid overloading the API
+                // Wait for the magnet link to get converted
                 while (torrentInformation.status == RdbTorrentStatusEnum.MAGNET_CONVERSION) {
-                    if (lastCheck.plus(3, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
+                    // Only check every 3 seconds to avoid overloading the API
+                    if (LocalDateTime.now().isAfter(lastCheck.plus(3, ChronoUnit.SECONDS))) {
                         torrentInformation = rdbService.getTorrentInfo(rdbAddedTorrent.id);
                         lastCheck = LocalDateTime.now();
+                    }
+
+                    // If the process has exceeded 5 minutes then cancel and return null as it likely will not complete
+                    if (LocalDateTime.now().isAfter(startTime.plus(5, ChronoUnit.MINUTES))) {
+                        rdbService.deleteTorrent(rdbAddedTorrent.id);
+                        return null;
                     }
                 }
             }
