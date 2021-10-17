@@ -470,7 +470,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 // If the episode is not optimized, ensure it is in the queue
                 if (!movie.isOptimized) {
-                    encodingQueueItemDao.create("movie", movie.id);
+                    encodingQueueItemDao.create("movie", movie.tmdbId);
                 }
 
                 // Remove the movie from the list of movies in the database

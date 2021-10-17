@@ -37,7 +37,7 @@ public class EncodingQueueResource {
 
         do {
             // Fetch the next item from the DB queue
-            item = encodingQueueItemDao.listALl().get(0);
+            item = encodingQueueItemDao.getNext();
 
             // Fetch the media information and ensure it is not already optimized
             if (item.mediaType.equals("movie")) {

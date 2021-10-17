@@ -26,6 +26,11 @@ public class EncodingQueueItemDao {
     }
 
     @Transactional
+    public EncodingQueueItem getNext() {
+        return EncodingQueueItem.findAll().firstResult();
+    }
+
+    @Transactional
     public boolean exists(int id) {
         return EncodingQueueItem.count("id", id) == 1;
     }
