@@ -1,7 +1,5 @@
 package net.celestialdata.plexbot.enumerators;
 
-import java.io.File;
-
 @SuppressWarnings({"unused"})
 public enum FileType {
     AVI(".avi"),

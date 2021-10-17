@@ -1,6 +1,7 @@
 package net.celestialdata.plexbot.utilities;
 
 import io.smallrye.mutiny.Multi;
+import lombok.SneakyThrows;
 import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbEpisode;
 import net.celestialdata.plexbot.clients.models.tvdb.objects.TvdbSeries;
@@ -309,6 +310,7 @@ public class FileUtilities {
         return getMediaInfo(tvFolder + episode.show.foldername + "/Season " + episode.season + "/" + episode.filename);
     }
 
+    @SneakyThrows
     public MediaInfoData getMediaInfo(String pathToVideo) {
         MediaInfoFile file = new MediaInfoFile(pathToVideo);
         MediaInfoData mediaInfoData = new MediaInfoData();
@@ -340,6 +342,8 @@ public class FileUtilities {
             mediaInfoData.width = Integer.parseInt(file.info("Video;%Width%"));
             mediaInfoData.height = Integer.parseInt(file.info("Video;%Height%"));
             mediaInfoData.duration = duration;
+        } else {
+            throw new InterruptedException("Unable to open file in MediaInfo to parse metadata.");
         }
 
         return mediaInfoData;
