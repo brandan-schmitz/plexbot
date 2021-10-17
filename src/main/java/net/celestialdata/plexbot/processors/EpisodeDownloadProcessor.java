@@ -31,6 +31,7 @@ import org.jboss.logging.Logger;
 import javax.annotation.Nullable;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
+import javax.ws.rs.ProcessingException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -126,13 +127,22 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 rdbService.deleteTorrent(rdbAddedTorrent.id);
                 return null;
             } else if (torrentInformation.status == RdbTorrentStatusEnum.MAGNET_CONVERSION) {
-                LocalDateTime lastCheck = LocalDateTime.now();
+                // Collect the start times and variable for storing when to perform the next check
+                var lastCheck = LocalDateTime.now();
+                var startTime = LocalDateTime.now();
 
-                // Wait for the magnet link to get converted, only check every 3 seconds to avoid overloading the API
+                // Wait for the magnet link to get converted
                 while (torrentInformation.status == RdbTorrentStatusEnum.MAGNET_CONVERSION) {
-                    if (lastCheck.plus(3, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
+                    // Only check every 3 seconds to avoid overloading the API
+                    if (LocalDateTime.now().isAfter(lastCheck.plus(3, ChronoUnit.SECONDS))) {
                         torrentInformation = rdbService.getTorrentInfo(rdbAddedTorrent.id);
                         lastCheck = LocalDateTime.now();
+                    }
+
+                    // If the process has exceeded 5 minutes then cancel and return null as it likely will not complete
+                    if (LocalDateTime.now().isAfter(startTime.plus(5, ChronoUnit.MINUTES))) {
+                        rdbService.deleteTorrent(rdbAddedTorrent.id);
+                        return null;
                     }
                 }
             }
@@ -187,7 +197,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
         try {
             // Configure the process name as it will appear in the bot process manager
-            configureProcess("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - loading...");
+            configureProcess("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - loading...");
 
             // Mark the item as downloading since the process has been started
             queueItem = downloadQueueItemDao.updateStatus(queueItem.id, "downloading");
@@ -200,12 +210,8 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 // Log the issue to the log
                 logger.error("An error occurred while trying to fetch information on TVDB about this torrent file's show: " + queueItem.filename);
 
-                // Mark the download as a failed download in the history
-                downloadHistoryItemDao.create(queueItem, "failed");
-                downloadQueueItemDao.delete(queueItem);
-
-                // Update the episode status in sickgear to show that the download failed
-                sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.FAILED);
+                // Manage the failure status of the queue item
+                handleFailed(queueItem);
 
                 // Stop the process
                 endProcess();
@@ -213,19 +219,15 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
             }
 
             // Fetch a list of episodes in the season this episode is in
-            var seriesEpisodeList = tvdbService.getSeriesEpisodes(queueItem.showId);
+            var seriesEpisodeList = tvdbService.getSeriesEpisodes(queueItem.showId, queueItem.seasonNumber);
 
             // Verify that it was able to get a list of episodes for the season
             if (!seriesEpisodeList.status.equalsIgnoreCase("success")) {
                 // Log the issue to the log
                 logger.error("An error occurred while trying to fetch information on TVDB about this torrent file's season episodes: " + queueItem.filename);
 
-                // Mark the download as a failed download in the history
-                downloadHistoryItemDao.create(queueItem, "failed");
-                downloadQueueItemDao.delete(queueItem);
-
-                // Update the episode status in sickgear to show that the download failed
-                sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.FAILED);
+                // Manage the failure status of the queue item
+                handleFailed(queueItem);
 
                 // Stop the process
                 endProcess();
@@ -245,12 +247,8 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 // Log the issue to the log
                 logger.error("Unable to locate the proper episode on TVDB for the following torrent file: " + queueItem.filename);
 
-                // Mark the download as a failed download in the history
-                downloadHistoryItemDao.create(queueItem, "failed");
-                downloadQueueItemDao.delete(queueItem);
-
-                // Update the episode status in sickgear to show that the download failed
-                sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.FAILED);
+                // Manage the failure status of the queue item
+                handleFailed(queueItem);
 
                 // Stop the process
                 endProcess();
@@ -268,7 +266,8 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 }
             }
 
-            updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - masking...");
+            // Update the process of the download in the bot status manager
+            updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" + queueItem.episodeNumber + " - masking...");
 
             // Add the torrent to real-debrid, use the proper method based on the file type
             torrentInformation = addTorrent(queueItem);
@@ -278,12 +277,8 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 // Log the issue to the log
                 logger.error("An error occurred while trying to add the following torrent to real-debrid: " + queueItem.filename);
 
-                // Mark the download as a failed download in the history
-                downloadHistoryItemDao.create(queueItem, "failed");
-                downloadQueueItemDao.delete(queueItem);
-
-                // Update the episode status in sickgear to show that the download failed
-                sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.FAILED);
+                // Manage the failure status of the queue item
+                handleFailed(queueItem);
 
                 // Stop the process
                 endProcess();
@@ -296,11 +291,15 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 // Convert the pathname to all lowercase letters for easier parsing
                 var normalizedPathname = file.path.toLowerCase();
 
+                // Replace any spaces with '.' characters to account for the few torrent file names with spaces
+                normalizedPathname = normalizedPathname.replace(" ", ".");
+
                 // Determine the type of file
                 var type = FileType.determineFiletype(normalizedPathname);
 
                 // Add the video files that match the right season/episode string to the list of possible files
-                if (type.isVideo() && normalizedPathname.contains(fileUtilities.buildSeasonAndEpisodeString(queueItem.episodeNumber, queueItem.seasonNumber))) {
+                // This looks for the s##e## format and verifies that there is a '.' on both sides so that we do not accidentally fetch combined episodes.
+                if (type.isVideo() && normalizedPathname.contains("." + fileUtilities.buildSeasonAndEpisodeString(queueItem.episodeNumber, queueItem.seasonNumber) + ".")) {
                     possibleFiles.add(file);
                 }
             }
@@ -319,9 +318,12 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                         .setColor(Color.YELLOW)
                 ).send(discordApi.getUserById(botOwner).join()).join();
 
-                // Mark the download as a failed download in the history
-                downloadHistoryItemDao.create(queueItem, "failed");
+                // Mark the download as a skipped download in the history
+                downloadHistoryItemDao.create(queueItem, "skipped");
                 downloadQueueItemDao.delete(queueItem);
+
+                // Delete the torrent file from real-debrid
+                rdbService.deleteTorrent(torrentInformation.id);
 
                 // Update the episode status in sickgear to show that the download was skipped
                 sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.SKIPPED);
@@ -360,9 +362,12 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                         .setColor(Color.YELLOW)
                 ).send(discordApi.getUserById(botOwner).join()).join();
 
-                // Mark the download as a failed download in the history
-                downloadHistoryItemDao.create(queueItem, "failed");
+                // Mark the download as a skipped download in the history
+                downloadHistoryItemDao.create(queueItem, "skipped");
                 downloadQueueItemDao.delete(queueItem);
+
+                // Delete the torrent file from real-debrid
+                rdbService.deleteTorrent(torrentInformation.id);
 
                 // Update the episode status in sickgear to show that the download was skipped
                 sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.SKIPPED);
@@ -385,10 +390,10 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
                     // Update the process sting with the download progress
                     if (torrentInformation.status == RdbTorrentStatusEnum.DOWNLOADING) {
-                        updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+                        updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" +
                                 queueItem.episodeNumber + " - masking: " + torrentInformation.progress + "%");
                     } else {
-                        updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+                        updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" +
                                 queueItem.episodeNumber + " - masking: processing...");
                     }
 
@@ -401,12 +406,8 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                         // Log the issue to the log
                         logger.error("An error occurred while waiting for real-debrid to download the file: " + queueItem.filename);
 
-                        // Mark the download as a failed download in the history
-                        downloadHistoryItemDao.create(queueItem, "failed");
-                        downloadQueueItemDao.delete(queueItem);
-
-                        // Update the episode status in sickgear to show that the download failed
-                        sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.FAILED);
+                        // Manage the failure status of the queue item
+                        handleFailed(queueItem);
 
                         // Delete the torrent file from real-debrid
                         rdbService.deleteTorrent(torrentInformation.id);
@@ -431,7 +432,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
             // Create a status tracker for the download failure status
             AtomicBoolean downloadFailed = new AtomicBoolean(false);
 
-            updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+            updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" +
                     queueItem.episodeNumber + " - downloading");
 
             // Run the download task
@@ -442,7 +443,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                     .subscribe().with(
                             progress -> {
                                 var percentage = (((double) progress / unrestrictedLink.filesize) * 100);
-                                updateProcessString("Download " + finalQueueItem.showId + " - s" + finalQueueItem.seasonNumber + "e" +
+                                updateProcessString("Download " + finalQueueItem.showId + " s" + finalQueueItem.seasonNumber + "e" +
                                         finalQueueItem.episodeNumber + " - downloading: " + decimalFormatter.format(percentage) + "%");
                             },
                             failure -> {
@@ -454,16 +455,12 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
             // Handle the failure of the download if one occurred
             if (downloadFailed.get()) {
-                // Mark the download as a failed download in the history
-                downloadHistoryItemDao.create(queueItem, "failed");
-                downloadQueueItemDao.delete(queueItem);
+                // Manage the failure status of the queue item
+                handleFailed(queueItem);
 
                 // Attempt to delete the failed download file(s)
                 FileUtils.deleteQuietly(new File(tempFolder + tempDownloadFilename));
                 FileUtils.deleteQuietly(new File(tempFolder + tempDownloadFilename + ".pbdownload"));
-
-                // Update the episode status in sickgear to show that the download failed
-                sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.FAILED);
 
                 // Delete all the torrent from real-debrid
                 rdbService.deleteTorrent(torrentInformation.id);
@@ -472,7 +469,7 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 return;
             }
 
-            updateProcessString("Download " + queueItem.showId + " - s" + queueItem.seasonNumber + "e" +
+            updateProcessString("Download " + queueItem.showId + " s" + queueItem.seasonNumber + "e" +
                     queueItem.episodeNumber + " - processing");
 
             // Generate the season and show folder names
@@ -555,16 +552,36 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
 
             // Make sure the process is removed from the bot status manager.
             endProcess();
-        } catch (Throwable e) {
+        } catch (ProcessingException e) {
             // Delete torrent from real-debrid if there was an error
-            if (torrentInformation != null) {
-                rdbService.deleteTorrent(torrentInformation.id);
+            try {
+                if (torrentInformation != null) {
+                    rdbService.deleteTorrent(torrentInformation.id);
+                }
+            } catch (Throwable e1) {
+                logger.trace("Unable to delete torrent after error, the torrent may have already been deleted.");
             }
 
-            // Mark that the download failed
-            // Mark the download as a failed download in the history
-            downloadHistoryItemDao.create(queueItem, "failed");
-            downloadQueueItemDao.delete(queueItem);
+            // Mark the download as dead download in the history and reset the
+            // status to queued so that it can be tried again.
+            downloadHistoryItemDao.create(queueItem, "dead");
+            downloadQueueItemDao.updateStatus(queueItem.id, "queued");
+
+            // Display the error and exit
+            logger.error(e);
+            endProcess(e);
+        } catch (Throwable e) {
+            // Delete torrent from real-debrid if there was an error
+            try {
+                if (torrentInformation != null) {
+                    rdbService.deleteTorrent(torrentInformation.id);
+                }
+            } catch (Throwable e1) {
+                logger.trace("Unable to delete torrent after error, the torrent may have already been deleted.");
+            }
+
+            // Manage the failure status of the queue item
+            handleFailed(queueItem);
 
             // Attempt to delete the temp download files if they exist
             if (!tempDownloadFilename.isBlank()) {
@@ -572,12 +589,26 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
                 FileUtils.deleteQuietly(new File(tempFolder + tempDownloadFilename + ".pbdownload"));
             }
 
-            // Update the episode status in sickgear to show that the download finished
-            sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.FAILED);
-
             // Report the error and exit
             logger.error(e.getCause());
+            e.printStackTrace();
             endProcess(e);
+        }
+    }
+
+    private void handleFailed(DownloadQueueItem queueItem) {
+        // Mark the download as a failed download in the history
+        downloadHistoryItemDao.create(queueItem, "failed");
+        downloadQueueItemDao.delete(queueItem);
+
+        // Re-add the queue item to the end of the queue only if it has not failed to be downloaded
+        // more than three times. If it has failed 3 times then it should not be added to the queue
+        // and the episode status in SickGear should be set as failed
+        if (downloadHistoryItemDao.countFailed(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber,
+                queueItem.quality, queueItem.filename) <= 3) {
+            downloadQueueItemDao.create(queueItem);
+        } else {
+            sgServiceWrapper.setEpisodeStatus(queueItem.showId, queueItem.seasonNumber, queueItem.episodeNumber, SgStatus.FAILED);
         }
     }
 }

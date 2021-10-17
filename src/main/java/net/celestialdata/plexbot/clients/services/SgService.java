@@ -19,7 +19,7 @@ public interface SgService {
     SgSimpleResponse addShow(@PathParam("api_key") String apiKey, @QueryParam("cmd") String sgCommand, @QueryParam("indexer") int indexerNum,
                              @QueryParam("status") String status, @QueryParam("upgrade_once") boolean upgradeOnce, @QueryParam("initial[]") String initial1,
                              @QueryParam("initial[]") String initial2, @QueryParam("initial[]") String initial3, @QueryParam("initial[]") String initial4,
-                             @QueryParam("initial[]") String initial5, @QueryParam("indexerid") long showTvdbId);
+                             @QueryParam("initial[]") String initial5, @QueryParam("initial[]") String initial6, @QueryParam("indexerid") long showTvdbId);
 
     @GET
     @Path(value = "/{api_key}/")
@@ -29,8 +29,19 @@ public interface SgService {
     @GET
     @Path(value = "/{api_key}/")
     @Produces(MediaType.APPLICATION_JSON)
+    SgSimpleResponse clearHistory(@PathParam("api_key") String apiKey, @QueryParam("cmd") String sgCommand);
+
+    @GET
+    @Path(value = "/{api_key}/")
+    @Produces(MediaType.APPLICATION_JSON)
     SgGetEpisodeResponse getEpisode(@PathParam("api_key") String apiKey, @QueryParam("cmd") String sgCommand, @QueryParam("indexer") int indexerNum,
                                     @QueryParam("indexerid") long showTvdbId, @QueryParam("season") int season, @QueryParam("episode") int episode);
+
+    @GET
+    @Path(value = "/{api_key}/")
+    @Produces(MediaType.APPLICATION_JSON)
+    SgSimpleResponse getShowSimple(@PathParam("api_key") String apiKey, @QueryParam("cmd") String sgCommand, @QueryParam("indexer") int indexerNum,
+                                    @QueryParam("indexerid") long showTvdbId);
 
     @GET
     @Path(value = "/{api_key}/")

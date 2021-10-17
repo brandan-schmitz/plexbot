@@ -264,9 +264,9 @@ public class ResourceTester {
 
     @GET
     @Produces("application/json")
-    @Path("/tvdb/series/{id}/episodes/official")
-    public List<TvdbEpisode> getSeriesEpisodes(@PathParam("id") long id) {
-        return tvdbService.getSeriesEpisodes(id).seriesEpisodes.episodes;
+    @Path("/tvdb/series/{id}/episodes/default")
+    public List<TvdbEpisode> getSeriesEpisodes(@PathParam("id") long id, @QueryParam("season") int season) {
+        return tvdbService.getSeriesEpisodes(id, season).seriesEpisodes.episodes;
     }
 
     @GET

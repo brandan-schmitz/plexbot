@@ -7,7 +7,11 @@ public class MediaInfoData {
     public int width;
 
     public boolean isOptimized() {
-        return this.codec.contains("265");
+        if (this.codec == null) {
+            throw new NullPointerException("Unable to determine media codec type.");
+        } else {
+            return this.codec.contains("265");
+        }
     }
 
     public int resolution() {

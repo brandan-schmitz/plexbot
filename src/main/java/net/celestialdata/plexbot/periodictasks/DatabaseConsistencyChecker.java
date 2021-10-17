@@ -422,7 +422,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
             MediaInfoData mediaInfo;
             try {
                 mediaInfo = fileUtilities.getMediaInfo(file.getAbsolutePath());
-            } catch (StringIndexOutOfBoundsException e) {
+            } catch (NumberFormatException e) {
                 // If the file is corrupted, send the proper warnings
                 logger.warn("Corrupted File Detected: " + file.getAbsolutePath());
                 corruptedMediaItemDao.create(mediaType, file);
@@ -470,7 +470,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
 
                 // If the episode is not optimized, ensure it is in the queue
                 if (!movie.isOptimized) {
-                    encodingQueueItemDao.create("movie", movie.id);
+                    encodingQueueItemDao.create("movie", movie.tmdbId);
                 }
 
                 // Remove the movie from the list of movies in the database

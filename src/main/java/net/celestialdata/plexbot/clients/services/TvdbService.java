@@ -55,7 +55,7 @@ public interface TvdbService {
     @GET
     @Produces("application/json")
     @Path("/series/{id}/episodes/default")
-    TvdbSeriesEpisodesResponse getSeriesEpisodes(@PathParam("id") long id);
+    TvdbSeriesEpisodesResponse getSeriesEpisodes(@PathParam("id") long id, @QueryParam("season") int season);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

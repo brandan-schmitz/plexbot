@@ -22,8 +22,23 @@ public enum SgStatus {
     @JsonProperty(value = "Snatched")
     SNATCHED("snatched"),
 
+    @JsonProperty(value = "Snatched (Proper)")
+    SNATCHED_PROPER("snatched"),
+
+    @JsonProperty(value = "Snatched (Best)")
+    SNATCHED_BEST("snatched"),
+
     @JsonProperty(value = "Downloaded")
-    DOWNLOADED("downloaded");
+    DOWNLOADED("downloaded"),
+
+    @JsonProperty(value = "Unknown")
+    UNKNOWN("unknown"),
+
+    @JsonProperty(value = "Unaired")
+    UNAIRED("unaired"),
+
+    @JsonProperty(value = "Subtitled")
+    SUBTITLED("subtitled");
 
     private final String value;
 

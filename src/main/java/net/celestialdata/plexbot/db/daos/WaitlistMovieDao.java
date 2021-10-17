@@ -98,18 +98,30 @@ public class WaitlistMovieDao {
     @Transactional
     public void delete(int id) {
         WaitlistMovie entity = WaitlistMovie.findById(id);
+
+        discordApi.getTextChannelById(movieWaitlistChannel).ifPresent(textChannel ->
+                textChannel.getMessageById(entity.messageId).join().delete());
+
         entity.delete();
     }
 
     @Transactional
     public void deleteByTmdbId(long tmdbId) {
         WaitlistMovie entity = WaitlistMovie.find("tmdbId", tmdbId).firstResult();
+
+        discordApi.getTextChannelById(movieWaitlistChannel).ifPresent(textChannel ->
+                textChannel.getMessageById(entity.messageId).join().delete());
+
         entity.delete();
     }
 
     @Transactional
     public void deleteByImdbId(String imdbId) {
         WaitlistMovie entity = WaitlistMovie.find("imdbId", imdbId).firstResult();
+
+        discordApi.getTextChannelById(movieWaitlistChannel).ifPresent(textChannel ->
+                textChannel.getMessageById(entity.messageId).join().delete());
+
         entity.delete();
     }
 
