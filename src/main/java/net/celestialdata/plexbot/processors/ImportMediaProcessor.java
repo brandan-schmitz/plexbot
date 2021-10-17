@@ -2,11 +2,14 @@ package net.celestialdata.plexbot.processors;
 
 import io.quarkus.arc.log.LoggerName;
 import io.smallrye.mutiny.Multi;
+import net.celestialdata.plexbot.clients.models.sg.enums.SgQuality;
+import net.celestialdata.plexbot.clients.models.sg.enums.SgStatus;
 import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
 import net.celestialdata.plexbot.clients.models.tmdb.TmdbSourceIdType;
 import net.celestialdata.plexbot.clients.services.SyncthingService;
 import net.celestialdata.plexbot.clients.services.TmdbService;
 import net.celestialdata.plexbot.clients.services.TvdbService;
+import net.celestialdata.plexbot.clients.utilities.SgServiceWrapper;
 import net.celestialdata.plexbot.dataobjects.ParsedMediaFilename;
 import net.celestialdata.plexbot.dataobjects.ParsedSubtitleFilename;
 import net.celestialdata.plexbot.db.daos.*;
@@ -86,6 +89,9 @@ public class ImportMediaProcessor extends BotProcess {
     @ConfigProperty(name = "SyncthingSettings.devices")
     List<String> syncthingDevices;
 
+    @ConfigProperty(name = "SickgearSettings.enabled")
+    boolean sickgearEnabled;
+
     @Inject
     FileUtilities fileUtilities;
 
@@ -106,6 +112,9 @@ public class ImportMediaProcessor extends BotProcess {
     @Inject
     @RestClient
     TmdbService tmdbService;
+
+    @Inject
+    SgServiceWrapper sgServiceWrapper;
 
     @Inject
     MovieDao movieDao;
@@ -615,6 +624,96 @@ public class ImportMediaProcessor extends BotProcess {
                         progress.getAndIncrement();
                         multiEmitter.emit(progress.get());
                         continue;
+                    }
+
+                    // Update the episode on SickGear if that integration is enabled. The show should already exist in SickGear
+                    // prior to importing episodes for it.
+                    if (sickgearEnabled) {
+                        try {
+                            // Attempt to fetch the show from the SickGear instance
+                            var showAdded = sgServiceWrapper.isShowAdded(show.tvdbId);
+
+                            logger.info("Show exists:" + showAdded);
+
+                            // If the show is not added, then we should add it and wait for it to be added before continuing.
+                            if (!showAdded) {
+                                // Add the show
+                                var addShowResponse = sgServiceWrapper.addShow(show.tvdbId);
+
+                                logger.info("Show added:" + addShowResponse.result);
+
+                                // Ensure that the add request was successful
+                                if (!addShowResponse.result.equalsIgnoreCase("success")) {
+                                    logger.error("Failed to add the following show to SickGear: " + show.name +
+                                            " {tvdb-" + show.tvdbId + "}");
+                                    new MessageBuilder()
+                                            .setEmbed(messageFormatter.errorMessage("The following episode is for a show that " +
+                                                    "does not exist in SickGear and there was an error while adding the show to SickGear: " +
+                                                    itemFilename, addShowResponse.message))
+                                            .send(replyMessage.getChannel())
+                                            .join();
+                                    progress.getAndIncrement();
+                                    multiEmitter.emit(progress.get());
+                                    continue;
+                                }
+
+                                // Wait for the show to be added
+                                var lastChecked = LocalDateTime.now();
+                                while (!showAdded) {
+                                    if (LocalDateTime.now().isAfter(lastChecked.plus(5, ChronoUnit.SECONDS))) {
+                                        // Check again to see if it has been added yet
+                                        showAdded = sgServiceWrapper.isShowAdded(show.tvdbId);
+
+                                        logger.info("Checked: " + showAdded);
+
+                                        // Update the time SickGear was last checked
+                                        lastChecked = LocalDateTime.now();
+                                    }
+                                }
+                            }
+
+                            // Determine the episode quality
+                            var sgQuality = SgQuality.UNKNOWN;
+                            var importedEpisode = episodeDao.getByTvdbId(episodeResponse.episode.id);
+                            if (importedEpisode.resolution < 720 ) {
+                                sgQuality = SgQuality.SD_TV;
+                            } else if (importedEpisode.resolution == 720) {
+                                sgQuality = SgQuality.HD_720_WEB;
+                            } else if (importedEpisode.resolution == 1080) {
+                                sgQuality = SgQuality.HD_1080_WEB;
+                            } else if (importedEpisode.resolution == 2160) {
+                                sgQuality = SgQuality.UHD_WEB;
+                            }
+
+                            logger.info("Determined quality: " + sgQuality.getHumanString());
+
+                            // Update the episode status on SickGear
+                            var updateResponse = sgServiceWrapper.setEpisodeStatus(importedEpisode.show.tvdbId,
+                                    importedEpisode.season, importedEpisode.number, SgStatus.DOWNLOADED, sgQuality);
+
+                            logger.info("Updated episode: " + updateResponse.result);
+
+                            // Verify that it successfully updated the episode status
+                            if (!updateResponse.result.equalsIgnoreCase("success")) {
+                                logger.error("Failed to update the following episode status in SickGear: " + itemFilename);
+                                new MessageBuilder()
+                                        .setEmbed(messageFormatter.errorMessage("Failed to update the download status of the following episode in SickGear. " +
+                                                "Please manually update this. The quality of the imported episode is " + sgQuality.getHumanString() + "." +
+                                                itemFilename, updateResponse.message))
+                                        .send(replyMessage.getChannel())
+                                        .join();
+                            }
+                        } catch (Exception e) {
+                            logger.error("An unknown error occurred while tying to add/update the following episode in SickGear: " + itemFilename, e);
+                            new MessageBuilder()
+                                    .setEmbed(messageFormatter.errorMessage("There was an unknown error while trying to add/update the following file in" +
+                                            " SickGear. Please manually add/update this episode." + itemFilename, e.getMessage()))
+                                    .send(replyMessage.getChannel())
+                                    .join();
+                            progress.getAndIncrement();
+                            multiEmitter.emit(progress.get());
+                            continue;
+                        }
                     }
 
                     // Send a message showing the episode has been added to the server if it is an episode

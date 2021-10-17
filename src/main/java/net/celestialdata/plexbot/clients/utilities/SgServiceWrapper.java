@@ -29,20 +29,20 @@ public class SgServiceWrapper {
      * @return A simple response from SG
      */
     public SgSimpleResponse addShow(long showTvdbId) {
-        return sgService.addShow(apiKey, "sg.show.addnew", 1, "wanted", false, "hdwebdl",
-                "hdbluray", "fullhdtv", "fullhdwebdl", "fullhdbluray", showTvdbId);
+        return sgService.addShow(apiKey, "sg.show.addnew", 1, "skipped", false, "fullhdtv",
+                "hdwebdl", "fullhdwebdl", "hdbluray", "fullhdbluray", "uhd4kweb", showTvdbId);
     }
 
     public SgFetchHistoryResponse fetchHistory() {
         return sgService.fetchHistory(apiKey, "sg.history", "snatched");
     }
 
-    public SgSimpleResponse clearHistory() {
-        return sgService.clearHistory(apiKey, "sg.history.clear");
-    }
-
     public SgGetEpisodeResponse getEpisode(long showTvdbId, int season, int episode) {
         return sgService.getEpisode(apiKey, "sg.episode", 1, showTvdbId, season, episode);
+    }
+
+    public boolean isShowAdded(long showTvdbId) {
+        return sgService.getShowSimple(apiKey, "sg.show", 1, showTvdbId).result.equalsIgnoreCase("success");
     }
 
     public SgSimpleResponse setEpisodeStatus(long showTvdbId, int season, int episode, SgStatus status) {
