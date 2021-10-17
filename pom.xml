@@ -205,7 +205,7 @@
           -H:JNIConfigurationFiles=jni-config.json,\
           -H:DynamicProxyConfigurationFiles=proxy-config.json,\
           --allow-incomplete-classpath,\
-          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.jna\,com.sun.proxy.$Proxy319
+          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.jna\,com.sun.proxy.$Proxy328
         </quarkus.native.additional-build-args>
         <quarkus.native.debug.enabled>false</quarkus.native.debug.enabled>
         <quarkus.package.type>native</quarkus.package.type>
@@ -225,7 +225,7 @@
           -H:JNIConfigurationFiles=jni-config.json,\
           -H:DynamicProxyConfigurationFiles=proxy-config.json,\
           --allow-incomplete-classpath,\
-          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.jna\,com.sun.proxy.$Proxy318
+          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.jna\,com.sun.proxy.$Proxy327
         </quarkus.native.additional-build-args>
         <quarkus.native.debug.enabled>false</quarkus.native.debug.enabled>
         <quarkus.package.type>native</quarkus.package.type>
