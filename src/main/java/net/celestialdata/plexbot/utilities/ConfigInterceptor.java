@@ -44,6 +44,22 @@ public class ConfigInterceptor implements ConfigSourceInterceptor {
                 var password = context.proceed("DatabaseSettings.password");
                 configValue = password.withName(name);
                 break;
+            case "quarkus.datasource.metrics.enabled":
+            case "quarkus.datasource.jdbc.enable-metrics":
+            case "quarkus.datasource.jdbc.extended-leak-report":
+                var metrics = context.proceed("DatabaseSettings.collectMetrics");
+                configValue = metrics.withName(name);
+                break;
+            case "quarkus.datasource.jdbc.max-size":
+                configValue = configValue.withValue("40");
+                break;
+            case "quarkus.datasource.jdbc.acquisition-timeout":
+                configValue = configValue.withValue("10");
+                break;
+            case "quarkus.datasource.jdbc.leak-detection-interval":
+                var leakDetectionInterval = context.proceed("DatabaseSettings.leakDetectionInterval");
+                configValue = leakDetectionInterval.withName(name);
+                break;
         }
 
         return configValue;
