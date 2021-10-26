@@ -46,9 +46,13 @@ public class ConfigInterceptor implements ConfigSourceInterceptor {
                 break;
             case "quarkus.datasource.metrics.enabled":
             case "quarkus.datasource.jdbc.enable-metrics":
-            case "quarkus.datasource.jdbc.extended-leak-report":
                 var metrics = context.proceed("DatabaseSettings.collectMetrics");
                 configValue = metrics.withName(name);
+                break;
+            case "quarkus.datasource.jdbc.extended-leak-report":
+                var extendedReport = context.proceed("DatabaseSettings.collectMetrics");
+                configValue = extendedReport.withName(name)
+                        .withValue("true");
                 break;
             case "quarkus.datasource.jdbc.max-size":
                 configValue = configValue.withValue("40");
@@ -57,8 +61,9 @@ public class ConfigInterceptor implements ConfigSourceInterceptor {
                 configValue = configValue.withValue("10");
                 break;
             case "quarkus.datasource.jdbc.leak-detection-interval":
-                var leakDetectionInterval = context.proceed("DatabaseSettings.leakDetectionInterval");
-                configValue = leakDetectionInterval.withName(name);
+                var leakDetectionInterval = context.proceed("DatabaseSettings.collectMetrics");
+                configValue = leakDetectionInterval.withName(name)
+                        .withValue("1M");
                 break;
         }
 
