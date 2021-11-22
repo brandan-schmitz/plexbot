@@ -3,6 +3,7 @@ package net.celestialdata.plexbot.periodictasks;
 import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.db.daos.DownloadQueueItemDao;
 import net.celestialdata.plexbot.processors.EpisodeDownloadProcessor;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.context.ManagedExecutor;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -22,6 +23,9 @@ public class EpisodeDownloadStarter {
     @Inject
     Instance<EpisodeDownloadProcessor> episodeDownloadProcessors;
 
+    @ConfigProperty(name = "SickgearSettings.enabled")
+    boolean enabled;
+
     @Scheduled(every = "1m", delay = 10, delayUnit = TimeUnit.SECONDS)
     public void startDownload() {
         // Check to see how many are currently downloading
@@ -29,7 +33,7 @@ public class EpisodeDownloadStarter {
 
         // Execute the next download task as long as there is not more than 3 already running. This will limit
         // the number of parallel downloads to 4 at a time. This also spaces out the downloads by 1 minute.
-        if (runningCount <= 3) {
+        if (runningCount <= 3 && enabled) {
             executor.get().execute(episodeDownloadProcessors.get());
         }
     }

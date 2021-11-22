@@ -6,6 +6,7 @@ import net.celestialdata.plexbot.clients.models.sg.enums.SgQuality;
 import net.celestialdata.plexbot.clients.models.sg.enums.SgStatus;
 import net.celestialdata.plexbot.clients.models.tmdb.TmdbMovie;
 import net.celestialdata.plexbot.clients.models.tmdb.TmdbSourceIdType;
+import net.celestialdata.plexbot.clients.services.PlexService;
 import net.celestialdata.plexbot.clients.services.SyncthingService;
 import net.celestialdata.plexbot.clients.services.TmdbService;
 import net.celestialdata.plexbot.clients.services.TvdbService;
@@ -133,6 +134,10 @@ public class ImportMediaProcessor extends BotProcess {
 
     @Inject
     WaitlistMovieDao waitlistMovieDao;
+
+    @Inject
+    @RestClient
+    PlexService plexService;
 
     public void setOverwrite(boolean overwrite) {
         this.overwrite = overwrite;
@@ -375,6 +380,13 @@ public class ImportMediaProcessor extends BotProcess {
                     .setColor(Color.GREEN)
                     .setFooter("Finished: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
                             .format(ZonedDateTime.now()) + " CST"), commandMessageId);
+        }
+
+        // Trigger a refresh of the libraries on the Plex server
+        try {
+            plexService.refreshLibraries();
+        } catch (Exception e) {
+            reportError(e);
         }
 
         endProcess();

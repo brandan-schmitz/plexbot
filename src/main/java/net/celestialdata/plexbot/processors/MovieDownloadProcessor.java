@@ -478,13 +478,11 @@ public class MovieDownloadProcessor extends BotProcess {
                 }
 
                 // Trigger a refresh of the libraries on the Plex server
-                /*
                 try {
                     plexService.refreshLibraries();
                 } catch (Exception e) {
                     reportError(e);
                 }
-                 */
 
                 endProcess();
                 processEmitter.complete();
