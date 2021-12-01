@@ -12,7 +12,6 @@ import net.celestialdata.plexbot.db.entities.Episode;
 import net.celestialdata.plexbot.db.entities.Movie;
 import net.celestialdata.plexbot.db.entities.Show;
 import net.celestialdata.plexbot.enumerators.FileType;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import uk.co.caprica.vlcjinfo.MediaInfoFile;
@@ -22,7 +21,6 @@ import javax.inject.Inject;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -84,7 +82,7 @@ public class FileUtilities {
 
                 // Rename the file to specified name
                 if (!multiEmitter.isCancelled()) {
-                    renameMedia(tempPath.toString(), tempPath.toString().replace(".pbdownload", ""), true);
+                    moveMedia(tempPath.toString(), tempPath.toString().replace(".pbdownload", ""), true);
                 }
 
                 multiEmitter.complete();
@@ -109,26 +107,8 @@ public class FileUtilities {
         return false;
     }
 
-    public boolean renameMedia(String source, String destination, boolean overwrite) {
-        boolean success;
-
-        // If the file exists and the overwrite flag is false, then do not write the file
-        if (Files.exists(Paths.get(destination)) && !overwrite) {
-            success = false;
-        } else {
-            try {
-                success = new File(source).renameTo(new File(destination));
-            } catch (Exception e) {
-                e.printStackTrace();
-                success = false;
-            }
-        }
-
-        return success;
-    }
-
     public boolean moveMedia(String source, String destination, boolean overwrite) {
-        boolean success = true;
+        boolean success;
 
         // If the file exists and the overwrite flag is false, then do not write the file
         if (Files.exists(Paths.get(destination)) && !overwrite) {

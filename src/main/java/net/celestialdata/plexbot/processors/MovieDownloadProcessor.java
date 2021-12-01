@@ -197,6 +197,21 @@ public class MovieDownloadProcessor extends BotProcess {
                     }
                 }
 
+                // Check if any of the files selected are video files
+                var videoFileSelected = false;
+                for (RdbTorrentFile file : selectedFiles) {
+                    if (FileType.isVideo(file.path.toLowerCase())) {
+                        videoFileSelected = true;
+                    }
+                }
+
+                // If there is no video file selected, fail the process
+                if (!videoFileSelected) {
+                    processEmitter.fail(new InterruptedException("No video file was selected for download!"));
+                    endProcess();
+                    return;
+                }
+
                 // Add the appropriate number of torrents to real-debrid
                 if ((selectedFiles.size() - 1) > 0) {
                     // Add the torrent already being used to the list
