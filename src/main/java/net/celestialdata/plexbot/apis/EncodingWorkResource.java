@@ -4,13 +4,15 @@ import net.celestialdata.plexbot.db.daos.EncodingWorkItemDao;
 import net.celestialdata.plexbot.db.entities.EncodingWorkItem;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 @Tag(name = "Encoding Work", description = "Endpoints available for the encoding workers get information about items being encoded")
-@Path("/encoding/work")
+@Path("/api/v1/encoding/work")
+@RolesAllowed({"admin", "encoder"})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EncodingWorkResource {
