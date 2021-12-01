@@ -52,22 +52,18 @@ public class EncodingWorkItemDao {
     }
 
     @Transactional
-    public EncodingWorkItem create(EncodingWorkItem entity) {
-        if (existsByMediaId(entity.mediaId)) {
-            return update(getByMediaId(entity.mediaId).id, entity);
+    public EncodingWorkItem create(EncodingWorkItem item) {
+        if (existsByMediaId(item.mediaId)) {
+            return update(getByMediaId(item.mediaId).id, item.progress);
         } else {
-            entity.persist();
-            return entity;
+            return create(item.progress, item.workerAgentName, item.mediaType, item.mediaId);
         }
     }
 
     @Transactional
-    public EncodingWorkItem update(int id, EncodingWorkItem updatedItem) {
+    public EncodingWorkItem update(int id, String progress) {
         EncodingWorkItem entity = EncodingWorkItem.findById(id);
-        entity.progress = updatedItem.progress;
-        entity.workerAgentName = updatedItem.workerAgentName;
-        entity.mediaType = updatedItem.mediaType;
-        entity.mediaId = updatedItem.mediaId;
+        entity.progress = progress;
         return entity;
     }
 
