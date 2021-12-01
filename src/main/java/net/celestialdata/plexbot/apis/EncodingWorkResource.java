@@ -36,8 +36,8 @@ public class EncodingWorkResource {
 
     @PUT
     @Path("/{id}")
-    public EncodingWorkItem update(@PathParam("id") int id, EncodingWorkItem workItem) {
-        return encodingWorkItemDao.update(id, workItem);
+    public EncodingWorkItem update(@PathParam("id") int id, @QueryParam("progress") String progress) {
+        return encodingWorkItemDao.update(id, progress);
     }
 
     @DELETE

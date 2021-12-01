@@ -20,6 +20,7 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import javax.ws.rs.WebApplicationException;
 import java.text.DecimalFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -123,7 +124,9 @@ public class WaitlistChecker extends BotProcess {
                         );
                     }
                 } catch (Exception e) {
-                    reportError(e);
+                    if (!(e instanceof WebApplicationException)) {
+                        reportError(e);
+                    }
                 }
 
                 progress++;

@@ -299,7 +299,6 @@ public class ResourceTester {
         return ytsService.search(imdbID).results.movies;
     }
 
-
     @POST
     @Path("/sg/shows")
     @Produces(MediaType.APPLICATION_JSON)
