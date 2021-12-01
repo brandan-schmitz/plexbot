@@ -328,8 +328,10 @@ public class MovieDownloadProcessor extends BotProcess {
 
                 // Download the files
                 var filenames = new ArrayList<String>();
-                AtomicBoolean downloadFailed = new AtomicBoolean(false);
                 for (Map.Entry<RdbTorrent, RdbUnrestrictedLink> entry : unrestrictedLinks.entrySet()) {
+                    // Keep track if downloads fail
+                    AtomicBoolean downloadFailed = new AtomicBoolean(false);
+
                     // Normalize the filename to lowercase letters
                     var filename = entry.getValue().filename;
 
@@ -368,13 +370,11 @@ public class MovieDownloadProcessor extends BotProcess {
                                                 )
                                         ));
                                     },
-                                    failure -> {
-                                        processEmitter.fail(new InterruptedException("Failed to download file: " + entry.getValue().filename));
-                                        downloadFailed.set(true);
-                                    },
+                                    failure -> downloadFailed.set(true),
                                     () -> rdbService.deleteTorrent(entry.getKey().id)
                     );
 
+                    // Handle failed downloads
                     if (downloadFailed.get()) {
                         // Delete torrents from real-debrid if there was an error
                         if (!finalTorrentList.isEmpty()) {
@@ -383,8 +383,24 @@ public class MovieDownloadProcessor extends BotProcess {
                             }
                         }
 
-                        endProcess();
-                        return;
+                        // If the file is a video file, emit a failure error and stop the download process
+                        // Otherwise simply display a warning as it should only be a subtitle and move to the next file
+                        if (fileType.isVideo()) {
+                            processEmitter.fail(new InterruptedException("Failed to download file: " + entry.getValue().filename));
+                            endProcess();
+                            return;
+                        } else {
+                            new MessageBuilder().setEmbed(new EmbedBuilder()
+                                    .setTitle("Subtitle Download Error")
+                                    .setDescription("A movie was recently downloaded to the server and the was supposed to included the following subtitle file. " +
+                                            "However an error occurred while downloading the subtitle file so it will need to be handled manually.")
+                                    .addInlineField("Movie:", "```" + movieToDownload.title + " (" + movieToDownload.getYear() + ")```")
+                                    .addInlineField("IMDB ID: ", "```" + movieToDownload.getImdbId() + "```")
+                                    .addInlineField("TMDB ID:", "```" + movieToDownload.tmdbId + "```")
+                                    .addField("Subtitle Filename:", "```" + entry.getValue().filename + "```")
+                                    .setColor(Color.YELLOW)
+                            ).send(discordApi.getUserById(botOwner).join()).join();
+                        }
                     }
                 }
 
