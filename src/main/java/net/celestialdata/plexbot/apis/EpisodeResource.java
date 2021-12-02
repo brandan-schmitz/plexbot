@@ -6,13 +6,15 @@ import net.celestialdata.plexbot.db.entities.Episode;
 import net.celestialdata.plexbot.db.entities.EpisodeSubtitle;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 @Tag(name = "Episodes", description = "Endpoints available for fetching information about episodes in the database")
-@Path("/episodes")
+@Path("/api/v1/episodes")
+@RolesAllowed({"admin", "encoder", "user"})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EpisodeResource {

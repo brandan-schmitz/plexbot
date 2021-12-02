@@ -23,14 +23,16 @@ import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 import java.util.List;
 
-@Tag(name = "Test", description = "Endpoints available to test the API functions.")
-@Path("/test")
+@Tag(name = "Debug", description = "Endpoints available to debug the API functions.")
+@Path("/api/v1/debug")
+@RolesAllowed("admin")
 public class ResourceTester {
 
     @Inject
@@ -70,7 +72,7 @@ public class ResourceTester {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("tmdb/tv/{tv_id}")
+    @Path("/tmdb/tv/{tv_id}")
     public TmdbShow getShow(@PathParam("tv_id") long showId) {
         return tmdbService.getShow(showId);
     }

@@ -7,12 +7,15 @@ import net.celestialdata.plexbot.db.entities.EncodingQueueItem;
 import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Tag(name = "Encoding Queue", description = "Endpoints available for the encoding workers get information about items in the encoding queue")
-@Path("/encoding/queue")
+@Path("/api/v1/encoding/queue")
+@RolesAllowed({"admin", "encoder"})
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EncodingQueueResource {
