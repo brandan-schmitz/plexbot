@@ -95,8 +95,7 @@ public class LifecycleController {
     @Transactional
     public void updateAdminUser(@Observes StartupEvent event) {
         logger.info("Adding/updating administrator credentials");
-        userDao.deleteByUsername(username);
-        userDao.create(username, password, "admin");
+        userDao.createOrUpdate(username, password, "admin");
     }
 
     void stop(@Observes ShutdownEvent event) {

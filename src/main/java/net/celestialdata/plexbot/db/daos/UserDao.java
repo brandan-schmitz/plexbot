@@ -37,9 +37,12 @@ public class UserDao {
     }
 
     @Transactional
-    public User create(String username, String password, String role) {
+    public User createOrUpdate(String username, String password, String role) {
         if (existsByUsername(username)) {
-            return getByUsername(username);
+            User entity = User.find("username", username).firstResult();
+            entity.password = BcryptUtil.bcryptHash(password);
+            entity.role = role;
+            return entity;
         } else {
             User entity = new User();
             entity.username = username;
