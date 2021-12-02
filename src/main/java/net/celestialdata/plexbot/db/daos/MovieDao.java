@@ -103,6 +103,28 @@ public class MovieDao {
     }
 
     @Transactional
+    public Movie update(int id, String filename) {
+        // Fetch the current movie from the database
+        Movie entity = Movie.findById(id);
+
+        // Scan the movie file to get updated media info
+        var movieFileData = fileUtilities.getMediaInfo(movieFolder + entity.folderName + "/" + filename);
+        var fileType = FileType.determineFiletype(filename);
+
+        // Update database fields
+        entity.filename = filename;
+        entity.filetype = fileType.getTypeString();
+        entity.resolution = movieFileData.resolution();
+        entity.height = movieFileData.height;
+        entity.width = movieFileData.width;
+        entity.duration = movieFileData.duration;
+        entity.codec = movieFileData.codec;
+        entity.isOptimized = movieFileData.isOptimized();
+
+        return entity;
+    }
+
+    @Transactional
     public void delete(int id) {
         Movie entity = Movie.findById(id);
         entity.delete();
