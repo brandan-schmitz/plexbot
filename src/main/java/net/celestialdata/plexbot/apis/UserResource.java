@@ -33,7 +33,7 @@ public class UserResource {
 
     @POST
     public int create(User user) {
-        return userDao.create(user.username, user.password, user.role).id;
+        return userDao.createOrUpdate(user.username, user.password, user.role).id;
     }
 
     @DELETE

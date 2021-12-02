@@ -29,10 +29,10 @@ public class LifecycleController {
     @ConfigProperty(name = "SickgearSettings.enabled")
     boolean sickgearEnabled;
 
-    @ConfigProperty(name = "BotSettings.adminLogin.username")
+    @ConfigProperty(name = "BotSettings.adminUsername")
     String username;
 
-    @ConfigProperty(name = "BotSettings.adminLogin.password")
+    @ConfigProperty(name = "BotSettings.adminPassword")
     String password;
 
     @Inject

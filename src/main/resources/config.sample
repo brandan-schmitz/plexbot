@@ -26,6 +26,12 @@ BotSettings:
   #  - OFF
   logLevel: INFO
 
+  # Username of your admin user
+  adminUsername: admin
+
+  # Password of your admin user
+  adminPassword: admin
+
 
 ##############################
 ### Periodic Task Settings ###
