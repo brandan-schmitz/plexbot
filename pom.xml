@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.celestialdata</groupId>
   <artifactId>plexbot</artifactId>
-  <version>2.3.2</version>
+  <version>2.4.0</version>
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -17,10 +17,10 @@
     <quarkus.native.enable-jni>true</quarkus.native.enable-jni>
     <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-    <quarkus.platform.version>2.5.0.Final</quarkus.platform.version>
+    <quarkus.platform.version>2.5.4.Final</quarkus.platform.version>
     <quarkus.ssl.native>true</quarkus.ssl.native>
     <quarkus.swagger-ui.always-include>true</quarkus.swagger-ui.always-include>
-    <version-date>12/01/2021</version-date>
+    <version-date>12/02/2021</version-date>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -99,7 +99,7 @@
     <dependency>
       <groupId>org.jboss.logmanager</groupId>
       <artifactId>log4j2-jboss-logmanager</artifactId>
-      <version>1.0.0.Final</version>
+      <version>1.1.1.Final</version>
     </dependency>
     <dependency>
       <groupId>com.vdurmont</groupId>
@@ -213,7 +213,7 @@
           -H:JNIConfigurationFiles=jni-config.json,\
           -H:DynamicProxyConfigurationFiles=proxy-config.json,\
           --allow-incomplete-classpath,\
-          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.jna\,com.sun.proxy.$Proxy341
+          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.jna
         </quarkus.native.additional-build-args>
         <quarkus.native.debug.enabled>false</quarkus.native.debug.enabled>
         <quarkus.package.type>native</quarkus.package.type>
@@ -233,7 +233,7 @@
           -H:JNIConfigurationFiles=jni-config.json,\
           -H:DynamicProxyConfigurationFiles=proxy-config.json,\
           --allow-incomplete-classpath,\
-          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.jna\,com.sun.proxy.$Proxy340
+          --initialize-at-run-time=com.neovisionaries.ws.client.Misc\,com.neovisionaries.ws.client.SNIHelper\,com.neovisionaries.ws.client.FixedLiteralLengthHuffman\,com.neovisionaries.ws.client.FixedDistanceHuffman\,uk.co.caprica.vlcjinfo.binding.LibMediaInfo\,org.mariadb.jdbc.internal.util.Utils\,org.mariadb.jdbc.internal.com.send.authentication\,io.netty.internal.tcnative.SSL\,com.sun.jna\,com.sun.proxy.$Proxy349
         </quarkus.native.additional-build-args>
         <quarkus.native.debug.enabled>false</quarkus.native.debug.enabled>
         <quarkus.package.type>native</quarkus.package.type>

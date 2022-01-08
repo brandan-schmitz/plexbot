@@ -8,7 +8,6 @@ import net.celestialdata.plexbot.utilities.FileUtilities;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.resteasy.annotations.jaxrs.HeaderParam;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -88,6 +87,7 @@ public class MovieResource {
         }
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @POST
     @Path("/upload")
     @Produces(MediaType.APPLICATION_JSON)

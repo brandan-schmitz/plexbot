@@ -92,7 +92,7 @@ public class EpisodeResource {
     @Path("/upload")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
-    public Response uploadFile(@org.jboss.resteasy.annotations.jaxrs.HeaderParam("Content-Length") long fileSize, @org.jboss.resteasy.annotations.jaxrs.HeaderParam("Content-Id") int id, InputStream data) {
+    public Response uploadFile(@HeaderParam("Content-Length") long fileSize, @HeaderParam("Content-Id") int id, InputStream data) {
         // Get the movie info from the database
         Episode episode = episodeDao.get(id);
 
