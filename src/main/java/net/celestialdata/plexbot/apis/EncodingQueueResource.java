@@ -51,7 +51,7 @@ public class EncodingQueueResource {
 
             // If the file has been optimized, remove it from the queue
             if (isOptimized) {
-                item.delete();
+                encodingQueueItemDao.delete(item.id);
             }
         } while (isOptimized);
 

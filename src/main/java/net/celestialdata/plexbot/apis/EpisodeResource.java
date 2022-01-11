@@ -77,7 +77,7 @@ public class EpisodeResource {
             return Response.ok((StreamingOutput) output -> {
                         try {
                             InputStream input = new FileInputStream(file);
-                            IOUtils.copy(input, output);
+                            IOUtils.copyLarge(input, output);
                             output.flush();
                         } catch (Exception e) {
                             e.printStackTrace();
