@@ -52,6 +52,9 @@ public class MovieDownloadProcessor extends BotProcess {
     @ConfigProperty(name = "FolderSettings.tempFolder")
     String tempFolder;
 
+    @ConfigProperty(name = "PlexSettings.enabled")
+    boolean plexEnabled;
+
     @Inject
     MessageFormatter messageFormatter;
 
@@ -509,10 +512,12 @@ public class MovieDownloadProcessor extends BotProcess {
                 }
 
                 // Trigger a refresh of the libraries on the Plex server
-                try {
-                    plexService.refreshLibraries();
-                } catch (Exception e) {
-                    reportError(e);
+                if (plexEnabled) {
+                    try {
+                        plexService.refreshLibraries();
+                    } catch (Exception e) {
+                        reportError(e);
+                    }
                 }
 
                 endProcess();

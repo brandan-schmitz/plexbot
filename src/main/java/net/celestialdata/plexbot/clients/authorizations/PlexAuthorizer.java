@@ -2,6 +2,7 @@ package net.celestialdata.plexbot.clients.authorizations;
 
 import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.clients.services.PlexAuthorizationService;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -16,9 +17,14 @@ public class PlexAuthorizer {
     PlexAuthorizationService plexAuthorizationService;
     private String authToken;
 
+    @ConfigProperty(name = "PlexSettings.enabled")
+    boolean plexEnabled;
+
     @Scheduled(every = "12h")
     void authorize() {
-        authToken = plexAuthorizationService.login().authToken;
+        if (plexEnabled) {
+            authToken = plexAuthorizationService.login().authToken;
+        }
     }
 
     public String getAuthToken() {
