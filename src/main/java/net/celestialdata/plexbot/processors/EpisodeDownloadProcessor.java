@@ -61,6 +61,9 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
     @ConfigProperty(name = "SickgearSettings.torrentFolder")
     String torrentFolder;
 
+    @ConfigProperty(name = "PlexSettings.enabled")
+    boolean plexEnabled;
+
     @Inject
     DownloadQueueItemDao downloadQueueItemDao;
 
@@ -542,10 +545,12 @@ public class EpisodeDownloadProcessor extends BotProcess implements Runnable {
             }
 
             // Trigger a refresh of the libraries on the Plex server
-            try {
-                plexService.refreshLibraries();
-            } catch (Exception e) {
-                reportError(e);
+            if (plexEnabled) {
+                try {
+                    plexService.refreshLibraries();
+                } catch (Exception e) {
+                    reportError(e);
+                }
             }
 
             // Make sure the process is removed from the bot status manager.
