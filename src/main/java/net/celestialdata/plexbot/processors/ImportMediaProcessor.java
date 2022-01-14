@@ -93,6 +93,9 @@ public class ImportMediaProcessor extends BotProcess {
     @ConfigProperty(name = "SickgearSettings.enabled")
     boolean sickgearEnabled;
 
+    @ConfigProperty(name = "PlexSettings.enabled")
+    boolean plexEnabled;
+
     @Inject
     FileUtilities fileUtilities;
 
@@ -383,10 +386,12 @@ public class ImportMediaProcessor extends BotProcess {
         }
 
         // Trigger a refresh of the libraries on the Plex server
-        try {
-            plexService.refreshLibraries();
-        } catch (Exception e) {
-            reportError(e);
+        if (plexEnabled) {
+            try {
+                plexService.refreshLibraries();
+            } catch (Exception e) {
+                reportError(e);
+            }
         }
 
         endProcess();

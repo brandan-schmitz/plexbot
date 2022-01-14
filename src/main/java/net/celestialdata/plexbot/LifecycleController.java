@@ -5,26 +5,35 @@ import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 import net.celestialdata.plexbot.db.daos.DownloadQueueItemDao;
+import net.celestialdata.plexbot.db.daos.UserDao;
 import net.celestialdata.plexbot.db.entities.DownloadQueueItem;
+import net.celestialdata.plexbot.db.entities.User;
 import net.celestialdata.plexbot.periodictasks.BotStatusDisplay;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.jboss.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
+import javax.transaction.Transactional;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-@ApplicationScoped
+@Singleton
 public class LifecycleController {
     private final Logger logger = Logger.getLogger(LifecycleController.class);
 
     @ConfigProperty(name = "SickgearSettings.enabled")
     boolean sickgearEnabled;
+
+    @ConfigProperty(name = "BotSettings.adminUsername")
+    String username;
+
+    @ConfigProperty(name = "BotSettings.adminPassword")
+    String password;
 
     @Inject
     DiscordApi discordApi;
@@ -34,6 +43,9 @@ public class LifecycleController {
 
     @Inject
     DownloadQueueItemDao downloadQueueItemDao;
+
+    @Inject
+    UserDao userDao;
 
     @Inject
     @Named("inviteLink")
@@ -78,6 +90,12 @@ public class LifecycleController {
                 downloadQueueItemDao.updateStatus(downloadQueueItem.id, "queued");
             }
         }
+    }
+
+    @Transactional
+    public void updateAdminUser(@Observes StartupEvent event) {
+        logger.info("Adding/updating administrator credentials");
+        userDao.createOrUpdate(username, password, "admin");
     }
 
     void stop(@Observes ShutdownEvent event) {

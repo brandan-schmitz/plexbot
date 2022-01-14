@@ -98,6 +98,28 @@ public class EpisodeDao {
     }
 
     @Transactional
+    public Episode update(int id, String filename) {
+        // Fetch the current episode from the database
+        Episode entity = Episode.findById(id);
+
+        // Scan the episode file to get updated media info
+        var episodeFileData = fileUtilities.getMediaInfo(tvFolder + entity.show.foldername + "/Season " + entity.season + "/" + filename);
+        var fileType = FileType.determineFiletype(filename);
+
+        // Update database fields
+        entity.filename = filename;
+        entity.filetype = fileType.getTypeString();
+        entity.height = episodeFileData.height;
+        entity.width = episodeFileData.width;
+        entity.duration = episodeFileData.duration;
+        entity.codec = episodeFileData.codec;
+        entity.resolution = episodeFileData.resolution();
+        entity.isOptimized = episodeFileData.isOptimized();
+
+        return entity;
+    }
+
+    @Transactional
     public void delete(int id) {
         Episode entity = Episode.findById(id);
         entity.delete();

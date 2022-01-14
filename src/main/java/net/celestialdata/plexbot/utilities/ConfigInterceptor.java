@@ -65,6 +65,9 @@ public class ConfigInterceptor implements ConfigSourceInterceptor {
                 configValue = leakDetectionInterval.withName(name)
                         .withValue("1M");
                 break;
+            case "quarkus.http.limits.max-body-size":
+                configValue = configValue.withValue("20G");
+                break;
         }
 
         return configValue;

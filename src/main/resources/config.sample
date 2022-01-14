@@ -26,6 +26,12 @@ BotSettings:
   #  - OFF
   logLevel: INFO
 
+  # Username of your admin user
+  adminUsername: admin
+
+  # Password of your admin user
+  adminPassword: admin
+
 
 ##############################
 ### Periodic Task Settings ###
@@ -75,6 +81,10 @@ DatabaseSettings:
   #            application code. If a change that could cause data-loss is defined, the application
   #            will fail to startup and the database will require manual migrations to the expected schema.
   generationStrategy: update
+
+  # Defines if the application will publish database metrics or not. Accepted values are "true" or "false".
+  # If enabled, metrics will be available on http://127.0.0.1:8080/q/metrics
+  collectMetrics: true
 
 
 ###########################
@@ -179,6 +189,9 @@ ImportSettings:
 ### Plex Media Server Settings ###
 ##################################
 PlexSettings:
+  # Should the plex server integration be enabled?
+  enabled: false
+
   # The Client Identifier used to identify individual devices on a Plex account. This needs to be a unique
   # UUID. You can generate one with the following commands:
   #   Windows (Powershell): [guid]::NewGuid()
@@ -224,6 +237,21 @@ SyncthingSettings:
     - "0123456-0123456-0123456-0123456-0123456-0123456-0123456-0123456"
     - "9876543-9876543-9876543-9876543-9876543-9876543-9876543-9876543"
 
+#########################
+### SickGear Settings ###
+#########################
+SickgearSettings:
+  # Should the SickGear integration be enabled? If false, TV show requests will not function.
+  enabled: true
+
+  # The protocol (http/https), IP/DNS address, and port number of the SickGear server to use for locating
+  # and downloading TV show torrent files for the bot to use in downloading episodes. You should also include
+  # API key in this url. The API key can be retrieved from the general settings under the advanced tab in SickGear.
+  address/mp-rest/url: "http://127.0.0.1:8081/api"
+
+  # The folder that contains the magnet and torrent files that SickGear downloads. This should end in a trailing / symbol.
+  torrentFolder: /path/to/sickgear/torrent/blackhole/folder/
+
 
 ################
 ### API Keys ###
@@ -251,3 +279,7 @@ ApiKeys:
   # The unique subscriber PIN code for TheTVDB API. This is retrieved from a users dashboard on https://thetvdb.com
   # and is required in addition to the API key above.
   tvdbSubscriberPin: somepin
+
+  # The API key for all requests to the SickGear server as defined above if it is enabled. This API key can be retrieved
+  # from your servers general settings under the Advanced tab.
+  sickgearApiKey: 0123456789abcdefghijklmnopqrstuvwxyz
