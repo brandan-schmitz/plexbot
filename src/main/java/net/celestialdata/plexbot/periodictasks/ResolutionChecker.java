@@ -245,7 +245,7 @@ public class ResolutionChecker extends BotProcess {
                     // Build a list of torrents available to download
                     var availableTorrents = new ArrayList<YtsMovieTorrent>();
                     for (YtsMovie ytsMovie : ytsResponse.results.movies) {
-                        if (ytsMovie.imdbCode.equalsIgnoreCase(movie.imdbId)) {
+                        if (ytsMovie.imdbCode.equalsIgnoreCase(movie.imdbId) && ytsMovie.torrents != null) {
                             availableTorrents.addAll(ytsMovie.torrents);
                         }
                     }
