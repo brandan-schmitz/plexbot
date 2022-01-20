@@ -63,7 +63,7 @@ public class EncodingWorkItemDao {
     @Transactional
     public EncodingWorkItem update(int id, String progress) {
         EncodingWorkItem entity = EncodingWorkItem.findById(id);
-        entity.progress = progress;
+        entity.progress = progress == null ? "" : progress;
         return entity;
     }
 
