@@ -91,7 +91,7 @@ public class ResolutionChecker extends BotProcess {
         upgradeChannel.addButtonClickListener(clickEvent -> {
             if (clickEvent.getButtonInteraction().getCustomId().equals("approve-upgrade") || clickEvent.getButtonInteraction().getCustomId().equals("ignore-upgrade")) {
                 // Get the ID of the message triggering this event
-                var messageId = clickEvent.getButtonInteraction().getMessageId();
+                var messageId = clickEvent.getButtonInteraction().getMessage().getId();
 
                 // Fetch the upgradable movie from the database
                 UpgradableMovie upgradableMovie = upgradableMovieDao.getByMessageId(messageId);

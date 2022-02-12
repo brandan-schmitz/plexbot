@@ -2,16 +2,16 @@ package net.celestialdata.plexbot.periodictasks;
 
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
 import net.celestialdata.plexbot.db.daos.EncodingWorkItemDao;
-import net.celestialdata.plexbot.db.daos.EpisodeDao;
-import net.celestialdata.plexbot.db.daos.MovieDao;
 import net.celestialdata.plexbot.db.entities.EncodingWorkItem;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.MessageUpdater;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.jboss.logging.Logger;
@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class BotStatusDisplay {
     final private HashMap<String, String> currentProcesses = new HashMap<>();
     Message statusMessage;
+    MessageUpdater messageUpdater;
 
     @LoggerName("net.celestialdata.plexbot.periodictasks.BotStatusDisplay")
     Logger logger;
@@ -51,12 +52,6 @@ public class BotStatusDisplay {
 
     @Inject
     EncodingWorkItemDao encodingWorkItemDao;
-
-    @Inject
-    MovieDao movieDao;
-
-    @Inject
-    EpisodeDao episodeDao;
 
     void initialize(@Observes StartupEvent startupEvent) {
         // Clear the past 100 messages in the channel. If the channel does not exist, throw an error then quit the application.
@@ -75,29 +70,22 @@ public class BotStatusDisplay {
                         .setColor(Color.YELLOW)
                 ).send(discordApi.getTextChannelById(statusChannelId).orElseThrow()).exceptionally(ExceptionLogger.get())
                 .join();
+
+        // Set the message updater
+        messageUpdater = new MessageUpdater(statusMessage);
     }
 
-    public void stopManager() {
-        statusMessage.edit(new EmbedBuilder()
+    void stop(@Observes ShutdownEvent shutdownEvent) {
+        messageUpdater.removeAllEmbeds();
+        messageUpdater.addEmbed(new EmbedBuilder()
                 .setTitle("Bot Status")
                 .setDescription("The bot has been shut down. Please check back later once the bot is back online.")
                 .setColor(Color.BLACK)
-        ).exceptionally(ExceptionLogger.get());
+        );
+        messageUpdater.applyChanges().join();
     }
 
-    private String generateSeasonString(int seasonNumber) {
-        if (seasonNumber <= 9) {
-            return "s0" + seasonNumber;
-        } else return "s" + seasonNumber;
-    }
-
-    private String generateEpisodeString(int episodeNumber) {
-        if (episodeNumber <= 9) {
-            return "e0" + episodeNumber;
-        } else return "e" + episodeNumber;
-    }
-
-    @Scheduled(every = "3s", delay = 10, delayUnit = TimeUnit.SECONDS)
+    @Scheduled(every = "5s", delay = 10, delayUnit = TimeUnit.SECONDS)
     void updateStatus() {
         var statusBuilder = new StringBuilder();
         var encodingStatusBuilder = new StringBuilder();
@@ -113,7 +101,7 @@ public class BotStatusDisplay {
             }
         }
 
-        // Create the string usd within the embed that displays running media optimizations
+        // Create the string used within the embed that displays running media optimizations
         List<EncodingWorkItem> workItems = encodingWorkItemDao.listALl();
         if (workItems.isEmpty()) {
             encodingStatusBuilder.append("Idle");
@@ -127,16 +115,14 @@ public class BotStatusDisplay {
 
                 // Create the title for this item
                 if (workItem.mediaType.equals("episode")) {
-                    var episode = episodeDao.getByTvdbId(workItem.mediaId);
-                    itemTitle = episode.show.name + " " + generateSeasonString(episode.season) + generateEpisodeString(episode.number);
+                    itemTitle = "episode-" + workItem.mediaId;
                 } else if (workItem.mediaType.equals("movie")) {
-                    var movie = movieDao.getByTmdbId(workItem.mediaId);
-                    itemTitle = movie.title + " (" + movie.year + ")";
+                    itemTitle = "movie-" + workItem.mediaType;
                 }
 
                 // Build the string
-                encodingStatusBuilder.append(counter).append(") ").append(itemTitle).append(" - ")
-                        .append(workItem.progress).append("\n");
+                encodingStatusBuilder.append(counter).append(") ").append(workItem.workerAgentName).append(" - ")
+                        .append(itemTitle).append(" - ").append(workItem.progress).append("\n");
 
                 // Increment the counter
                 counter++;
@@ -144,7 +130,8 @@ public class BotStatusDisplay {
         }
 
         // Update the status message
-        statusMessage.edit(new EmbedBuilder()
+        messageUpdater.removeAllEmbeds();
+        messageUpdater.addEmbed(new EmbedBuilder()
                 .setTitle("Bot Status")
                 .setDescription("The processes that are currently being run by the bot are displayed below.")
                 .addField("Tasks:", "```" + statusBuilder + "```")
@@ -152,8 +139,8 @@ public class BotStatusDisplay {
                 .setFooter("Plexbot v" + botVersion.get() + " - " + DateTimeFormatter.ofLocalizedDateTime(
                         FormatStyle.MEDIUM).format(ZonedDateTime.now()) + " CST"
                 )
-                .setColor(Color.GREEN)
-        ).exceptionally(ExceptionLogger.get());
+                .setColor(Color.GREEN));
+        messageUpdater.applyChanges();
     }
 
     /**

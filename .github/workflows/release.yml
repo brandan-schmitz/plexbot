@@ -19,17 +19,12 @@ jobs:
   #
   #      - name: Setup Graalvm
   #        id: setup-graalvm
-  #        uses: DeLaGuardo/setup-graalvm@master
+  #        uses: graalvm/setup-graalvm@v1
   #        with:
-  #          # GraalVM version, no pattern syntax available atm
-  #          graalvm: '21.3.0'
-  #          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
-  #          java: 'java11'
-  #          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
-  #          arch: 'amd64'
-  #
-  #      - name: Install native-image component
-  #        run: gu.cmd install native-image
+  #          version: '21.3.0'
+  #          java-version: '11'
+  #          components: 'native-image'
+  #          github-token: ${{ secrets.GITHUB_TOKEN }}
   #
   #      - name: Create app config for building
   #        run: copy src\main\resources\config.sample src\main\resources\application.yaml
@@ -62,17 +57,12 @@ jobs:
 
       - name: Setup Graalvm
         id: setup-graalvm
-        uses: DeLaGuardo/setup-graalvm@master
+        uses: graalvm/setup-graalvm@v1
         with:
-          # GraalVM version, no pattern syntax available atm
-          graalvm: '21.3.0'
-          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
-          java: 'java11'
-          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
-          arch: 'amd64'
-
-      - name: Install native-image component
-        run: gu install native-image
+          version: '21.3.0'
+          java-version: '11'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create app config for building
         run: cp src/main/resources/config.sample src/main/resources/application.yaml
@@ -98,17 +88,12 @@ jobs:
 
       - name: Setup Graalvm
         id: setup-graalvm
-        uses: DeLaGuardo/setup-graalvm@master
+        uses: graalvm/setup-graalvm@v1
         with:
-          # GraalVM version, no pattern syntax available atm
-          graalvm: '21.3.0'
-          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
-          java: 'java11'
-          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
-          arch: 'amd64'
-
-      - name: Install native-image component
-        run: gu install native-image
+          version: '21.3.0'
+          java-version: '11'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create app config for building
         run: cp src/main/resources/config.sample src/main/resources/application.yaml
@@ -134,14 +119,11 @@ jobs:
 
       - name: Setup Graalvm
         id: setup-graalvm
-        uses: DeLaGuardo/setup-graalvm@master
+        uses: graalvm/setup-graalvm@v1
         with:
-          # GraalVM version, no pattern syntax available atm
-          graalvm: '21.3.0'
-          # Java version, optional, defaults to 'java8'. Available options are 'java8' and 'java11'.
-          java: 'java11'
-          # Architecture flag, optional, defaults to 'amd64'. Available options are 'amd64' and 'aarch64'. Later is available only for linux runners.
-          arch: 'amd64'
+          version: '21.3.0'
+          java-version: '11'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create app config for building
         run: cp src/main/resources/config.sample src/main/resources/application.yaml

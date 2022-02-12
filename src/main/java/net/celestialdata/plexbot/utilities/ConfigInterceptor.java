@@ -66,7 +66,18 @@ public class ConfigInterceptor implements ConfigSourceInterceptor {
                         .withValue("1M");
                 break;
             case "quarkus.http.limits.max-body-size":
-                configValue = configValue.withValue("20G");
+                configValue = configValue.withValue("25G");
+                break;
+            case "quarkus.transaction-manager.default-transaction-timeout":
+                configValue = configValue.withValue("PT10M");
+                break;
+            case "quarkus.shutdown.timeout":
+                var shutdownTimeout = context.proceed("BotSettings.shutdownTimeout");
+                configValue = shutdownTimeout.withName(name);
+                break;
+            case "quarkus.log.file.enable":
+                var logFileEnabled = context.proceed("BotSettings.logFileEnabled");
+                configValue = logFileEnabled.withName(name);
                 break;
         }
 

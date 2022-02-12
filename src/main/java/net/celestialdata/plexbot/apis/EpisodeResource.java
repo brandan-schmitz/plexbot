@@ -134,11 +134,11 @@ public class EpisodeResource {
                 return Response.status(500, "Failed to move media file").build();
             }
 
-            // Delete the backup file since the move was successful
-            fileUtilities.deleteFile(tvFolder + episode.show.foldername + "/Season " + episode.season + "/" + episode.filename + ".bak");
-
             // Update the database with the new file
             episodeDao.update(id, newFilename);
+
+            // Delete the backup file since the move was successful
+            fileUtilities.deleteFile(tvFolder + episode.show.foldername + "/Season " + episode.season + "/" + episode.filename + ".bak");
 
             // Return that the upload was successful
             return Response.ok().build();
