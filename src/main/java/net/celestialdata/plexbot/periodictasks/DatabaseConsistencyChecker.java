@@ -117,7 +117,7 @@ public class DatabaseConsistencyChecker extends BotProcess {
         upgradeChannel.addButtonClickListener(clickEvent -> {
             if (clickEvent.getButtonInteraction().getCustomId().equals("recheck-corrupted-file")) {
                 // Get the ID of the message triggering this event
-                var messageId = clickEvent.getButtonInteraction().getMessageId();
+                var messageId = clickEvent.getButtonInteraction().getMessage().getId();
 
                 // Fetch the corrupted media item from the database
                 CorruptedMediaItem corruptedMediaItem = corruptedMediaItemDao.getByMessageId(messageId);

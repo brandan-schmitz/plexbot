@@ -2,15 +2,11 @@ package net.celestialdata.plexbot;
 
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.Quarkus;
-import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 import net.celestialdata.plexbot.db.daos.DownloadQueueItemDao;
 import net.celestialdata.plexbot.db.daos.UserDao;
 import net.celestialdata.plexbot.db.entities.DownloadQueueItem;
-import net.celestialdata.plexbot.db.entities.User;
-import net.celestialdata.plexbot.periodictasks.BotStatusDisplay;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.javacord.api.DiscordApi;
 import org.jboss.logging.Logger;
 
 import javax.enterprise.event.Observes;
@@ -34,12 +30,6 @@ public class LifecycleController {
 
     @ConfigProperty(name = "BotSettings.adminPassword")
     String password;
-
-    @Inject
-    DiscordApi discordApi;
-
-    @Inject
-    BotStatusDisplay botStatusDisplay;
 
     @Inject
     DownloadQueueItemDao downloadQueueItemDao;
@@ -96,10 +86,5 @@ public class LifecycleController {
     public void updateAdminUser(@Observes StartupEvent event) {
         logger.info("Adding/updating administrator credentials");
         userDao.createOrUpdate(username, password, "admin");
-    }
-
-    void stop(@Observes ShutdownEvent event) {
-        botStatusDisplay.stopManager();
-        discordApi.disconnect();
     }
 }

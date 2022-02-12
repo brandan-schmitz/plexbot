@@ -26,11 +26,21 @@ BotSettings:
   #  - OFF
   logLevel: INFO
 
+  # If the bot should generate a file with the logs in addition to the
+  # logs displayed in the console output.
+  logFileEnabled: true
+
   # Username of your admin user
   adminUsername: admin
 
   # Password of your admin user
   adminPassword: admin
+
+  # The time to wait for the bot to finish processing tasks and come to a complete stop
+  # This is specified in seconds. Keep in mind this could take a while if the bot is downloading
+  # media files or running various checks. The bot will interrupt these tasks after the duration
+  # specified below.
+  shutdownTimeout: 600
 
 
 ##############################
